@@ -1,0 +1,66 @@
+# deploy hugo site to my own server
+name: deploy
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    paths-ignore:
+      - '.forestry/**'
+      - 'archetypes/**'
+      - '.gitignore'
+      - '.gitmodules'
+      - 'README.md'
+      - 'LICENSE'
+    branches: [ master ]
+  pull_request:
+    paths-ignore:
+      - '.forestry/**'
+      - 'archetypes/**'
+      - '.gitignore'
+      - '.gitmodules'
+      - 'README.md'
+      - 'LICENSE'
+  # Manual run
+  workflow_dispatch:
+    
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "rsync"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          submodules: true  # Fetch Hugo themes (true OR recursive)
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+      
+      # Prepare Hugo env
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+          # extended: true
+
+      # Hugo generate static site    
+      - name: Build
+        run: |
+          hugo --gc --verbose --minify
+#          cp -r .forestry/admin public/admin
+      # Deploy site by using rsync
+      - name: Deploy
+        uses: burnett01/rsync-deployments@5.1
+        with:
+          switches: -avzr --delete
+          path: ./public/
+          remote_host: ${{ secrets.REMOTE_HOST }}
+          remote_port: ${{ secrets.REMOTE_PORT }}
+          remote_path: ${{ secrets.REMOTE_PATH }}
+          remote_user: ${{ secrets.REMOTE_USER }}
+          remote_key: ${{ secrets.REMOTE_KEY }}
