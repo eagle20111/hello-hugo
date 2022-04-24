@@ -4,7 +4,7 @@
 # theme: PaperMod
 
 # baseURL: "https://jianye0428.github.io/"
-baseURL: "https://jianye0428.github.io/my_blog/"
+baseURL: "https://jianye0428.github.io/"
 # baseURL: "https://jianye0428.github.io/jian-s-blog/"
 title: Jian's Blog
 paginate: 5
