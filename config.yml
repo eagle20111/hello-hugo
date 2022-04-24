@@ -51,23 +51,27 @@ languages:
                 - name: My Resume
                   url: myresume/
                   weight: 13
-    # en:
-    #     languageName: "English"
-    #     weight: 1
-    #     menu:
-    #         main:
-    #             - name: Archive
-    #               url: archives
-    #               weight: 15
-    #             - name: Search
-    #               url: search/
-    #               weight: 16
-    #             - name: Tags
-    #               url: tags/
-    #               weight: 14
-    #             - name: Categories
-    #               url: categories/
-    #               weight: 13
+    en:
+        languageName: "English"
+        weight: 1
+        menu:
+            main:
+                - name: Archive
+                  url: archives
+                  weight: 15
+                - name: Search
+                  url: search/
+                  weight: 16
+                - name: Tags
+                  url: tags/
+                  weight: 14
+                - name: Categories
+                  url: categories/
+                  weight: 13
+                - name: My Resume
+                  url: myresume/
+                  weight: 13
+
     
 
 outputs:
@@ -78,10 +82,10 @@ outputs:
 
 params:
     env: production # to enable google analytics, opengraph, twitter-cards and schema.
-    description: "SadBird的狗窝-工作、学习和生活"
+    description: "Here I take little notes about my study and life."
     author: Jian Ye
     # author: ["Me", "You"] # multiple authors
-    keywords: ["仙羡", "SadBird", "Study"]
+    keywords: ["Jian", "SadBird", "Study"]
 
     defaultTheme: auto
     # disableThemeToggle: true
@@ -112,9 +116,9 @@ params:
     #           url: tags
 
     homeInfoParams:
-        Title: "Hi there! here is Jian 的狗窝"
+        Title: "Hi there! Here is Jian. A ROOKIE in ROBOTICS."
         Content: >
-            怨无大小;生于所爱;物无美恶;过则为灾。
+            better to burn out than fade away.
     socialIcons:
         - name: github
           url: "https://github.com/jianye0428"
