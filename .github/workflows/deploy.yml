@@ -1,66 +1,102 @@
-# deploy hugo site to my own server
-name: deploy
+# # deploy hugo site to my own server
+# name: deploy
 
-# Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    paths-ignore:
-      - '.forestry/**'
-      - 'archetypes/**'
-      - '.gitignore'
-      - '.gitmodules'
-      - 'README.md'
-      - 'LICENSE'
-    branches: [ master ]
-  pull_request:
-    paths-ignore:
-      - '.forestry/**'
-      - 'archetypes/**'
-      - '.gitignore'
-      - '.gitmodules'
-      - 'README.md'
-      - 'LICENSE'
-  # Manual run
-  workflow_dispatch:
+# # Controls when the workflow will run
+# on:
+#   # Triggers the workflow on push or pull request events but only for the master branch
+#   push:
+#     paths-ignore:
+#       - '.forestry/**'
+#       - 'archetypes/**'
+#       - '.gitignore'
+#       - '.gitmodules'
+#       - 'README.md'
+#       - 'LICENSE'
+#     branches: [ master ]
+#   pull_request:
+#     paths-ignore:
+#       - '.forestry/**'
+#       - 'archetypes/**'
+#       - '.gitignore'
+#       - '.gitmodules'
+#       - 'README.md'
+#       - 'LICENSE'
+#   # Manual run
+#   workflow_dispatch:
     
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # This workflow contains a single job called "rsync"
-  deploy:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+# # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# jobs:
+#   # This workflow contains a single job called "rsync"
+#   deploy:
+#     # The type of runner that the job will run on
+#     runs-on: ubuntu-18.04
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout source
-        uses: actions/checkout@v2
-        with:
-          ref: master
-          submodules: true  # Fetch Hugo themes (true OR recursive)
-          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+#     # Steps represent a sequence of tasks that will be executed as part of the job
+#     steps:
+#       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#       - name: Checkout source
+#         uses: actions/checkout@v2
+#         with:
+#           ref: master
+#           submodules: true  # Fetch Hugo themes (true OR recursive)
+#           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
       
-      # Prepare Hugo env
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+#       # Prepare Hugo env
+#       - name: Setup Hugo
+#         uses: peaceiris/actions-hugo@v2
+#         with:
+#           hugo-version: 'latest'
+#           # extended: true
+
+#       # Hugo generate static site    
+#       - name: Build
+#         run: |
+#           hugo --gc --verbose --minify
+# #          cp -r .forestry/admin public/admin
+#       # Deploy site by using rsync
+#       - name: Deploy
+#         uses: burnett01/rsync-deployments@5.1
+#         with:
+#           switches: -avzr --delete
+#           path: ./public/
+#           remote_host: ${{ secrets.REMOTE_HOST }}
+#           remote_port: ${{ secrets.REMOTE_PORT }}
+#           remote_path: ${{ secrets.REMOTE_PATH }}
+#           remote_user: ${{ secrets.REMOTE_USER }}
+#           remote_key: ${{ secrets.REMOTE_KEY }}
+
+
+# second try
+name: github pages # 名字自取
+
+on:
+  push:
+    branches:
+      - master  # 这里的意思是当 main分支发生push的时候，运行下面的jobs，这里先改为github-actions
+
+jobs:
+  deploy: # 任务名自取
+    runs-on: ubuntu-18.04	# 在什么环境运行任务
+    steps:
+      - uses: actions/checkout@v2	# 引用actions/checkout这个action，与所在的github仓库同名
         with:
-          hugo-version: 'latest'
+          submodules: true  # Fetch Hugo themes (true OR recursive) 获取submodule主题
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Setup Hugo	# 步骤名自取
+        uses: peaceiris/actions-hugo@v2	# hugo官方提供的action，用于在任务环境中获取hugo
+        with:
+          hugo-version: 'latest'	# 获取最新版本的hugo
           # extended: true
 
-      # Hugo generate static site    
       - name: Build
-        run: |
-          hugo --gc --verbose --minify
-#          cp -r .forestry/admin public/admin
-      # Deploy site by using rsync
+        run: hugo --minify	# 使用hugo构建静态网页
+
       - name: Deploy
-        uses: burnett01/rsync-deployments@5.1
+        uses: peaceiris/actions-gh-pages@v3	# 一个自动发布github pages的action
         with:
-          switches: -avzr --delete
-          path: ./public/
-          remote_host: ${{ secrets.REMOTE_HOST }}
-          remote_port: ${{ secrets.REMOTE_PORT }}
-          remote_path: ${{ secrets.REMOTE_PATH }}
-          remote_user: ${{ secrets.REMOTE_USER }}
-          remote_key: ${{ secrets.REMOTE_KEY }}
+          # github_token: ${{ secrets.GITHUB_TOKEN }} 该项适用于发布到源码相同repo的情况，不能用于发布到其他repo
+          external_repository: yejian0428/jianye0428.github.io	# 发布到哪个repo
+          personal_token: ${{ secrets.ACTION_ACCESS_TOKEN }}	# 发布到其他repo需要提供上面生成的personal access token
+          publish_dir: ./public	# 注意这里指的是要发布哪个文件夹的内容，而不是指发布到目的仓库的什么位置，因为hugo默认生成静态网页到public文件夹，所以这里发布public文件夹里的内容
+          publish_branch: master	# 发布到哪个branch
