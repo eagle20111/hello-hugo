@@ -37,26 +37,6 @@ languages:
         menu:
             main:
                 - name: Archive
-                  url: archives/
-                  weight: 15
-                - name: Search
-                  url: search/
-                  weight: 16
-                - name: Tags
-                  url: tags/
-                  weight: 14
-                - name: Categories
-                  url: categories/
-                  weight: 13
-                - name: My Resume
-                  url: myresume/
-                  weight: 13
-    en:
-        languageName: "English"
-        weight: 1
-        menu:
-            main:
-                - name: Archive
                   url: archives
                   weight: 15
                 - name: Search
@@ -65,12 +45,32 @@ languages:
                 - name: Tags
                   url: tags/
                   weight: 14
-                - name: Categories
-                  url: categories/
-                  weight: 13
+                # - name: Categories
+                #   url: categories/
+                #   weight: 13
                 - name: My Resume
                   url: myresume/
                   weight: 13
+    # en:
+    #     languageName: "English"
+    #     weight: 1
+    #     menu:
+    #         main:
+    #             - name: Archive
+    #               url: archives
+    #               weight: 15
+    #             - name: Search
+    #               url: search/
+    #               weight: 16
+    #             - name: Tags
+    #               url: tags/
+    #               weight: 14
+    #             # - name: Categories
+    #             #   url: categories/
+    #             #   weight: 13
+    #             - name: My Resume
+    #               url: myresume/
+    #               weight: 13
 
     
 
