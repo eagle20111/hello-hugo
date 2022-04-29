@@ -85,7 +85,7 @@ params:
     description: "Here I take little notes about my study and life."
     author: Jian Ye
     # author: ["Me", "You"] # multiple authors
-    keywords: ["Jian", "SadBird", "Study"]
+    keywords: ["Jian", "Study"]
 
     defaultTheme: auto
     # disableThemeToggle: true
@@ -116,7 +116,7 @@ params:
     #           url: tags
 
     homeInfoParams:
-        Title: "Hi there! Here is Jian. A ROOKIE in ROBOTICS."
+        Title: "👋 Hi there! Here is Jian. A ROOKIE in ROBOTICS."
         Content: >
             better to burn out than fade away.
     socialIcons:
