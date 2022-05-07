@@ -17,7 +17,8 @@ draft: true
 
 1. create a new markdown file
 ```shell
-hugo new posts/tech/name.md
+hugo new posts/tech/name-of-file.md  
+hugo new content/tech/name-of-file.md
 ```
 
 2. create new site
