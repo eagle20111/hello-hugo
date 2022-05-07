@@ -25,3 +25,13 @@ hugo new content/tech/name-of-file.md
 ```shell
 hugo new site name
 ```
+
+3. Install hugo 
+
+- Linux
+    ```shell
+    wget https://github.com/gohugoio/hugo/releases/download/v0.83.1/hugo_0.83.1_Linux-64bit.tar.gz
+    tar -xf hugo_0.83.1_Linux-64bit.tar.gz
+    sudo mv hugo /usr/local/bin/
+    hugo version
+    ```
