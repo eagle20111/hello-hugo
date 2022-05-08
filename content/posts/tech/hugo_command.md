@@ -16,15 +16,15 @@ draft: true
 # command_line for creating sites backend with hugo
 
 1. create a new markdown file
-```shell
-hugo new posts/tech/name-of-file.md  
-hugo new content/tech/name-of-file.md
-```
+    ```shell
+    hugo new posts/tech/name-of-file.md  
+    hugo new content/posts/tech/name-of-file.md
+    ```
 
 2. create new site
-```shell
-hugo new site name
-```
+    ```shell
+    hugo new site name
+    ```
 
 3. Install hugo 
 

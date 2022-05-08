@@ -97,10 +97,14 @@ params:
     ShowBreadCrumbs: true
     ShowCodeCopyButtons: true
     ShowToc: true
+    # TocOpen: true # 自动展开目录
     comments: true
     hideFooter: true # 使用自定义footer(新增备案号)，隐藏原footer
     katex: false
     images: ["https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"] # link or path of image for opengraph, twitter-cards
+    VisitCount: true
+    ShowWordCounts: true
+    ShowLastMod: true #显示文章更新时间
 
     # profileMode:
     #     enabled: false
@@ -139,9 +143,9 @@ params:
         # icon: /img/earlybird.png
         iconHeight: 30
 
-    # analytics:
-    #     google:
-    #         SiteVerificationTag: "XYZabc"
+    analytics:
+        google:
+            SiteVerificationTag: "XYZabc"
 
     assets:
         disableHLJS: true
@@ -200,7 +204,7 @@ markup:
         # 生成方式为 hugo gen chromastyles --style=dracula > assets/css/extended/chroma.css，其中dracula可以更换为任意代码主题
         noClasses: false
         # noClasses为false时，style失效，因此必须手动生成css
-        style: monaco
+        style: gruvbox
         # style: monokai
 
 privacy:
