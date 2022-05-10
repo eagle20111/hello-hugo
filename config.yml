@@ -6,7 +6,7 @@
 # baseURL: "https://jianye0428.github.io/"
 baseURL: "https://jianye0428.github.io/"
 # baseURL: "https://jianye0428.github.io/jian-s-blog/"
-title: Jian's Blog
+title: Jian's Blog 
 paginate: 5
 theme: PaperMod
 defaultContentLanguage: cn
@@ -98,6 +98,12 @@ params:
     VisitCount: true
     ShowWordCounts: true
     ShowLastMod: true #显示文章更新时间
+    ShowReadingTime: true
+    ShowShareButtons: true 
+    ShowCodeCopyButtons: true
+    analytics.google.SiteVerificationTag: "XYZabc"
+    analytics.bing.SiteVerificationTag: "XYZabc"	
+    analytics.yandex.SiteVerificationTag: "XYZabc"
 
     # profileMode:
     #     enabled: false
@@ -135,7 +141,7 @@ params:
 
     label:
         text: "Jian's Blog"
-        icon: /favicon/favicon.ico
+        icon: /favicon/jian_icon.png
         iconHeight: 30
 
     analytics:
@@ -144,9 +150,9 @@ params:
 
     assets:
         disableHLJS: true
-        favicon: "/favicon/favicon.ico"
-        favicon16x16: "/favicon/favicon-16x16.png"
-        favicon32x32: "/favicon/favicon-32x32.png"
+        favicon: "/favicon/jian_icon.png"
+        favicon16x16: "/favicon/jian_icon.png"
+        favicon32x32: "/favicon/jian_icon.png"
         apple_touch_icon: "/favicon/apple-touch-icon.png"
         safari_pinned_tab: "/favicon/safari-pinned-tab.svg"
 
