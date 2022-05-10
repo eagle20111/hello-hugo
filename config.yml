@@ -83,15 +83,8 @@ outputs:
 params:
     env: production # to enable google analytics, opengraph, twitter-cards and schema.
     description: "Here I take little notes about my study and life."
-    author: Jian Ye
-    # author: ["Me", "You"] # multiple authors
-    keywords: ["Jian", "Study"]
-
-    defaultTheme: auto
-    # disableThemeToggle: true
-    ShowShareButtons: true
-    ShowReadingTime: true
-    # disableSpecial1stPost: true
+    author: ["Jian Ye"]
+    keywords: ["Jian", "Tech", "Notes"]
     displayFullLangName: true
     ShowPostNavLinks: true
     ShowBreadCrumbs: true
@@ -120,9 +113,11 @@ params:
     #           url: tags
 
     homeInfoParams:
-        Title: "👋 Hi there! Here is Jian. A ROOKIE in ROBOTICS."
+        Title: "👋 Hi there! Here is Jian. "
         Content: >
             better to burn out than fade away.
+
+        
     socialIcons:
         - name: github
           url: "https://github.com/jianye0428"
@@ -140,7 +135,7 @@ params:
 
     label:
         text: "Jian's Blog"
-        # icon: /img/earlybird.png
+        icon: /favicon/favicon.ico
         iconHeight: 30
 
     analytics:

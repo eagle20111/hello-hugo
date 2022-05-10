@@ -1,5 +1,5 @@
 ---
-title: "Ubuntu 22.04 | Install zsh as default shell"
+title: "Ubuntu 22.04 | zsh 以及 oh-my-zsh的安装和配置"
 slug: ""
 date: 2022-05-09T11:54:06+08:00
 summary: ""
@@ -23,56 +23,58 @@ draft: false
 
 ## 准备
  - 查看当前系统用shell版本
-```shell
-echo $SHELL
-```
+    ```shell
+    echo $SHELL
+    ```
 
 - 查看系统自带哪些shell
-```shell
-cat /etc/shells
-```
+    ```shell
+    cat /etc/shells
+    ```
 
 ## 安装zsh
+
 ```shell
 sudo apt install zsh
 ```
 
 ## zsh配置
 
-将zsh设置为默认的shell
-```shell
-chsh -s /bin/zsh
-```
+- 将zsh设置为默认的shell
 
-然后重启电脑
-```shell
-reboot
-```
+    ```shell
+    chsh -s /bin/zsh
+    ```
+
+- 然后重启电脑
+    ```shell
+    reboot
+    ```
 
 ## 安装oh-my-zsh及其个性化配置
 
 ### 安装oh-my-zsh
-
-```shell
-sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
-```
-或者
-```
-sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-```
+- 执行以下命令安装oh-my-zsh
+    ```shell
+    sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+    ```
+    或者
+    ```shell
+    sh -c "$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+    ```
 
 ### 主题配置
 
-打开配置文件~/.zshrc
+- 打开配置文件~/.zshrc
+    输入:
 
-编辑
-```txt
-ZSH_THEME="xxf"
-```
+    ```txt
+    ZSH_THEME="xxf"
+    ```
 
-xxf.zsh-theme文件下载地址: [xxf.zsh-theme文件下载](https://github.com/xfanwu/oh-my-zsh-custom-xxf/blob/master/themes/xxf.zsh-theme)  
+  xxf.zsh-theme文件下载地址: [xxf.zsh-theme文件下载](https://github.com/xfanwu/oh-my-zsh-custom-xxf/blob/master/themes/xxf.zsh-theme)  
 
-下载之后将文件拷贝到以下路径: ```/home/username/.oh-my-zsh/themes/```
+  下载之后将文件拷贝到以下路径: ```/home/username/.oh-my-zsh/themes/```
 
 ### 插件
 
@@ -116,37 +118,37 @@ source ~/.zshrc
 
 #### 安装zsh-syntax-highlighting语法高亮插件
 
-从gihub下载源码并放在~/.oh-my-zsh/plugins/文件夹下:
-```shell
-cd ~/.oh-my-zsh/plugins/
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
-```
+- 从gihub下载源码并放在~/.oh-my-zsh/plugins/文件夹下:
+    ```shell
+    cd ~/.oh-my-zsh/plugins/
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git
+    ```
 
-在~/.zshrc文件中编辑:
-```
-source ~/.oh-my-zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-```
-然后，source一下:
-```shell
-source ~/.zshrc
-```
+- 在~/.zshrc文件中编辑:
+    ```
+    source ~/.oh-my-zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    ```
+- 然后，source一下:
+    ```shell
+    source ~/.zshrc
+    ```
 
 #### 安装zsh-autosuggestions语法历史记录插件
 
-从gihub下载源码并放在~/.oh-my-zsh/plugins/文件夹下:
-```shell
-cd ~/.oh-my-zsh/plugins/
-git clone git@github.com:zsh-users/zsh-autosuggestions.git
-```
+- 从gihub下载源码并放在~/.oh-my-zsh/plugins/文件夹下:
+    ```shell
+    cd ~/.oh-my-zsh/plugins/
+    git clone git@github.com:zsh-users/zsh-autosuggestions.git
+    ```
 
-在~/.zshrc文件中编辑:
-```
-source ~/.oh-my-zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-```
-然后，source一下:
-```shell
-source ~/.zshrc
-```
+- 在~/.zshrc文件中编辑:
+    ```
+    source ~/.oh-my-zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+    ```
+- 然后，source一下:
+    ```shell
+    source ~/.zshrc
+    ```
 
 ### 其他
 
@@ -166,4 +168,11 @@ source ~/.zshrc
 - 卸载oh-my-zsh
     ```shell
     uninstall_on_my_zsh zsh
+    ```
+
+### 从bash到zsh的切换
+
+- 直接执行zsh和oh-my-zsh的安装以及配置，并且在~/.zshrc文件中添加:
+    ```
+    source ~/.bashrc
     ```
