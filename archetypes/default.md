@@ -8,7 +8,7 @@ cover:
     image: ""
     alt: ""
 tags: []
-katex: false
+katex: true
 mermaid: false
 draft: true
 ---
