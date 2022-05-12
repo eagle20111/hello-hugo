@@ -33,10 +33,10 @@ draft: false
     ```
 
 ## 安装zsh
-
-```shell
-sudo apt install zsh
-```
+- 通过命令行安装zsh
+    ```shell
+    sudo apt install zsh
+    ```
 
 ## zsh配置
 
@@ -79,42 +79,43 @@ sudo apt install zsh
 ### 插件
 
 #### 安装自动补全插件incr
-
-```shell
-cd ~/.oh-my-zsh/plugins/
-mkdir incr && cd incr
-wget http://mimosa-pudica.net/src/incr-0.2.zsh
-```
-编辑~/.zshrc文件，添加以下内容:
-```
-source ~/.oh-my-zsh/plugins/incr/incr*.zsh
-```
-然后，source一下:
-```shell
-source ~/.zshrc
-```
+- 首先，下载incr插件到本地
+    ```shell
+    cd ~/.oh-my-zsh/plugins/
+    mkdir incr && cd incr
+    wget http://mimosa-pudica.net/src/incr-0.2.zsh
+    ```
+- 编辑~/.zshrc文件，添加以下内容:
+    ```
+    source ~/.oh-my-zsh/plugins/incr/incr*.zsh
+    ```
+- 然后，source一下:
+    ```shell
+    source ~/.zshrc
+    ```
 
 #### 直接使用默认插件
 
-在~/.zshrc文件中添加插件:
+- 在~/.zshrc文件中添加插件:
  
-```txt
-plugins=(git extract z)
-```
+    ```txt
+    plugins=(git extract z)
+    ```
 
 #### 安装autojump插件
-```shell
-sudo apt install autojump
-```
 
-在~/.zshrc文件中编辑:
-```
-. /usr/share/autojump/autojump.sh
-```
-然后，source一下:
-```shell
-source ~/.zshrc
-```
+- 通过命令行安装autojump
+    ```shell
+    sudo apt install autojump
+    ```
+- 在~/.zshrc文件中编辑:
+    ```
+    . /usr/share/autojump/autojump.sh
+    ```
+- 然后，source一下:
+    ```shell
+    source ~/.zshrc
+    ```
 
 #### 安装zsh-syntax-highlighting语法高亮插件
 
