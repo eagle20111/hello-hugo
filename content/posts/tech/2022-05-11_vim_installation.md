@@ -36,15 +36,10 @@ git clone git@github:
 echo $PATH
 ```
 
-![执行echo $PATH的结果](/static/blog/posts/tech/2022-05-12_vim_install/echo_path.png)
+![执行echo $PATH的结果](/blog/posts/tech/2022-05-12_vim_install/echo_path.png)
 
-<img src="/static/blog/posts/tech/2022-05-12_vim_install/echo_path.png"/>
+<img src="/blog/posts/tech/2022-05-12_vim_install/echo_path.png"/>
 
-
-
-![执行echo $PATH的结果](https://github.com/jianye0428/hello-hugo/blob/master/static/blog/posts/tech/2022-05-12_vim_install/echo_path.png)
-
-<img src="https://github.com/jianye0428/hello-hugo/blob/master/static/blog/posts/tech/2022-05-12_vim_install/echo_path.png"/>
 
 这里/usr/local/bin优先于/usr/bin, 一般都是如此。
 
