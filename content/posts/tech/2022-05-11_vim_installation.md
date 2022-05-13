@@ -10,7 +10,7 @@ cover:
 tags: []
 katex: false
 mermaid: false
-draft: true
+draft: false
 ---
 
 # VIM 8.2 安装
