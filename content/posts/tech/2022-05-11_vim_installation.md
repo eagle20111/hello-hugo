@@ -22,3 +22,5 @@ draft: true
 ```shell
 git clone git@github:
 ```
+
+![执行echo $PATH的结果](/img/posts/tech/2022-05-12_vim_install/echo_path.png)
