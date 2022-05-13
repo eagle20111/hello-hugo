@@ -10,7 +10,7 @@ cover:
 tags: []
 katex: false
 mermaid: false
-draft: false
+draft: true
 ---
 
 # VIM 8.2 安装
@@ -23,4 +23,4 @@ draft: false
 git clone git@github:
 ```
 
-![执行echo $PATH的结果](/img/posts/tech/2022-05-12_vim_install/echo_path.png)
+![执行echo $PATH的结果](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-05-13_linux_filesystem/echo_path.png)
