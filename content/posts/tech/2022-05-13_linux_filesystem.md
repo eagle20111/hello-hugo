@@ -1,44 +1,35 @@
 ---
-title: "Build VIM 8.2 from source"
+title: "Linux filesystem"
 slug: ""
-date: 2022-05-11T10:00:13+08:00
+date: 2022-05-13T10:53:31+08:00
 summary: ""
 author: ["Jian"]
 cover:
     image: ""
     alt: ""
-tags: []
-katex: false
+tags: ["Linux", "filesystem"]
+katex: true
 mermaid: false
-draft: true
+draft: false
 ---
-
-# VIM 8.2 安装
-
-## 1. 首先从github下载源码vim 8.2
-
-- run the following command to downlaod source code of VIM from github
-
-```shell
-git clone git@github:
-```
 
 # Linux系统各系统文件夹下的区别
 
 首先，usr 指 Unix System Resource，而不是User。
 通常，
-**/usr/bin**下面的都是系统预装的可执行程序，会随着系统升级而改变。
+- **/usr/bin**下面的都是系统预装的可执行程序，会随着系统升级而改变。
 
-**/usr/local/bin**目录是给用户放置自己的可执行程序的地方，推荐放在这里，不会被系统升级而覆盖同名文件。
+- **/usr/local/bin**目录是给用户放置自己的可执行程序的地方，推荐放在这里，不会被系统升级而覆盖同名文件。
 
 如果两个目录下有相同的可执行程序，谁优先执行受到PATH环境变量的影响，比如我的一台服务器的PATH变量为。
+
 ```shell
 echo $PATH
 ```
 
 ![执行echo $PATH的结果](/img/posts/tech/2022-05-12_vim_install/echo_path.png)
 
-这里/usr/local/bin优先于/usr/bin, 一般都是如此。
+这里<u>/usr/local/bin</u>优先于<u>/usr/bin</u>, 一般都是如此。
 
 **/lib**是内核级的, **/usr/lib**是系统级的, **/usr/local/lib**是用户级的.
 
@@ -84,13 +75,13 @@ echo $PATH
 
 - **/opt/** — 可选文件和程序的贮存目录。该目录主要被第三方开发者用来简易地安装和卸装他们的软件包。这里主要存放那些可选的程序。你想尝试最新的firefox测试版吗?那就装到/opt目录下吧，这样，当你尝试完，想删掉firefox的时候，你就可 以直接删除它，而不影响系统其他任何设置。安装到/opt目录下的程序，它所有的数据、库文件等等都是放在同个目录下面。
 
-- **/usr/local** - 这里主要存放那些手动安装的软件，即apt或者apt-get安装的软件。它和/usr目录具有相类似的目录结构。让软件包管理器来管理/usr目录，而把自定义的脚本(scripts)放到/usr/local目录下面，我想这应该是个不错的主意。
+- **/usr/local/** - 这里主要存放那些手动安装的软件，即apt或者apt-get安装的软件。它和/usr目录具有相类似的目录结构。让软件包管理器来管理/usr目录，而把自定义的脚本(scripts)放到/usr/local目录下面，我想这应该是个不错的主意。
 
-- **media** - 有些linux的发行版使用这个目录来挂载那些usb接口的移动硬盘(包括U盘)、CD/DVD驱动器等等。
+- **/media/** - 有些linux的发行版使用这个目录来挂载那些usb接口的移动硬盘(包括U盘)、CD/DVD驱动器等等。
 
 ## /usr/local/ 和 /usr/share/ 区别
 
-**/usr/local** - 这个目录一般是用来存放用户自编译安装软件的存放目录；一般是通过源码包安装的软件，如果没有特别指定安装目录的话，一般是安装在这个目录中。这个目录下面有子目录。自己看看吧。
+**/usr/local** - 这个目录一般是用来存放用户自编译安装软件的存放目录；一般是通过源码包安装的软件，如果没有特别指定安装目录的话，一般是安装在这个目录中。这个目录下面有子目录。
 
 - **/usr/share** - 系统共用的东西存放地，比如 /usr/share/fonts 是字体目录，/usr/share/doc和/usr/share/man帮助文件。
 

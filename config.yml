@@ -124,7 +124,6 @@ params:
         Content: >
             better to burn out than fade away.
 
-        
     socialIcons:
         - name: github
           url: "https://github.com/jianye0428"
