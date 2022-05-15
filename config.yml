@@ -120,9 +120,9 @@ params:
     #           url: tags
 
     homeInfoParams:
-        Title: "👋 Hi there! Here is Jian. "
+        Title: "👋 Hi there! Welcome to my blog!"
         Content: >
-            better to burn out than fade away.
+            It's better to burn out than fade away.
 
     socialIcons:
         - name: github
