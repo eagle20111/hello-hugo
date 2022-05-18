@@ -161,7 +161,7 @@ draft: false
 - 其他主题直接编辑:PlugInstall进行安装
 
 ### 3.2 reference
-- 参考链接:
-[1] https://github.com/ycm-core/YouCompleteMe/wiki/Building-Vim-from-source
-[2] https://wizardforcel.gitbooks.io/use-vim-as-ide/content/0.html
+- 参考链接:  
+    [1] https://github.com/ycm-core/YouCompleteMe/wiki/Building-Vim-from-source
+    [2] https://wizardforcel.gitbooks.io/use-vim-as-ide/content/0.html
 

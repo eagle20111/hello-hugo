@@ -7,7 +7,7 @@ author: ["Jian"]
 cover:
     image: ""
     alt: ""
-tags: ["statistical methods"]
+tags: ["Statistical Methods"]
 katex: false
 mermaid: false
 draft: true
@@ -18,7 +18,7 @@ draft: true
 # CH03 -- 
 # CH04 -- 
 # CH05 -- Decision Tree 决策树
-# CH06 -- 
+# CH06 -- Logistic Regression and Maximum Entropy Model 逻辑斯谛回归和最大熵模型
 # CH07 -- 
 # CH08 -- 
 # CH09 -- 
