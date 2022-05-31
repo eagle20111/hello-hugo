@@ -13,7 +13,7 @@ mermaid: false
 draft: true
 ---
 
-# command_line for creating sites backend with hugo
+# Commands for creating sites backend with hugo
 
 1. create a new markdown file
     ```shell

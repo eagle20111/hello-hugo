@@ -185,3 +185,9 @@ draft: false
         ```shell
         git submodule update --init --recursive
         ```
+
+4. **<font color=red>拉取远程分支到本地</font>**
+    ```shell
+    git fetch origin remote-branch-name
+    git checkout -b local-branch-name origin/remote-branch-name
+    ```
