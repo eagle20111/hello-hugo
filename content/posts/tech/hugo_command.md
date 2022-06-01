@@ -7,7 +7,7 @@ author: ["Jian"]
 cover:
     image: ""
     alt: ""
-tags: []
+tags: ["Hugo"]
 katex: false
 mermaid: false
 draft: true

@@ -7,7 +7,7 @@ author: ["Jian"]
 cover:
     image: ""
     alt: ""
-tags: ["git"]
+tags: ["Git"]
 katex: false
 mermaid: false
 draft: false
