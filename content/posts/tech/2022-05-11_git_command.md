@@ -187,7 +187,20 @@ draft: false
         ```
 
 4. **<font color=red>拉取远程分支到本地</font>**
-    ```shell
-    git fetch origin remote-branch-name
-    git checkout -b local-branch-name origin/remote-branch-name
-    ```
+    - 拉取某一个远程的分支，并在创建相应的本地分支名称
+        ```shell
+        git fetch origin remote-branch-name
+        git checkout -b local-branch-name origin/remote-branch-name
+        ```
+
+5. **<font color=red>git tag</font>**
+    - 用git tag打标签
+        ```shell
+        git tag -a v1.0
+        git tag -a v0 85fc7e7 #追加标签
+        ```
+    -  git clone 按照tag拉取代码
+        ```shell
+        # git clone --branch [tags标签] [git地址]
+        git clone -b v5.2.0 --depth=1 http://gitlab地址
+        ```
