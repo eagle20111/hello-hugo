@@ -204,3 +204,17 @@ draft: false
         # git clone --branch [tags标签] [git地址]
         git clone -b v5.2.0 --depth=1 http://gitlab地址
         ```
+6. **<font color=red>git stash</font>**
+    - ```git stash```
+        ```shell
+        git stash # 隐藏修改
+        git stash save "stash-name" #给每一个stash取名字
+        git stash pop # 恢复隐藏的修改
+        git stash list # 列出所有的隐藏
+        git stash apply [number] # 指定恢复使用哪一个隐藏修改
+        git stash drop # 移除某一项修改
+        git stash clear # 删除所有隐藏的修改
+        git stash show # 查看隐藏的修改
+        git stash show -p
+        git stash show --patch # 查看特定的stash的diff
+        ```
