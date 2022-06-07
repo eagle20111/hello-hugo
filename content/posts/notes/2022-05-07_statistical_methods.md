@@ -20,7 +20,7 @@ draft: true
 # CH05 -- Decision Tree 决策树
 # CH06 -- Logistic Regression and Maximum Entropy Model 逻辑斯谛回归和最大熵模型
 # CH07 -- Support Vector Machine 支持向量机
-- **模型**：支持向量机 ( SVM ) 是一种二类分类模型。它的基本模型是定义在特征空间上的间隔最大的线性分类器。支持向量机还包括核技巧，使它成为实质上的非线性分类器。
+- **模型**:支持向量机 (SVM) 是一种二类分类模型。它的基本模型是定义在特征空间上的间隔最大的线性分类器。支持向量机还包括核技巧，使它成为实质上的非线性分类器。
 分离超平面:$\omega ^ * \cdot{x} + b^* = 0$
 分类决策函数:$f(x) = sign (\omega ^ * \cdot{x} + b ^ *)$。
 
