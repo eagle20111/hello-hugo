@@ -218,3 +218,74 @@ draft: false
         git stash show -p
         git stash show --patch # 查看特定的stash的diff
         ```
+7. <font color=red>代码回退: git reset/git revert</font>
+   - 本地分支版本回退的方法
+     ```shell
+     git reflog # 找回要回退的版本的commit_id
+     git reset --hard <commit_id>
+     ```
+   - 自己的远程分支版本回退的方法
+     ```shell
+     # 如果你的错误提交已经推送到自己的远程分支了，那么就需要回滚远程分支了。 
+     # 1. 首先要回退本地分支：
+     git reflog
+     git reset --hard <commit_id>
+     # 2. 强制推送到远程分支
+     git push -f
+     ```
+   - 公共远程分支版本回退的问题
+     > 一个显而易见的问题：如果你回退公共远程分支，把别人的提交给丢掉了怎么办？   
+
+     假设你的远程master分支情况是这样的:
+     ```shell
+     A1–A2–B1 #
+     ```
+     其中A、B分别代表两个人，A1、A2、B1代表各自的提交。并且所有人的本地分支都已经更新到最新版本，和远程分支一致。
+    
+     这个时候你发现A2这次提交有错误，你用reset回滚远程分支master到A1，那么理想状态是你的队友一拉代码git pull，他们的master分支也回滚了，然而现实却是，你的队友会看到下面的提示：
+
+     ```shell
+     $ git status
+        On branch master
+        Your branch is ahead of 'origin/master' by 2 commits.
+        (use "git push" to publish your local commits)
+        nothing to commit, working directory clean
+     ```
+     > 也就是说，你的队友的分支并没有主动回退，而是比远程分支超前了两次提交，因为远程分支回退了嘛。
+
+     ```shell
+     git revert HEAD #撤销最近一次提交
+     git revert HEAD~1 #撤销上上次的提交，注意：数字从0开始
+     git revert 0ffaacc  #撤销0ffaacc这次提交
+     ```
+
+     > git revert 命令意思是撤销某次提交。它会产生一个新的提交，虽然代码回退了，但是版本依然是向前的，所以，当你用revert回退之后，所有人pull之后，他们的代码也自动的回退了。 
+     但是，要注意以下几点：
+      >>    1、revert 是撤销一次提交，所以后面的commit id是你需要回滚到的版本的前一次提交。
+            2、使用revert HEAD是撤销最近的一次提交，如果你最近一次提交是用revert命令产生的，那么你再执行一次，就相当于撤销了上次的撤销操作，换句话说，你连续执行两次revert HEAD命令，就跟没执行是一样的。
+            3、使用revert HEAD~1 表示撤销最近2次提交，这个数字是从0开始的，如果你之前撤销过产生了commi id，那么也会计算在内的。
+            4、如果使用 revert 撤销的不是最近一次提交，那么一定会有代码冲突，需要你合并代码，合并代码只需要把当前的代码全部去掉，保留之前版本的代码就可以了。 
+    git revert 命令的好处就是不会丢掉别人的提交，即使你撤销后覆盖了别人的提交，他更新代码后，可以在本地用 reset 向前回滚，找到自己的代码，然后拉一下分支，再回来合并上去就可以找回被你覆盖的提交了。
+
+
+    **revert 合并代码，解决冲突**
+    使用revert命令，如果不是撤销的最近一次提交，那么一定会有冲突，如下所示：
+    ```shell
+    <<<<<<< HEAD
+    全部清空
+    第一次提交
+    =======
+    全部清空
+    >>>>>>> parent of c24cde7... 全部清空
+    ```
+
+    解决冲突很简单，因为我们只想回到某次提交，因此需要把当前最新的代码去掉即可，也就是HEAD标记的代码:
+
+    ```shell
+    <<<<<<< HEAD
+    全部清空
+    第一次提交
+    =======
+    ```
+    把上面部分代码去掉就可以了，然后再提交一次代码就可以解决冲突了。
+

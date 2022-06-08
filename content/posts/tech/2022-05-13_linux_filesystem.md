@@ -235,3 +235,7 @@ Linux自动创建这个数据库，并且每天自动更新一次，所以使用
   # 查看符合条件的日志条目。
   grep -n '2019-10-24 00:01:11' *.log
   ```
+  ```shell
+  # 只匹配文本文件，不匹配二进制文件的命令
+  grep -srn "parameter" .  --binary-files=without-match
+  ``` 
