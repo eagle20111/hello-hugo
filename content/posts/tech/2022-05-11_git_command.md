@@ -13,7 +13,8 @@ mermaid: false
 draft: false
 ---
 ## git command record as my cheatsheet
-1. **<font color=red>git rebase</font>**
+
+### 1. **<font color=red>git rebase</font>**
    ref: https://git-scm.com/docs/git-rebase
    - **用法一:```git rebase <branch-name>```** 将topic分支的base由E改为master
         ```shell
@@ -128,7 +129,7 @@ draft: false
         git branch -d b1
         ```    
 
-2. **<font color=red>git cherrypick</font>**
+### 2. **<font color=red>git cherrypick</font>**
    - 将指定的提交用于其他分支
         例如:
         ```shell
@@ -163,7 +164,7 @@ draft: false
         ```
         ref:https://www.ruanyifeng.com/blog/2020/04/git-cherry-pick.html
         
-3. **<font color=red>git submodule</font>**
+### 3. **<font color=red>git submodule</font>**
    - 将一个repo添加为submodule
         ```shell
         git submodule add https://github.com/chaconinc/DbConnector
@@ -186,14 +187,14 @@ draft: false
         git submodule update --init --recursive
         ```
 
-4. **<font color=red>拉取远程分支到本地</font>**
+### 4. **<font color=red>拉取远程分支到本地</font>**
     - 拉取某一个远程的分支，并在创建相应的本地分支名称
         ```shell
         git fetch origin remote-branch-name
         git checkout -b local-branch-name origin/remote-branch-name
         ```
 
-5. **<font color=red>git tag</font>**
+### 5. **<font color=red>git tag</font>**
     - 用git tag打标签
         ```shell
         git tag -a v1.0
@@ -204,7 +205,7 @@ draft: false
         # git clone --branch [tags标签] [git地址]
         git clone -b v5.2.0 --depth=1 http://gitlab地址
         ```
-6. **<font color=red>git stash</font>**
+### 6. **<font color=red>git stash</font>**
     - ```git stash```
         ```shell
         git stash # 隐藏修改
@@ -218,7 +219,7 @@ draft: false
         git stash show -p
         git stash show --patch # 查看特定的stash的diff
         ```
-7. <font color=red>代码回退: git reset/git revert</font>
+### 7. <font color=red>代码回退: git reset/git revert</font>
    - ref:https://blog.csdn.net/weixin_35082950/article/details/113629326
    - 本地分支版本回退的方法
      ```shell
