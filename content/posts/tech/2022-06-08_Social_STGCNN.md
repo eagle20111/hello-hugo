@@ -39,8 +39,7 @@ TXP-CNN将这些特征作为输入，并预测所有行人作为一个整体的�
 
 **$a^{ij}_{sim,t}$是要在邻接矩阵$A_t$中使用的内核函数。** 定义为: 
 
-$$
-\begin{equation}
+$$\begin{equation}
 a^{ij}_{sim,t}=
 \left
 \{
@@ -49,8 +48,7 @@ a^{ij}_{sim,t}=
 0, Otherwise
 \end{aligned}
 \right.
-\end{equation}
-$$
+\end{equation}$$
 
 (2) <font color=red>Graph Convolution Neural Network</font>
 
@@ -97,13 +95,13 @@ where, $V^{(l)}$ denotes the stack of $V^{(l)}_t$, and $W^{(l)}$ denotes the tra
 
 ## Data Processing 数据处理以及图构建
 
-obs_traj - 前8帧观察轨迹(绝对坐标)
-pred_traj_gt - 后12帧预测轨迹(ground truth)(绝对坐标)
-obs_traj_rel - 前8帧观察轨迹(相对坐标)
-pred_traj_gt_rel - 后12帧预测轨迹(ground truth)(相对坐标)
-non_linear_ped - 非线性轨迹 (剔除)
-loss_mask - 
-V_obs - graph nodes
-A_obs - graph Adjacency Matrix
-V_tr - 预测轨迹 graph nodes
-A_tr - 预测轨迹 graph Adjacency Matrix
+obs_traj - 前8帧观察轨迹(绝对坐标)  
+pred_traj_gt - 后12帧预测轨迹(ground truth)(绝对坐标)  
+obs_traj_rel - 前8帧观察轨迹(相对坐标)  
+pred_traj_gt_rel - 后12帧预测轨迹(ground truth)(相对坐标)  
+non_linear_ped - 非线性轨迹 (剔除)  
+loss_mask 
+V_obs - graph nodes  
+A_obs - graph Adjacency Matrix  
+V_tr - 预测轨迹 graph nodes  
+A_tr - 预测轨迹 graph Adjacency Matrix  
