@@ -1,5 +1,5 @@
 ---
-title: "Social_STGCNN: : A Social Spatio-Temporal Graph Convolutional Neural Network for Human Trajectory Prediction"
+title: "Social_STGCNN: A Social Spatio-Temporal Graph Convolutional Neural Network for Human Trajectory Prediction"
 slug: ""
 date: 2022-06-08T16:36:37+08:00
 summary: ""
@@ -12,12 +12,13 @@ katex: true
 mermaid: false
 draft: false
 ---
-link: https://arxiv.org/abs/2002.11927?from=leiphonecolumn_paperreview0323
+`paper link:` https://arxiv.org/abs/2002.11927?from=leiphonecolumn_paperreview0323
 
 ## 网络结构
 
 特点: Social STGCNN不同于其他方法只是聚合各种学习的行人状态，而是对行人交互做图建模。其中提出一种kernel function把行人社交交互嵌入一个adjacency matrix。
-> 代码现实，图建模一般在数据前处理完成。
+
+> 代码显示，图建模一般在数据前处理完成。
 
 ### Model Description
 
