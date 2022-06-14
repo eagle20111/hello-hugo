@@ -13,10 +13,10 @@ mermaid: false
 draft: false
 ---
 
-`paper link:` https://arxiv.org/abs/2012.11717
-`论文解读参考:` 
-    [1] https://zhuanlan.zhihu.com/p/434650863
-    [2] https://www.gushiciku.cn/pl/amod
+`paper link:` https://arxiv.org/abs/2012.11717  
+`论文解读参考:`  
+    [1] https://zhuanlan.zhihu.com/p/434650863  
+    [2] https://www.gushiciku.cn/pl/amod  
 
 ## Issue to solve and its Solution
 
@@ -34,15 +34,17 @@ Modeling the negative samples through self-supervision:
 
 ### Contrastive Representation Learning
 
-- functionality: 
+- Functionality: 
 
-`Representation Learning:` to learn a parametric function that maps the raw data into a feature space to extract abstract and useful information for downstream tasks.
+  - `Representation Learning:` to learn a parametric function that maps the raw data into a feature space to extract abstract and useful information for downstream tasks.
 
-`NCE(Noise Contrastive Estimation):` to train encoder
+  - `NCE(Noise Contrastive Estimation):` to train encoder  
 
-$$\mathcal{L}_{NCE} = -\log \frac{\exp{(sim(q, k^+)/ \tau)}}{\sum_{n=0}^N  \exp(sim(q,k_n)/ \tau)}$$
+ 
+  
+   $$\mathcal{L_{NCE}} = -\log \frac{\exp(sim(q,k^+)/\tau)}{\sum_{n=0}^N  \exp(sim(q,k_n)/ \tau)}$$
 
-where the encoded query $q$ is brought close to one positive key $k_0 = k^+$ and pushed apart from $N$ negative keys $\{ k_1, k_2, ... , k_N\}$, $\tau$ is a temperature hyperparameter, and $sim(u,v) = u^{\mathsf{T}}v/(||u||||v||)$ is the cosine similarity between two feature vectors. 
+    where the encoded query $q$ is brought close to one positive key $k_0 = k^+$ and pushed apart from $N$ negative keys $\{ k_1, k_2, ... , k_N\}$, $\tau$ is a temperature hyperparameter, and $sim(u,v) = u^{\mathsf{T}}v/(||u||||v||)$ is the cosine similarity between two feature vectors. 
 
 ### Social NCE
     
@@ -70,7 +72,7 @@ $$h^i_t = f_I(z_t, i)$$
 
 给定一个场景，包括感兴趣的主智体（蓝色）和附近多个相邻智体（灰色），Social-NCE 损失鼓励在嵌入空间中提取的运动表示，接近未来的正样本事件，并远离可能导致碰撞或不适的合成负样本事件. Social NCE的损失函数如下:
 
-$$\mathcal{L}_{SocialNCE} = -\log\frac{\exp(\psi(h^i_t)\cdot\phi(s^{i,+}_{t+\delta t}, \delta t)/\tau)}{\sum_{\delta t\in\Lambda}\sum_{n=0}^{N}\exp(\psi(h^i_t)\cdot\phi(s^{i,n}_{t+\delta t}, \delta t)/\tau))}$$
+$$\mathcal{L_{SocialNCE}} = -\log\frac{\exp(\psi(h^i_t)\cdot\phi(s^{i,+}_{t+\delta t}, \delta t)/\tau)}{\sum_{\delta t\in\Lambda}\sum_{n=0}^{N}\exp(\psi(h^i_t)\cdot\phi(s^{i,n}_{t+\delta t}, \delta t)/\tau))}$$
 
 
 最终的训练损失函数为Social-NCE和传统任务损失项之和，即轨迹预测的mean squared error (MSE) 或者negative log-likelihood (NLL)：

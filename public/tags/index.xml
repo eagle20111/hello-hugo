@@ -9,7 +9,124 @@
       <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Mon, 09 May 2022 11:54:06 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 12 Jun 2022 09:44:14 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>pedestrian</title>
+      <link>https://jianye0428.github.io/tags/pedestrian/</link>
+      <pubDate>Sun, 12 Jun 2022 09:44:14 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/pedestrian/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>prediction</title>
+      <link>https://jianye0428.github.io/tags/prediction/</link>
+      <pubDate>Sun, 12 Jun 2022 09:44:14 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/prediction/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MAP</title>
+      <link>https://jianye0428.github.io/tags/map/</link>
+      <pubDate>Mon, 30 May 2022 16:38:56 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/map/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>MLE</title>
+      <link>https://jianye0428.github.io/tags/mle/</link>
+      <pubDate>Mon, 30 May 2022 16:38:56 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/mle/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Statistical</title>
+      <link>https://jianye0428.github.io/tags/statistical/</link>
+      <pubDate>Mon, 30 May 2022 16:38:56 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/statistical/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>numpy</title>
+      <link>https://jianye0428.github.io/tags/numpy/</link>
+      <pubDate>Tue, 24 May 2022 20:52:49 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/numpy/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>python</title>
+      <link>https://jianye0428.github.io/tags/python/</link>
+      <pubDate>Mon, 23 May 2022 08:51:45 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>data</title>
+      <link>https://jianye0428.github.io/tags/data/</link>
+      <pubDate>Mon, 23 May 2022 08:51:34 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/data/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>pandas</title>
+      <link>https://jianye0428.github.io/tags/pandas/</link>
+      <pubDate>Mon, 23 May 2022 08:51:34 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/pandas/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Filesystem</title>
+      <link>https://jianye0428.github.io/tags/filesystem/</link>
+      <pubDate>Fri, 13 May 2022 10:53:31 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/filesystem/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Linux</title>
+      <link>https://jianye0428.github.io/tags/linux/</link>
+      <pubDate>Fri, 13 May 2022 10:53:31 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/linux/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>vim</title>
+      <link>https://jianye0428.github.io/tags/vim/</link>
+      <pubDate>Wed, 11 May 2022 10:00:13 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/vim/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Git</title>
+      <link>https://jianye0428.github.io/tags/git/</link>
+      <pubDate>Wed, 11 May 2022 09:59:56 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/git/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>zsh</title>
       <link>https://jianye0428.github.io/tags/zsh/</link>
@@ -20,20 +137,29 @@
     </item>
     
     <item>
-      <title>paper</title>
-      <link>https://jianye0428.github.io/tags/paper/</link>
-      <pubDate>Thu, 05 May 2022 21:52:44 +0800</pubDate>
+      <title>PPO</title>
+      <link>https://jianye0428.github.io/tags/ppo/</link>
+      <pubDate>Fri, 06 May 2022 13:16:25 +0200</pubDate>
       
-      <guid>https://jianye0428.github.io/tags/paper/</guid>
+      <guid>https://jianye0428.github.io/tags/ppo/</guid>
       <description></description>
     </item>
     
     <item>
       <title>RL</title>
       <link>https://jianye0428.github.io/tags/rl/</link>
-      <pubDate>Thu, 05 May 2022 21:52:44 +0800</pubDate>
+      <pubDate>Fri, 06 May 2022 13:16:25 +0200</pubDate>
       
       <guid>https://jianye0428.github.io/tags/rl/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>paper</title>
+      <link>https://jianye0428.github.io/tags/paper/</link>
+      <pubDate>Thu, 05 May 2022 21:52:44 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/tags/paper/</guid>
       <description></description>
     </item>
     

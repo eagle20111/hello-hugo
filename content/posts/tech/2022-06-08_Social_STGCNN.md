@@ -39,7 +39,7 @@ TXP-CNN将这些特征作为输入，并预测所有行人作为一个整体的�
 为了建模两个节点之间相互影响的强度，我们附加了一个值$a^{ij}_t$, 它是由每个$ e^{ij}_t$ 的某种核函数计算得到。$a^{ij}_t$ 被组织为带权邻接矩阵$A_t$。
 
 **$a^{ij}_{sim,t}$是要在邻接矩阵$A_t$中使用的内核函数。** 定义为: 
-
+  
 $$\begin{equation}
 a^{ij}_{sim,t}=
 \left
@@ -49,7 +49,7 @@ a^{ij}_{sim,t}=
 0, Otherwise
 \end{aligned}
 \right.
-\end{equation}$$
+\end{equation}$$  
 
 (2) <font color=red>Graph Convolution Neural Network</font>
 
