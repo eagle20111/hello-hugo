@@ -40,8 +40,6 @@ Modeling the negative samples through self-supervision:
 
   - `NCE(Noise Contrastive Estimation):` to train encoder  
 
- 
-  
    $$\mathcal{L_{NCE}} = -\log \frac{\exp(sim(q,k^+)/\tau)}{\sum_{n=0}^N  \exp(sim(q,k_n)/ \tau)}$$
 
     where the encoded query $q$ is brought close to one positive key $k_0 = k^+$ and pushed apart from $N$ negative keys $\{ k_1, k_2, ... , k_N\}$, $\tau$ is a temperature hyperparameter, and $sim(u,v) = u^{\mathsf{T}}v/(||u||||v||)$ is the cosine similarity between two feature vectors. 
@@ -62,8 +60,7 @@ $$h^i_t = f_I(z_t, i)$$
 
 其中， $z^i_t$ 是给定智能体 $i$ 在时间 $t$ 观察其自身状态的潜在表示， $z_t = \{z^1_t,...,z^M_t\}$ 。很多方法已经探索了各种架构，并验证了其准确性。尽管如此，它们的鲁棒性仍然是一个悬而未决的问题。 最近的几项工作表明，现有模型预测的轨迹通常会输出社会不可接受的解决方案（例如，碰撞），表明缺乏关于社会准则的常识。
 
-
-![SocialNCE](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/social_nce.png)
+![SocialNCE](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/social_nce.png#pic_center)
 
 - `query`: embedding of history observations $q = \psi(h^i_t)$, where $\psi(\cdot)$ is an MLP projection head;
 - `key`: embedding of a future event $k = \phi(s^i_{s+\delta t}, \delta t)$, where $\phi(\cdot)$ is an event encoder modeled by an MLP, $s_{t+\delta t}^i$ is a sampled spatial location and $\delta_t > 0$ is the sampling horizon.
@@ -84,7 +81,7 @@ $$\mathcal{L}(f,g,\psi, \phi) = \mathcal{L}_{task}(f,g) + \lambda \mathcal{L}_{S
 ### sampling strategy in multi-agent context 采样策略
 
 
-![SocialNCE](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/sampling_strategy.png)
+![sampling strategy](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/sampling_strategy.png#pic_center)
 
 在其他智能体附近寻求更多信息的负样本:
 
