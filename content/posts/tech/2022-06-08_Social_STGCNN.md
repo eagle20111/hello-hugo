@@ -96,13 +96,13 @@ where, $V^{(l)}$ denotes the stack of $V^{(l)}_t$, and $W^{(l)}$ denotes the tra
 
 ## Data Processing 数据处理以及图构建
 
-obs_traj - 前8帧观察轨迹(绝对坐标)  
-pred_traj_gt - 后12帧预测轨迹(ground truth)(绝对坐标)  
-obs_traj_rel - 前8帧观察轨迹(相对坐标)  
-pred_traj_gt_rel - 后12帧预测轨迹(ground truth)(相对坐标)  
-non_linear_ped - 非线性轨迹 (剔除)  
+obs_traj - <font color=red>*前8帧观察轨迹(绝对坐标)*</font>  
+pred_traj_gt - <font color=red>*后12帧预测轨迹(ground truth)(绝对坐标)*</font>  
+obs_traj_rel - *<font color=red>前8帧观察轨迹(相对坐标)*</font>  
+pred_traj_gt_rel - *<font color=red>后12帧预测轨迹(ground truth)(相对坐标)*</font>  
+non_linear_ped - *<font color=red>非线性轨迹 (剔除)*</font>  
 loss_mask 
-V_obs - graph nodes  
-A_obs - graph Adjacency Matrix  
-V_tr - 预测轨迹 graph nodes  
-A_tr - 预测轨迹 graph Adjacency Matrix  
+V_obs - *<font color=red>graph nodes*</font>  
+A_obs - *<font color=red>graph Adjacency Matrix*</font>  
+V_tr - *<font color=red>预测轨迹 graph nodes*</font>  
+A_tr - *<font color=red>预测轨迹 graph Adjacency Matrix*</font>  

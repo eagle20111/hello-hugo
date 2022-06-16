@@ -42,7 +42,7 @@ draft: false
     then run the command ```git rebase master```, you will get following result:
     ```shell
                     B'---C' topic
-                    /
+                  /
     D---E---A'---F master
     ``` 
 - **用法二:```git rebase --onto```**
@@ -63,8 +63,8 @@ draft: false
     o---o---o---o---o  master
         |            \
         |             o'--o'--o'  topic
-            \
-            o---o---o---o---o  next
+         \
+          o---o---o---o---o  next
     ```
     Another example:
     A range of commits could also be removed with rebase. If we have the following situation:
