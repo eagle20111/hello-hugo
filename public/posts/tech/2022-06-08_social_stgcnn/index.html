@@ -429,16 +429,16 @@ TXP-CNN直接作用于图嵌入 $\overline{V}$ 的时间维度，并将其扩展
 <p>$$f(V^{l}, A) = \sigma(\Lambda_t^{-\frac{1}{2}}\hat{A}\Lambda_t^{-\frac{1}{2}}V^{(l)}W^{(l)})$$</p>
 <p>where, $V^{(l)}$ denotes the stack of $V^{(l)}_t$, and $W^{(l)}$ denotes the trainable parameters.</p>
 <h2 id="data-processing-数据处理以及图构建">Data Processing 数据处理以及图构建<a hidden class="anchor" aria-hidden="true" href="#data-processing-数据处理以及图构建">#</a></h2>
-<p>obs_traj - 前8帧观察轨迹(绝对坐标)<br>
-pred_traj_gt - 后12帧预测轨迹(ground truth)(绝对坐标)<br>
-obs_traj_rel - 前8帧观察轨迹(相对坐标)<br>
-pred_traj_gt_rel - 后12帧预测轨迹(ground truth)(相对坐标)<br>
-non_linear_ped - 非线性轨迹 (剔除)<br>
+<p>obs_traj - <font color=red><em>前8帧观察轨迹(绝对坐标)</em></font><br>
+pred_traj_gt - <font color=red><em>后12帧预测轨迹(ground truth)(绝对坐标)</em></font><br>
+obs_traj_rel - <em><font color=red>前8帧观察轨迹(相对坐标)</em></font><br>
+pred_traj_gt_rel - <em><font color=red>后12帧预测轨迹(ground truth)(相对坐标)</em></font><br>
+non_linear_ped - <em><font color=red>非线性轨迹 (剔除)</em></font><br>
 loss_mask
-V_obs - graph nodes<br>
-A_obs - graph Adjacency Matrix<br>
-V_tr - 预测轨迹 graph nodes<br>
-A_tr - 预测轨迹 graph Adjacency Matrix</p>
+V_obs - <em><font color=red>graph nodes</em></font><br>
+A_obs - <em><font color=red>graph Adjacency Matrix</em></font><br>
+V_tr - <em><font color=red>预测轨迹 graph nodes</em></font><br>
+A_tr - <em><font color=red>预测轨迹 graph Adjacency Matrix</em></font></p>
 
 
   </div>

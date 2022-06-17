@@ -182,8 +182,8 @@ Modeling the negative samples through self-supervision:
   "keywords": [
     "prediction", "pedestrian"
   ],
-  "articleBody": "paper link: https://arxiv.org/abs/2012.11717\n论文解读参考:\n[1] https://zhuanlan.zhihu.com/p/434650863\n[2] https://www.gushiciku.cn/pl/amod\nIssue to solve and its Solution Due to the ill-distributed training Data, it’s difficult to capture the notion of the “negative” examples like collision.\nSolution:\nModeling the negative samples through self-supervision:\n a social contrastive loss: regularizes the extracted motion representation by discerning the ground-truth positive events from synthetic negative ones; Construct negative samples based on prior knowledge of rare but dangerous circumstances.  a social sampling strategy (informed): construct the positive enven from the ground-truth location of the primary agent and the negative events from the regions of other neighbors. given that one location cannot be occupied by multiple agents at the same time.\n   Method: Contrastive Learning + Social NCE Contrastive Representation Learning  functionality:  Representation Learning: to learn a parametric function that maps the raw data into a feature space to extract abstract and useful information for downstream tasks.\nNCE(Noise Contrastive Estimation): to train encoder\n$$ \\mathcal{L}{NCE} = - \\log \\frac{ \\exp{(sim(q, k^+)/ \\tau)}}{\\sum{n=0}^N \\exp(sim(q,k_n)/ \\tau)}$$\n$$\\mathcal{L}_{NCE} = - \\log \\frac {\\exp{(sim(q, k^+)/ \\tau)}} {{\\sum\\limits_0^{N}} \\exp(sim(q,k_n) / \\tau)}$$\n$$\\sum_{i=0}^N\\int_{a}^{b}g(t,i)\\text{d}t$$\nwhere the encoded query $q$ is brought close to one positive key $k_0 = k^+$ and pushed apart from $N$ negative keys ${ k_1, k_2, … , k_N}$, $\\tau$ is a temperature hyperparameter, and $sim(u,v) = u^{\\mathsf{T}}v/(||u||||v||)$ is the cosine similarity between two feature vectors.\nSocial NCE Social NCE Description:\n智能体 $i$ 在时刻 $t$ 上的位置记为 $s^i_t=(x^i_t,y^i_t)$ 。那么 $M$ 个智能体的联合状态记为 $s_t = { s_t^1, …, s^M_t}$ 。给定一个历史观测序列 ${s_1, s_2, …, s_t}$ ，任务是预测所有智能体未来直至 $T$ 时刻的轨迹 ${s_{t+1}, …, s_T}$，许多最近的预测模型被设计为编码器 - 解码器神经网络，其中运动编码器 $f(\\cdot)$ 首先提取与 $i$ 相关的紧密表示 $h_t^i$ ，然后解码器 $g(\\cdot)$ 随后推测出其未来的轨迹 $\\hat{s}^i_{t+1,T}$ :\n$$h^i_t = f(s_{1:t}, i), $$ $$\\hat{s}^i_{t+1:T} = g(h^i_t)$$\n为了多智能体之间的社交互动，$f(\\cdot)$通常包含两个子模块：一个序列建模模块 $f_S(\\cdot)$ 用于编码每个单独的序列，以及一个交互模块 $f_I(\\cdot)$ 用于在多智能体之间共享信息：\n$$z^i_t = f_S(h^i_{t-1}, s^i_t),$$ $$h^i_t = f_I(z_t, i)$$\n其中， $z^i_t$ 是给定智能体 $i$ 在时间 $t$ 观察其自身状态的潜在表示， $z_t = {z^1_t,…,z^M_t}$ 。很多方法已经探索了各种架构，并验证了其准确性。尽管如此，它们的鲁棒性仍然是一个悬而未决的问题。 最近的几项工作表明，现有模型预测的轨迹通常会输出社会不可接受的解决方案（例如，碰撞），表明缺乏关于社会准则的常识。\n  query: embedding of history observations $q = \\psi(h^i_t)$, where $\\psi(\\cdot)$ is an MLP projection head;\n  key: embedding of a future event $k = \\phi(s^i_{s+\\delta t}, \\delta t)$, where $\\phi(\\cdot)$ is an event encoder modeled by an MLP, $s_{t+\\delta t}^i$ is a sampled spatial location and $\\delta_t  0$ is the sampling horizon.\n tuning $\\delta_t \\in \\Lambda$, e.g. $\\Lambda = {1,…,4}$, then future events in the next few step can be taken in account simultaneously. Nevertheless, when $\\delta_t$ is a fixed value, then $\\phi(\\cdot)$ can be simplified as a location encoder, i.e., $\\phi(s^i_{t+\\delta t})$.\n   给定一个场景，包括感兴趣的主智体（蓝色）和附近多个相邻智体（灰色），Social-NCE 损失鼓励在嵌入空间中提取的运动表示，接近未来的正样本事件，并远离可能导致碰撞或不适的合成负样本事件. Social NCE的损失函数如下:\n$$\\mathcal{L}{SocialNCE} = -\\log\\frac{\\exp(\\psi(h^i_t)\\cdot\\phi(s^{i,+}{t+\\delta t}, \\delta t)/\\tau)}{\\sum_{\\delta t\\in\\Lambda}\\sum_{n=0}^{N}\\exp(\\psi(h^i_t)\\cdot\\phi(s^{i,n}_{t+\\delta t}, \\delta t)/\\tau))}$$\n最终的训练损失函数为Social-NCE和传统任务损失项之和，即轨迹预测的mean squared error (MSE) 或者negative log-likelihood (NLL)：\n$$\\mathcal{L}(f,g,\\psi, \\phi) = \\mathcal{L}{task}(f,g) + \\lambda \\mathcal{L}{SocialNCE}(f, \\psi, \\phi)$$\n其中，$\\lambda$ 为超参数，控制SocialNCE损失函数的重要程度。\nsampling strategy in multi-agent context 采样策略 在其他智能体附近寻求更多信息的负样本:\n$$s^{i,n-}{t+\\delta t} = s^{j}{t+\\delta t} + \\bigtriangleup{s_p} + \\epsilon$$\n其中， $j\\in{1,2,…,M} \\backslash i$ 是其他agent的index, $\\bigtriangleup{s_p}$ 是适合社交距离的局部位移。\n对于positive sample, 对该agent周围直接采样获得:\n$$s^{i,n-}{t+\\delta t} = s^{i}{t+\\delta t} + \\epsilon$$\n",
-  "wordCount" : "455",
+  "articleBody": "paper link: https://arxiv.org/abs/2012.11717\n论文解读参考:\n[1] https://zhuanlan.zhihu.com/p/434650863\n[2] https://www.gushiciku.cn/pl/amod\nIssue to solve and its Solution Due to the ill-distributed training Data, it’s difficult to capture the notion of the “negative” examples like collision.\nSolution:\nModeling the negative samples through self-supervision:\n a social contrastive loss: regularizes the extracted motion representation by discerning the ground-truth positive events from synthetic negative ones; Construct negative samples based on prior knowledge of rare but dangerous circumstances.  a social sampling strategy (informed): construct the positive enven from the ground-truth location of the primary agent and the negative events from the regions of other neighbors. given that one location cannot be occupied by multiple agents at the same time.\n   Method: Contrastive Learning + Social NCE Contrastive Representation Learning   Functionality:\n  Representation Learning: to learn a parametric function that maps the raw data into a feature space to extract abstract and useful information for downstream tasks.\n  NCE(Noise Contrastive Estimation): to train encoder\n  $$\\mathcal{L_{NCE}} = -\\log \\frac{\\exp(sim(q,k^+)/\\tau)}{\\sum_{n=0}^N \\exp(sim(q,k_n)/ \\tau)}$$\nwhere the encoded query $q$ is brought close to one positive key $k_0 = k^+$ and pushed apart from $N$ negative keys ${ k_1, k_2, … , k_N}$, $\\tau$ is a temperature hyperparameter, and $sim(u,v) = u^{\\mathsf{T}}v/(||u||||v||)$ is the cosine similarity between two feature vectors.\n  Social NCE Social NCE Description:\n智能体 $i$ 在时刻 $t$ 上的位置记为 $s^i_t=(x^i_t,y^i_t)$ 。那么 $M$ 个智能体的联合状态记为 $s_t = { s_t^1, …, s^M_t}$ 。给定一个历史观测序列 ${s_1, s_2, …, s_t}$ ，任务是预测所有智能体未来直至 $T$ 时刻的轨迹 ${s_{t+1}, …, s_T}$，许多最近的预测模型被设计为编码器 - 解码器神经网络，其中运动编码器 $f(\\cdot)$ 首先提取与 $i$ 相关的紧密表示 $h_t^i$ ，然后解码器 $g(\\cdot)$ 随后推测出其未来的轨迹 $\\hat{s}^i_{t+1,T}$ :\n$$h^i_t = f(s_{1:t}, i), $$ $$\\hat{s}^i_{t+1:T} = g(h^i_t)$$\n为了多智能体之间的社交互动，$f(\\cdot)$通常包含两个子模块：一个序列建模模块 $f_S(\\cdot)$ 用于编码每个单独的序列，以及一个交互模块 $f_I(\\cdot)$ 用于在多智能体之间共享信息：\n$$z^i_t = f_S(h^i_{t-1}, s^i_t),$$ $$h^i_t = f_I(z_t, i)$$\n其中， $z^i_t$ 是给定智能体 $i$ 在时间 $t$ 观察其自身状态的潜在表示， $z_t = {z^1_t,…,z^M_t}$ 。很多方法已经探索了各种架构，并验证了其准确性。尽管如此，它们的鲁棒性仍然是一个悬而未决的问题。 最近的几项工作表明，现有模型预测的轨迹通常会输出社会不可接受的解决方案（例如，碰撞），表明缺乏关于社会准则的常识。\n  query: embedding of history observations $q = \\psi(h^i_t)$, where $\\psi(\\cdot)$ is an MLP projection head;\n  key: embedding of a future event $k = \\phi(s^i_{s+\\delta t}, \\delta t)$, where $\\phi(\\cdot)$ is an event encoder modeled by an MLP, $s_{t+\\delta t}^i$ is a sampled spatial location and $\\delta_t  0$ is the sampling horizon.\n tuning $\\delta_t \\in \\Lambda$, e.g. $\\Lambda = {1,…,4}$, then future events in the next few step can be taken in account simultaneously. Nevertheless, when $\\delta_t$ is a fixed value, then $\\phi(\\cdot)$ can be simplified as a location encoder, i.e., $\\phi(s^i_{t+\\delta t})$.\n   给定一个场景，包括感兴趣的主智体（蓝色）和附近多个相邻智体（灰色），Social-NCE 损失鼓励在嵌入空间中提取的运动表示，接近未来的正样本事件，并远离可能导致碰撞或不适的合成负样本事件. Social NCE的损失函数如下:\n$$\\mathcal{L_{SocialNCE}} = -\\log\\frac{\\exp(\\psi(h^i_t)\\cdot\\phi(s^{i,+}{t+\\delta t}, \\delta t)/\\tau)}{\\sum{\\delta t\\in\\Lambda}\\sum_{n=0}^{N}\\exp(\\psi(h^i_t)\\cdot\\phi(s^{i,n}_{t+\\delta t}, \\delta t)/\\tau))}$$\n最终的训练损失函数为Social-NCE和传统任务损失项之和，即轨迹预测的mean squared error (MSE) 或者negative log-likelihood (NLL)：\n$$\\mathcal{L}(f,g,\\psi, \\phi) = \\mathcal{L}{task}(f,g) + \\lambda \\mathcal{L}{SocialNCE}(f, \\psi, \\phi)$$\n其中，$\\lambda$ 为超参数，控制SocialNCE损失函数的重要程度。\nsampling strategy in multi-agent context 采样策略 在其他智能体附近寻求更多信息的负样本:\n$$s^{i,n-}{t+\\delta t} = s^{j}{t+\\delta t} + \\bigtriangleup{s_p} + \\epsilon$$\n其中， $j\\in{1,2,…,M} \\backslash i$ 是其他agent的index, $\\bigtriangleup{s_p}$ 是适合社交距离的局部位移。\n对于positive sample, 对该agent周围直接采样获得:\n$$s^{i,n-}{t+\\delta t} = s^{i}{t+\\delta t} + \\epsilon$$\n",
+  "wordCount" : "437",
   "inLanguage": "cn",
   "datePublished": "2022-06-12T09:44:14+08:00",
   "dateModified": "2022-06-12T09:44:14+08:00",
@@ -389,14 +389,20 @@ Modeling the negative samples through self-supervision:
 <h2 id="method-contrastive-learning--social-nce">Method: Contrastive Learning + Social NCE<a hidden class="anchor" aria-hidden="true" href="#method-contrastive-learning--social-nce">#</a></h2>
 <h3 id="contrastive-representation-learning">Contrastive Representation Learning<a hidden class="anchor" aria-hidden="true" href="#contrastive-representation-learning">#</a></h3>
 <ul>
-<li>functionality:</li>
-</ul>
+<li>
+<p>Functionality:</p>
+<ul>
+<li>
 <p><code>Representation Learning:</code> to learn a parametric function that maps the raw data into a feature space to extract abstract and useful information for downstream tasks.</p>
+</li>
+<li>
 <p><code>NCE(Noise Contrastive Estimation):</code> to train encoder</p>
-<p>$$ \mathcal{L}<em>{NCE} = - \log \frac{ \exp{(sim(q, k^+)/ \tau)}}{\sum</em>{n=0}^N  \exp(sim(q,k_n)/ \tau)}$$</p>
-<p>$$\mathcal{L}_{NCE} = - \log \frac {\exp{(sim(q, k^+)/ \tau)}} {{\sum\limits_0^{N}} \exp(sim(q,k_n) / \tau)}$$</p>
-<p>$$\sum_{i=0}^N\int_{a}^{b}g(t,i)\text{d}t$$</p>
+</li>
+</ul>
+<p>$$\mathcal{L_{NCE}} = -\log \frac{\exp(sim(q,k^+)/\tau)}{\sum_{n=0}^N  \exp(sim(q,k_n)/ \tau)}$$</p>
 <p>where the encoded query $q$ is brought close to one positive key $k_0 = k^+$ and pushed apart from $N$ negative keys ${ k_1, k_2, &hellip; , k_N}$, $\tau$ is a temperature hyperparameter, and $sim(u,v) = u^{\mathsf{T}}v/(||u||||v||)$ is the cosine similarity between two feature vectors.</p>
+</li>
+</ul>
 <h3 id="social-nce">Social NCE<a hidden class="anchor" aria-hidden="true" href="#social-nce">#</a></h3>
 <p><strong>Social NCE Description:</strong></p>
 <p>智能体 $i$ 在时刻 $t$ 上的位置记为 $s^i_t=(x^i_t,y^i_t)$ 。那么 $M$ 个智能体的联合状态记为 $s_t = { s_t^1, &hellip;, s^M_t}$ 。给定一个历史观测序列 ${s_1, s_2, &hellip;, s_t}$ ，任务是预测所有智能体未来直至 $T$ 时刻的轨迹 ${s_{t+1}, &hellip;, s_T}$，许多最近的预测模型被设计为编码器 - 解码器神经网络，其中运动编码器 $f(\cdot)$ 首先提取与 $i$ 相关的紧密表示 $h_t^i$ ，然后解码器 $g(\cdot)$ 随后推测出其未来的轨迹 $\hat{s}^i_{t+1,T}$ :</p>
@@ -406,7 +412,7 @@ $$\hat{s}^i_{t+1:T} = g(h^i_t)$$</p>
 <p>$$z^i_t = f_S(h^i_{t-1}, s^i_t),$$
 $$h^i_t = f_I(z_t, i)$$</p>
 <p>其中， $z^i_t$ 是给定智能体 $i$ 在时间 $t$ 观察其自身状态的潜在表示， $z_t = {z^1_t,&hellip;,z^M_t}$ 。很多方法已经探索了各种架构，并验证了其准确性。尽管如此，它们的鲁棒性仍然是一个悬而未决的问题。 最近的几项工作表明，现有模型预测的轨迹通常会输出社会不可接受的解决方案（例如，碰撞），表明缺乏关于社会准则的常识。</p>
-<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/social_nce.png" alt="SocialNCE"  />
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/social_nce.png#pic_center" alt="SocialNCE"  />
 </p>
 <ul>
 <li>
@@ -420,12 +426,12 @@ $$h^i_t = f_I(z_t, i)$$</p>
 </li>
 </ul>
 <p>给定一个场景，包括感兴趣的主智体（蓝色）和附近多个相邻智体（灰色），Social-NCE 损失鼓励在嵌入空间中提取的运动表示，接近未来的正样本事件，并远离可能导致碰撞或不适的合成负样本事件. Social NCE的损失函数如下:</p>
-<p>$$\mathcal{L}<em>{SocialNCE} = -\log\frac{\exp(\psi(h^i_t)\cdot\phi(s^{i,+}</em>{t+\delta t}, \delta t)/\tau)}{\sum_{\delta t\in\Lambda}\sum_{n=0}^{N}\exp(\psi(h^i_t)\cdot\phi(s^{i,n}_{t+\delta t}, \delta t)/\tau))}$$</p>
+<p>$$\mathcal{L_{SocialNCE}} = -\log\frac{\exp(\psi(h^i_t)\cdot\phi(s^{i,+}<em>{t+\delta t}, \delta t)/\tau)}{\sum</em>{\delta t\in\Lambda}\sum_{n=0}^{N}\exp(\psi(h^i_t)\cdot\phi(s^{i,n}_{t+\delta t}, \delta t)/\tau))}$$</p>
 <p>最终的训练损失函数为Social-NCE和传统任务损失项之和，即轨迹预测的mean squared error (MSE) 或者negative log-likelihood (NLL)：</p>
 <p>$$\mathcal{L}(f,g,\psi, \phi) = \mathcal{L}<em>{task}(f,g) + \lambda \mathcal{L}</em>{SocialNCE}(f, \psi, \phi)$$</p>
 <p>其中，$\lambda$ 为超参数，控制SocialNCE损失函数的重要程度。</p>
 <h3 id="sampling-strategy-in-multi-agent-context-采样策略">sampling strategy in multi-agent context 采样策略<a hidden class="anchor" aria-hidden="true" href="#sampling-strategy-in-multi-agent-context-采样策略">#</a></h3>
-<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/sampling_strategy.png" alt="SocialNCE"  />
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-06-12_Social_NCE/sampling_strategy.png#pic_center" alt="sampling strategy"  />
 </p>
 <p>在其他智能体附近寻求更多信息的负样本:</p>
 <p>$$s^{i,n-}<em>{t+\delta t} = s^{j}</em>{t+\delta t} + \bigtriangleup{s_p} + \epsilon$$</p>
@@ -442,6 +448,11 @@ $$h^i_t = f_I(z_t, i)$$</p>
       <li><a href="https://jianye0428.github.io/tags/pedestrian/">pedestrian</a></li>
     </ul>
 <nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/posts/tech/2022-06-13_lanegcn/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> </span>
+    <br>
+    <span>LaneGCN: Learning Lane Graph Representations for Motion Forecasting</span>
+  </a>
   <a class="next" href="https://jianye0428.github.io/posts/notes/2022-06-09_pytorch/">
     <span class="title"> <i class="fas fa-angle-double-right"></i></span>
     <br>

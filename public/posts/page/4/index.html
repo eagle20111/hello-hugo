@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="cn" dir="auto">
 
-<head>
-	<meta name="generator" content="Hugo 0.96.0" /><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Jian&#39;s Blog</title>
-<meta name="keywords" content="Jian, Tech, Notes">
-<meta name="description" content="Here I take little notes about my study and life.">
+<title>Posts | Jian&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="Posts - Jian&#39;s Blog">
 <meta name="author" content="Jian Ye">
-<link rel="canonical" href="https://jianye0428.github.io/">
+<link rel="canonical" href="https://jianye0428.github.io/posts/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
 <link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
@@ -19,8 +18,7 @@
 <link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://jianye0428.github.io/index.xml">
-<link rel="alternate" type="application/json" href="https://jianye0428.github.io/index.json">
+<link rel="alternate" type="application/rss+xml" href="https://jianye0428.github.io/posts/index.xml">
 <noscript>
     <style>
         #theme-toggle,
@@ -83,27 +81,29 @@ if (!doNotTrack) {
 	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
 }
 </script>
-<meta property="og:title" content="Jian&#39;s Blog" />
+<meta property="og:title" content="Posts" />
 <meta property="og:description" content="Here I take little notes about my study and life." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://jianye0428.github.io/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+<meta property="og:url" content="https://jianye0428.github.io/posts/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
 
-<meta name="twitter:title" content="Jian&#39;s Blog"/>
+<meta name="twitter:title" content="Posts"/>
 <meta name="twitter:description" content="Here I take little notes about my study and life."/>
+
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Jian's Blog",
-  "url": "https://jianye0428.github.io/",
-  "description": "Here I take little notes about my study and life.",
-  "thumbnailUrl": "https://jianye0428.github.io/favicon/jian_icon.png",
-  "sameAs": [
-      "https://github.com/jianye0428", "mailto:18817571704@163.com", "https://web.telegram.org/", "index.xml"
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/posts/"
+    }
   ]
 }
 </script>
@@ -175,86 +175,24 @@ if (!doNotTrack) {
     </nav>
 </header>
 <main class="main"> 
+<header class="page-header"><div class="breadcrumbs"><a href="https://jianye0428.github.io/">Home</a></div>
+  <h1>Posts</h1>
+</header>
 
 <article class="post-entry"> 
   <header class="entry-header">
-    <h2>Build VIM 8.2 from source
+    <h2>TensorRT custom operator development -- ScatterElements
     </h2>
   </header>
   <section class="entry-content">
-    <p>VIM 8.2 安装 1. Install Python3.9 from source   Update the packages list and install the packages necessary to build Python
-1  sudo apt update &amp;&amp; sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev     Download the latest release’s source code from the Python download page using wget
-1  wegt https://www.python.org/ftp/python/3.9.0/Python-3.9.1.tgz     Switch to the Python source directory and execute the configure script which performs a number of checks to make sure all of the dependencies on your system are present...</p>
+    <p>TensorRT Installation Custom Operator ScatterElements </p>
   </section>
-  <footer class="entry-footer"><span title='2022-05-11 10:00:13 +0800 CST'>May 11, 2022</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;Jian</footer>
-  <a class="entry-link" aria-label="post link to Build VIM 8.2 from source" href="https://jianye0428.github.io/posts/tech/2022-05-11_vim_installation/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2>Git Command Notes
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>git command record as my cheatsheet 1. git rebase ref: https://git-scm.com/docs/git-rebase
-  用法一:git rebase &lt;branch-name&gt; 将topic分支的base由E改为master
-1 2 3  A---B---C topic / D---E---F---G master   运行:
-1 2  git rebase master git rebase master topic   结果:
-1 2 3  A&#39;--B&#39;--C&#39; topic / D---E---F---G master    if upstream branch already has a change like below:
- 1 2 3  A---B---C topic / D---E---A&#39;---F master   then run the command git rebase master, you will get following result:...</p>
-  </section>
-  <footer class="entry-footer"><span title='2022-05-11 09:59:56 +0800 CST'>May 11, 2022</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;Jian</footer>
-  <a class="entry-link" aria-label="post link to Git Command Notes" href="https://jianye0428.github.io/posts/tech/2022-05-11_git_command/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2>Ubuntu 22.04 | zsh 以及 oh-my-zsh的安装和配置
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>zsh说明   zsh是一个Linux下强大的shell, 由于大多数Linux产品安装以及默认使用bash shell, 但是丝毫不影响极客们对zsh的热衷, 几乎每一款Linux产品都包含有zsh，通常可以用apt-get、urpmi或yum等包管理器进行安装.
-  zsh是bash的增强版，其实zsh和bash是两个不同的概念，zsh更加强大。
-  通常zsh配置起来非常麻烦，且相当的复杂，所以oh-my-zsh是为了简化zsh的配置而开发的，因此oh-my-zsh算是zsh的配置.
-  准备   查看当前系统用shell版本
-1  echo $SHELL     查看系统自带哪些shell
-1  cat /etc/shells     安装zsh  通过命令行安装zsh 1  sudo apt install zsh     zsh配置   将zsh设置为默认的shell
-1  chsh -s /bin/zsh     然后重启电脑
-1  reboot     安装oh-my-zsh及其个性化配置 安装oh-my-zsh  执行以下命令安装oh-my-zsh 1  sh -c &#34;$(wget https://raw....</p>
-  </section>
-  <footer class="entry-footer"><span title='2022-05-09 11:54:06 +0800 CST'>May 9, 2022</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;Jian</footer>
-  <a class="entry-link" aria-label="post link to Ubuntu 22.04 | zsh 以及 oh-my-zsh的安装和配置" href="https://jianye0428.github.io/posts/tech/2022-05-09_zsh_installation/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2>PPO -- Proximal Policy Optimization
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>PPO Architechture </p>
-  </section>
-  <footer class="entry-footer"><span title='2022-05-06 13:16:25 +0200 +0200'>May 6, 2022</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;Jian</footer>
-  <a class="entry-link" aria-label="post link to PPO -- Proximal Policy Optimization" href="https://jianye0428.github.io/posts/tech/2022-05-06_ppo/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2>DQN -- Deep Q Network
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>[DQN]paper link: https://arxiv.org/pdf/1312.5602v1.pdf
-DQN: Playing Atari with Deep Reinforcement Learning General Architecture Here is Network listed:
- play Atari games using RL and perform better than human CNN &#43; Q Learning: CNN for frame-skiped images features extraction; and Q Learning for policy generation     Network Channel Kernel Size Stride Activation Output Size     Input NA NA NA NA 84x84x4   First Conv 16 8x8 4 Relu 20x20x6   Second Conv 32 4x4 2 Relu 9x9x32   Hidden NA NA NA Relu 256   Output NA NA NA None 4 to 18     在当时，普遍的做法是为每一个action学习一个函数，而不是一个网络结构直接输出所有q的value....</p>
-  </section>
-  <footer class="entry-footer"><span title='2022-05-05 21:52:44 +0800 CST'>May 5, 2022</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;Jian</footer>
-  <a class="entry-link" aria-label="post link to DQN -- Deep Q Network" href="https://jianye0428.github.io/posts/tech/2022-05-05_dqn/"></a>
+  <footer class="entry-footer"><span title='2022-04-24 19:34:50 +0800 CST'>April 24, 2022</span>&nbsp;·&nbsp;1 min&nbsp;·&nbsp;Jian</footer>
+  <a class="entry-link" aria-label="post link to TensorRT custom operator development -- ScatterElements" href="https://jianye0428.github.io/posts/tech/2022-04-24_tensorrt_custom_operator/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
-    <a class="prev" href="https://jianye0428.github.io/page/2/">« </a>
-    <a class="next" href="https://jianye0428.github.io/page/4/"> »</a>
+    <a class="prev" href="https://jianye0428.github.io/posts/page/3/">« </a>
   </nav>
 </footer>
     </main>

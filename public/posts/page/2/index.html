@@ -181,6 +181,18 @@ if (!doNotTrack) {
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2>Machine Learning Algo
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>用pickle保存和加载模型  保存模型 1 2 3 4 5 6 7  import pickle from sklearn.svm import SVC model_dir = &#39;./model.pkl&#39; model = SVC() with open(model_dir, &#39;wb&#39;) as f: pickle.dump(model, f) f.close() # 注意:保存完模型之后要关闭文件    加载模型 1 2 3 4 5  import pickle model_dir = &#39;./model.pkl&#39; with open(model_dir, &#39;rb&#39;) as f: model = pickel.load(f) print(mode.predict(x))     逻辑回归 Logistic Regression  LR Implementation code snippets 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72  from sklearn....</p>
+  </section>
+  <footer class="entry-footer"><span title='2022-05-28 09:11:55 +0800 CST'>May 28, 2022</span>&nbsp;·&nbsp;4 min&nbsp;·&nbsp;Jian</footer>
+  <a class="entry-link" aria-label="post link to Machine Learning Algo" href="https://jianye0428.github.io/posts/notes/2022-05-28_ml/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2>Numpy Notes
     </h2>
   </header>
@@ -250,20 +262,6 @@ if (!doNotTrack) {
   </section>
   <footer class="entry-footer"><span title='2022-05-13 10:53:31 +0800 CST'>May 13, 2022</span>&nbsp;·&nbsp;2 min&nbsp;·&nbsp;Jian</footer>
   <a class="entry-link" aria-label="post link to Linux filesystem" href="https://jianye0428.github.io/posts/tech/2022-05-13_linux_filesystem/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2>Build VIM 8.2 from source
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>VIM 8.2 安装 1. Install Python3.9 from source   Update the packages list and install the packages necessary to build Python
-1  sudo apt update &amp;&amp; sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev     Download the latest release’s source code from the Python download page using wget
-1  wegt https://www.python.org/ftp/python/3.9.0/Python-3.9.1.tgz     Switch to the Python source directory and execute the configure script which performs a number of checks to make sure all of the dependencies on your system are present...</p>
-  </section>
-  <footer class="entry-footer"><span title='2022-05-11 10:00:13 +0800 CST'>May 11, 2022</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;Jian</footer>
-  <a class="entry-link" aria-label="post link to Build VIM 8.2 from source" href="https://jianye0428.github.io/posts/tech/2022-05-11_vim_installation/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
