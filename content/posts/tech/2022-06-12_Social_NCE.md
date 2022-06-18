@@ -20,7 +20,7 @@ draft: false
 
 ## Issue to solve and its Solution
 
-Due to the ill-distributed training Data, it's difficult to capture the notion of the "negative" examples like collision.
+Due to the ill-distributed training Data, it's <u><font color=red>difficult to capture the notion of the "negative" examples</font></u> like collision.
 
 **Solution:**
 
@@ -30,7 +30,7 @@ Modeling the negative samples through self-supervision:
   > a social sampling strategy (informed): construct the positive enven from the ground-truth location of the primary agent and the negative events from the regions of other neighbors. given that one location cannot be occupied by multiple agents at the same time.
 
 
-## Method: Contrastive Learning + Social NCE
+## Method: <font color=red>*Contrastive Learning + Social NCE*</font>
 
 ### Contrastive Representation Learning
 

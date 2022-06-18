@@ -17,7 +17,7 @@ draft: false
 
 ## Dataset
 
-PyTorch为我们提供的两个Dataset和DataLoader类分别负责可被Pytorhc使用的数据集的创建以及向训练传递数据的任务。如果想个性化自己的数据集或者数据传递方式，也可以自己重写子类。
+PyTorch为我们提供的两个`Dataset`和`DataLoader`类分别负责可被Pytorch使用的数据集的创建以及向训练传递数据的任务。如果想个性化自己的数据集或者数据传递方式，也可以自己重写子类。
 
 Dataset是DataLoader实例化的一个参数，所以这篇文章会先从Dataset的源代码讲起，然后讲到DataLoader，关注主要函数，少细枝末节，目的是使大家学会自定义自己的数据集。
 
@@ -416,3 +416,32 @@ class BatchSampler(Sampler):
 `num_workers` 参数表示同时参与数据读取的线程数量，多线程技术可以加快数据读取，提供GPU/CPU利用率。
 
 未来会出一篇文章讲一讲PyTorch多线程实现的原理。
+
+
+### DataLoader 和 Dataset 简单举例
+
+
+```python
+# construct dataset
+import torch 
+from torch.utils.data import Dataset,DataLoader
+
+class MyDataset(Dataset):
+    def __init__(self):
+        self.data = torch.tensor([[1,2,3],[2,3,4],[3,4,5],[4,5,6]])
+        self.label = torch.LongTensor([1,1,0,0])
+
+    def __getitem__(self,index):
+        return self.data[index],self.label[index]
+
+    def __len__(self):
+        return len(self.data)
+
+# dataloader
+mydataloader = DataLoader(dataset=mydataset,
+                          batch_size = 2,
+                          shuffle=True)
+
+for i, (data, label) in enumerate(mydataloader):
+    print(data, label)
+```
