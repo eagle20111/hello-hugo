@@ -221,7 +221,7 @@ draft: false
      git stash show -p
      git stash show --patch # 查看特定的stash的diff
      ```
-### 7. <font color=red>代码回退: git reset/git revert</font>
+### 7. **<font color=red>代码回退: git reset/git revert</font>**
  - ref:https://blog.csdn.net/weixin_35082950/article/details/113629326
  - 本地分支版本回退的方法
    ```shell
@@ -275,12 +275,8 @@ draft: false
 **revert 合并代码，解决冲突**
 使用revert命令，如果不是撤销的最近一次提交，那么一定会有冲突，如下所示：
 ```shell
-<<<<<<< HEAD
 全部清空
 第一次提交
-=======
-全部清空
->>>>>>> parent of c24cde7... 全部清空
 ```
 
 解决冲突很简单，因为我们只想回到某次提交，因此需要把当前最新的代码去掉即可，也就是HEAD标记的代码:
@@ -293,9 +289,46 @@ draft: false
 ```
 把上面部分代码去掉就可以了，然后再提交一次代码就可以解决冲突了。
 
-### 8. <font color=red>git branch</font>
+### 8. **<font color=red>git branch</font>**
 
 - 将本地分支与远程分支关联:
   ```shell
   git branch --set-upstream=origin/remote_branch your_branch
   ```
+
+### 9. **<font color=red>git commit</font>**
+
+- `git commit --amend`: 提交小修改但是不增加`commit_id`:
+  ```shell
+  git add .
+  git commmit --amend # 此除可以修改commit message
+  git push origin master
+  ```
+
+### 10. **<font color=red>git pull</font>**
+- 示例:
+    ```shell
+    git pull <远程主机名> <远程分支名>:<本地分支名>
+    ```
+- **Examples**：
+  - 取回origin主机的next分支，与本地的master分支合并
+    ```shell
+    git pull origin next:master
+    ```   
+  - 远程分支(next)要与当前分支合并，则冒号后面的部分可以省略。
+    ```shell
+    git pull origin next
+    ```
+  - 如果当前分支与远程分支存在追踪关系，git pull就可以省略远程分支名
+    ```shell
+    git pull origin
+    ```
+  - 如果当前分支只有一个追踪分支，连远程主机名都可以省略
+    ```shell
+    git pull 
+    ```
+
+
+### 11. **<font color=red>git clone</font>**
+
+    - `git clone shallow`
