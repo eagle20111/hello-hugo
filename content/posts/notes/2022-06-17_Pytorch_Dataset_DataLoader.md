@@ -445,3 +445,458 @@ mydataloader = DataLoader(dataset=mydataset,
 for i, (data, label) in enumerate(mydataloader):
     print(data, label)
 ```
+
+
+## DEMO1 - MLP's Dataset and DataLoader
+
+```python
+dim_output = 2
+class TrainValidDataset(Dataset):
+    '''
+    Args:
+      - root_dir (string): Directory containing all folders with different
+        dates, each folder containing .cruise.h5 data files.
+    '''
+
+    def __init__(self, list_of_files):
+        self.list_of_files_ = list_of_files
+        self.data_size_until_this_file_ = []
+        self.dataset_size = 0
+        for file in self.list_of_files_:
+            with h5py.File(file, 'r') as h5_file:
+                data_size = h5_file[list(h5_file.keys())[0]].shape[0]
+            self.dataset_size += data_size
+            self.data_size_until_this_file_.append(self.dataset_size)
+        print ('Total size of dataset: {}'.format(self.data_size_until_this_file_))
+
+    def __len__(self):
+        return self.dataset_size
+
+    def __getitem__(self, index):
+        bin_idx = self.FindBin(index, 0, len(
+            self.data_size_until_this_file_)-1)
+        with h5py.File(self.list_of_files_[bin_idx], 'r') as h5_file:
+            idx_offset = self.data_size_until_this_file_[bin_idx] - \
+                h5_file[list(h5_file.keys())[0]].shape[0]
+            data = h5_file[list(h5_file.keys())[0]][index-idx_offset]
+        label = data[-dim_output:]
+        label[0] = (label[0] > 0.0).astype(float)
+        return data[:-dim_output], label
+
+    # Binary search to expedite the data-loading process.
+    def FindBin(self, index, start, end):
+        if (start == end):
+            return start
+
+        mid = int((start+end)/2.0)
+        if (self.data_size_until_this_file_[mid] <= index):
+            return self.FindBin(index, mid+1, end)
+        else:
+            return self.FindBin(index, start, mid)
+
+# search all the files in the directory
+def getListOfFiles(dirName):
+    listOfFiles = os.listdir(dirName)
+    allFiles = list()
+
+    for entry in listOfFiles:
+        fullPath = os.path.join(dirName, entry)
+        if os.path.isdir(fullPath):
+            allFiles = allFiles + getListOfFiles(fullPath)
+        else:
+            allFiles.append(fullPath)
+
+    return allFiles
+
+if __name__ == '__main__':
+
+    list_of_training_files = getListOfFiles('data')
+    train_dataset = TrainValidDataset(list_of_training_files)
+    
+    myDataLoader = DataLoader(dataset=train_dataset, batch_size=2, drop_last=True, shuffle=True)
+    for i, (data, label) in enumerate(myDataLoader):
+        print(data.shape)
+```
+
+
+## DEMO2 - LaneGCN's Dataset and DataLoader
+
+
+**dataset description:**
+```python
+class ArgoDataset(Dataset):
+    def __init__(self, split, config, train=True):
+        self.config = config
+        self.train = train
+        
+        if 'preprocess' in config and config['preprocess']:
+            if train:
+                self.split = np.load(self.config['preprocess_train'], allow_pickle=True)
+            else:
+                self.split = np.load(self.config['preprocess_val'], allow_pickle=True)
+        else:
+            self.avl = ArgoverseForecastingLoader(split)
+            self.avl.seq_list = sorted(self.avl.seq_list)
+            self.am = ArgoverseMap()
+
+        if 'raster' in config and config['raster']:
+            #TODO: DELETE
+            self.map_query = MapQuery(config['map_scale'])
+            
+    def __getitem__(self, idx):
+        if 'preprocess' in self.config and self.config['preprocess']:
+            data = self.split[idx]
+
+            if self.train and self.config['rot_aug']:
+                new_data = dict()
+                for key in ['city', 'orig', 'gt_preds', 'has_preds']:
+                    if key in data:
+                        new_data[key] = ref_copy(data[key])
+
+                dt = np.random.rand() * self.config['rot_size']#np.pi * 2.0
+                theta = data['theta'] + dt
+                new_data['theta'] = theta
+                new_data['rot'] = np.asarray([
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)]], np.float32)
+
+                rot = np.asarray([
+                    [np.cos(-dt), -np.sin(-dt)],
+                    [np.sin(-dt), np.cos(-dt)]], np.float32)
+                new_data['feats'] = data['feats'].copy()
+                new_data['feats'][:, :, :2] = np.matmul(new_data['feats'][:, :, :2], rot)
+                new_data['ctrs'] = np.matmul(data['ctrs'], rot)
+
+                graph = dict()
+                for key in ['num_nodes', 'turn', 'control', 'intersect', 'pre', 'suc', 'lane_idcs', 'left_pairs', 'right_pairs', 'left', 'right']:
+                    graph[key] = ref_copy(data['graph'][key])
+                graph['ctrs'] = np.matmul(data['graph']['ctrs'], rot)
+                graph['feats'] = np.matmul(data['graph']['feats'], rot)
+                new_data['graph'] = graph
+                data = new_data
+            else:
+                new_data = dict()
+                for key in ['city', 'orig', 'gt_preds', 'has_preds', 'theta', 'rot', 'feats', 'ctrs', 'graph']:
+                    if key in data:
+                        new_data[key] = ref_copy(data[key])
+                data = new_data
+           
+            if 'raster' in self.config and self.config['raster']:
+                data.pop('graph')
+                x_min, x_max, y_min, y_max = self.config['pred_range']
+                cx, cy = data['orig']
+                
+                region = [cx + x_min, cx + x_max, cy + y_min, cy + y_max]
+                raster = self.map_query.query(region, data['theta'], data['city'])
+
+                data['raster'] = raster
+            return data
+
+        data = self.read_argo_data(idx)
+        data = self.get_obj_feats(data)
+        data['idx'] = idx
+
+        if 'raster' in self.config and self.config['raster']:
+            x_min, x_max, y_min, y_max = self.config['pred_range']
+            cx, cy = data['orig']
+
+            region = [cx + x_min, cx + x_max, cy + y_min, cy + y_max]
+            raster = self.map_query.query(region, data['theta'], data['city'])
+
+            data['raster'] = raster
+            return data
+
+        data['graph'] = self.get_lane_graph(data)
+        return data
+    
+    def __len__(self):
+        if 'preprocess' in self.config and self.config['preprocess']:
+            return len(self.split)
+        else:
+            return len(self.avl)
+
+    def read_argo_data(self, idx):
+        city = copy.deepcopy(self.avl[idx].city)
+
+        """TIMESTAMP,TRACK_ID,OBJECT_TYPE,X,Y,CITY_NAME"""
+        df = copy.deepcopy(self.avl[idx].seq_df)
+        
+        agt_ts = np.sort(np.unique(df['TIMESTAMP'].values))
+        mapping = dict()
+        for i, ts in enumerate(agt_ts):
+            mapping[ts] = i
+
+        trajs = np.concatenate((
+            df.X.to_numpy().reshape(-1, 1),
+            df.Y.to_numpy().reshape(-1, 1)), 1)
+        
+        steps = [mapping[x] for x in df['TIMESTAMP'].values]
+        steps = np.asarray(steps, np.int64)
+
+        objs = df.groupby(['TRACK_ID', 'OBJECT_TYPE']).groups
+        keys = list(objs.keys())
+        obj_type = [x[1] for x in keys]
+
+        agt_idx = obj_type.index('AGENT')
+        idcs = objs[keys[agt_idx]]
+       
+        agt_traj = trajs[idcs]
+        agt_step = steps[idcs]
+
+        del keys[agt_idx]
+        ctx_trajs, ctx_steps = [], []
+        for key in keys:
+            idcs = objs[key]
+            ctx_trajs.append(trajs[idcs])
+            ctx_steps.append(steps[idcs])
+
+        data = dict()
+        data['city'] = city
+        data['trajs'] = [agt_traj] + ctx_trajs
+        data['steps'] = [agt_step] + ctx_steps
+        return data
+    
+    def get_obj_feats(self, data):
+        orig = data['trajs'][0][19].copy().astype(np.float32)
+
+        if self.train and self.config['rot_aug']:
+            theta = np.random.rand() * np.pi * 2.0
+        else:
+            pre = data['trajs'][0][18] - orig
+            theta = np.pi - np.arctan2(pre[1], pre[0])
+
+        rot = np.asarray([
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)]], np.float32)
+
+        feats, ctrs, gt_preds, has_preds = [], [], [], []
+        for traj, step in zip(data['trajs'], data['steps']):
+            if 19 not in step:
+                continue
+
+            gt_pred = np.zeros((30, 2), np.float32)
+            has_pred = np.zeros(30, np.bool)
+            future_mask = np.logical_and(step >= 20, step < 50)
+            post_step = step[future_mask] - 20
+            post_traj = traj[future_mask]
+            gt_pred[post_step] = post_traj
+            has_pred[post_step] = 1
+            
+            obs_mask = step < 20
+            step = step[obs_mask]
+            traj = traj[obs_mask]
+            idcs = step.argsort()
+            step = step[idcs]
+            traj = traj[idcs]
+            
+            for i in range(len(step)):
+                if step[i] == 19 - (len(step) - 1) + i:
+                    break
+            step = step[i:]
+            traj = traj[i:]
+
+            feat = np.zeros((20, 3), np.float32)
+            feat[step, :2] = np.matmul(rot, (traj - orig.reshape(-1, 2)).T).T
+            feat[step, 2] = 1.0
+
+            x_min, x_max, y_min, y_max = self.config['pred_range']
+            if feat[-1, 0] < x_min or feat[-1, 0] > x_max or feat[-1, 1] < y_min or feat[-1, 1] > y_max:
+                continue
+
+            ctrs.append(feat[-1, :2].copy())
+            feat[1:, :2] -= feat[:-1, :2]
+            feat[step[0], :2] = 0
+            feats.append(feat)
+            gt_preds.append(gt_pred)
+            has_preds.append(has_pred)
+
+        feats = np.asarray(feats, np.float32)
+        ctrs = np.asarray(ctrs, np.float32)
+        gt_preds = np.asarray(gt_preds, np.float32)
+        has_preds = np.asarray(has_preds, np.bool)
+
+        data['feats'] = feats
+        data['ctrs'] = ctrs
+        data['orig'] = orig
+        data['theta'] = theta
+        data['rot'] = rot
+        data['gt_preds'] = gt_preds
+        data['has_preds'] = has_preds
+        return data
+
+ 
+    def get_lane_graph(self, data):
+        """Get a rectangle area defined by pred_range."""
+        x_min, x_max, y_min, y_max = self.config['pred_range']
+        radius = max(abs(x_min), abs(x_max)) + max(abs(y_min), abs(y_max))
+        lane_ids = self.am.get_lane_ids_in_xy_bbox(data['orig'][0], data['orig'][1], data['city'], radius)
+        lane_ids = copy.deepcopy(lane_ids)
+        
+        lanes = dict()
+        for lane_id in lane_ids:
+            lane = self.am.city_lane_centerlines_dict[data['city']][lane_id]
+            lane = copy.deepcopy(lane)
+            centerline = np.matmul(data['rot'], (lane.centerline - data['orig'].reshape(-1, 2)).T).T
+            x, y = centerline[:, 0], centerline[:, 1]
+            if x.max() < x_min or x.min() > x_max or y.max() < y_min or y.min() > y_max:
+                continue
+            else:
+                """Getting polygons requires original centerline"""
+                polygon = self.am.get_lane_segment_polygon(lane_id, data['city'])
+                polygon = copy.deepcopy(polygon)
+                lane.centerline = centerline
+                lane.polygon = np.matmul(data['rot'], (polygon[:, :2] - data['orig'].reshape(-1, 2)).T).T
+                lanes[lane_id] = lane
+            
+        lane_ids = list(lanes.keys())
+        ctrs, feats, turn, control, intersect = [], [], [], [], []
+        for lane_id in lane_ids:
+            lane = lanes[lane_id]
+            ctrln = lane.centerline
+            num_segs = len(ctrln) - 1
+            
+            ctrs.append(np.asarray((ctrln[:-1] + ctrln[1:]) / 2.0, np.float32))
+            feats.append(np.asarray(ctrln[1:] - ctrln[:-1], np.float32))
+            
+            x = np.zeros((num_segs, 2), np.float32)
+            if lane.turn_direction == 'LEFT':
+                x[:, 0] = 1
+            elif lane.turn_direction == 'RIGHT':
+                x[:, 1] = 1
+            else:
+                pass
+            turn.append(x)
+
+            control.append(lane.has_traffic_control * np.ones(num_segs, np.float32))
+            intersect.append(lane.is_intersection * np.ones(num_segs, np.float32))
+            
+        node_idcs = []
+        count = 0
+        for i, ctr in enumerate(ctrs):
+            node_idcs.append(range(count, count + len(ctr)))
+            count += len(ctr)
+        num_nodes = count
+        
+        pre, suc = dict(), dict()
+        for key in ['u', 'v']:
+            pre[key], suc[key] = [], []
+        for i, lane_id in enumerate(lane_ids):
+            lane = lanes[lane_id]
+            idcs = node_idcs[i]
+            
+            pre['u'] += idcs[1:]
+            pre['v'] += idcs[:-1]
+            if lane.predecessors is not None:
+                for nbr_id in lane.predecessors:
+                    if nbr_id in lane_ids:
+                        j = lane_ids.index(nbr_id)
+                        pre['u'].append(idcs[0])
+                        pre['v'].append(node_idcs[j][-1])
+                    
+            suc['u'] += idcs[:-1]
+            suc['v'] += idcs[1:]
+            if lane.successors is not None:
+                for nbr_id in lane.successors:
+                    if nbr_id in lane_ids:
+                        j = lane_ids.index(nbr_id)
+                        suc['u'].append(idcs[-1])
+                        suc['v'].append(node_idcs[j][0])
+
+        lane_idcs = []
+        for i, idcs in enumerate(node_idcs):
+            lane_idcs.append(i * np.ones(len(idcs), np.int64))
+        lane_idcs = np.concatenate(lane_idcs, 0)
+
+        pre_pairs, suc_pairs, left_pairs, right_pairs = [], [], [], []
+        for i, lane_id in enumerate(lane_ids):
+            lane = lanes[lane_id]
+
+            nbr_ids = lane.predecessors
+            if nbr_ids is not None:
+                for nbr_id in nbr_ids:
+                    if nbr_id in lane_ids:
+                        j = lane_ids.index(nbr_id)
+                        pre_pairs.append([i, j])
+
+            nbr_ids = lane.successors
+            if nbr_ids is not None:
+                for nbr_id in nbr_ids:
+                    if nbr_id in lane_ids:
+                        j = lane_ids.index(nbr_id)
+                        suc_pairs.append([i, j])
+
+            nbr_id = lane.l_neighbor_id
+            if nbr_id is not None:
+                if nbr_id in lane_ids:
+                    j = lane_ids.index(nbr_id)
+                    left_pairs.append([i, j])
+
+            nbr_id = lane.r_neighbor_id
+            if nbr_id is not None:
+                if nbr_id in lane_ids:
+                    j = lane_ids.index(nbr_id)
+                    right_pairs.append([i, j])
+        pre_pairs = np.asarray(pre_pairs, np.int64)
+        suc_pairs = np.asarray(suc_pairs, np.int64)
+        left_pairs = np.asarray(left_pairs, np.int64)
+        right_pairs = np.asarray(right_pairs, np.int64)
+                    
+        graph = dict()
+        graph['ctrs'] = np.concatenate(ctrs, 0)
+        graph['num_nodes'] = num_nodes
+        graph['feats'] = np.concatenate(feats, 0)
+        graph['turn'] = np.concatenate(turn, 0)
+        graph['control'] = np.concatenate(control, 0)
+        graph['intersect'] = np.concatenate(intersect, 0)
+        graph['pre'] = [pre]
+        graph['suc'] = [suc]
+        graph['lane_idcs'] = lane_idcs
+        graph['pre_pairs'] = pre_pairs
+        graph['suc_pairs'] = suc_pairs
+        graph['left_pairs'] = left_pairs
+        graph['right_pairs'] = right_pairs
+        
+        for k1 in ['pre', 'suc']:
+            for k2 in ['u', 'v']:
+                graph[k1][0][k2] = np.asarray(graph[k1][0][k2], np.int64)
+        
+        for key in ['pre', 'suc']:
+            if 'scales' in self.config and self.config['scales']:
+                #TODO: delete here
+                graph[key] += dilated_nbrs2(graph[key][0], graph['num_nodes'], self.config['scales'])
+            else:
+                graph[key] += dilated_nbrs(graph[key][0], graph['num_nodes'], self.config['num_scales'])
+        return graph
+```
+
+**DataLoader:**
+
+```python
+ # Data loader for training
+    dataset = Dataset(config["train_split"], config, train=True)
+    train_sampler = DistributedSampler(
+        dataset, num_replicas=hvd.size(), rank=hvd.rank()
+    )
+    train_loader = DataLoader(
+        dataset,
+        batch_size=config["batch_size"],
+        num_workers=config["workers"],
+        sampler=train_sampler,
+        collate_fn=collate_fn,
+        pin_memory=True,
+        worker_init_fn=worker_init_fn,
+        drop_last=True,
+    )
+
+    # Data loader for evaluation
+    dataset = Dataset(config["val_split"], config, train=False)
+    val_sampler = DistributedSampler(dataset, num_replicas=hvd.size(), rank=hvd.rank())
+    val_loader = DataLoader(
+        dataset,
+        batch_size=config["val_batch_size"],
+        num_workers=config["val_workers"],
+        sampler=val_sampler,
+        collate_fn=collate_fn,
+        pin_memory=True,
+    )
+```

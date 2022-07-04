@@ -69,7 +69,7 @@ echo $PATH
     - **警告**: 
         > 不要删除/initrd/目录。如果你删除了该目录后再重新引导Red Hat Linux时，你将无法引导你的计算机。
 
-- **/tmp/** — 用户和程序的临时目录。/tmp给予所有系统用户读写权。
+- **/tmp/** — 用户和程序的临时目录。/tmp给予所有系统用户读写权。**这是让一般使用者或者是正在执行的程序暂时放置档案的地方。**这个目录是任何人都能够存取的，所以你需要定期的清理一下。当然，重要资料不可放置在此目录啊。 因为FHS甚至建议在开机时，应该要将/tmp下的资料都删除。
 
 - **/home/** — 用户主目录的默认位置。
 
@@ -78,6 +78,9 @@ echo $PATH
 - **/usr/local/** - 这里主要存放那些手动安装的软件，即apt或者apt-get安装的软件。它和/usr目录具有相类似的目录结构。让软件包管理器来管理/usr目录，而把自定义的脚本(scripts)放到/usr/local目录下面，我想这应该是个不错的主意。
 
 - **/media/** - 有些linux的发行版使用这个目录来挂载那些usb接口的移动硬盘(包括U盘)、CD/DVD驱动器等等。
+
+
+![执行echo $PATH的结果](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-05-13_linux_filesystem/LINUX_tree.png)
 
 ## /usr/local/ 和 /usr/share/ 区别
 
