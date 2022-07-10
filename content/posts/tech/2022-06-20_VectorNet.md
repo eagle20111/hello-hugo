@@ -15,7 +15,8 @@ draft: false
 ---
 
 `ref link`: https://blog.csdn.net/qq_41897558/article/details/120087113  
-`ref code`: https://github.com/xk-huang/yet-another-vectornet
+`ref code`: https://github.com/xk-huang/yet-another-vectornet  
+            https://github.com/DQSSSSS/VectorNet
 ## Novel Highlights
 
  (1) 使用矢量化的高精地图以及障碍物的历史轨迹，从而避免有损渲染以及ConvNet编码(计算开销比较大)。
