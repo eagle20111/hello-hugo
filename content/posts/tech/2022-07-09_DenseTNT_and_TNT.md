@@ -10,7 +10,7 @@ cover:
 tags: ["prediction"]
 katex: true
 mermaid: false
-draft: true
+draft: false
 ---
 
 ## TNT: Target-driveN Trajectory Prediction
@@ -29,7 +29,7 @@ https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distr
 TNT的预测方式: 首先预测轨迹的终点，然后基于这个终点补充完整条轨迹。  
 
 TNT 基于终点的轨迹预测流程图:
-![执行echo $PATH的结果](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/TNT_Architecture.png)
+![TNT Architecture](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/TNT_Architecture.png)
 
 TNT使用VectorNet对高精地图和车辆信息进行编码，得到要预测的车辆的全局特征，以用于接下来的解码，从而完成轨迹预测：
 
@@ -38,6 +38,25 @@ TNT使用VectorNet对高精地图和车辆信息进行编码，得到要预测�
 (3). **轨迹打分和筛选:** 根据场景特征，为每条轨迹进行打分，并筛选出最有可能的若干条轨迹。
 
 ### TNT 实现
+
+#### 原理
+
+给定一个单个代理的观测状态序列 $S_P = [s_{-T^{'}+1}, s_{-T^{'}+2}, ..., s_0]$。我们的目标是预测它的未来状态 $S_F = [s_1, s_2, ..., s_T]$ 到某个固定时间步 T。自然地，代理与由其它代理和场景元素组成的环境交互作为背景: $C_P​=[c_{T′+1}​,c_{T′+2}​,...,c_0​]$。为简洁起见，我们记 $X = (s_P, c_P)$，因此我们想捕捉的整体概率分布是 $p(S_F|X)$ 。
+
+实际上， $p(S_F|X)$ 可以是高度多模态的。例如，车辆驶近十字路口时可能左转、直行或改变车道。直观上，未来状态的不确定性可以被分解为两部分：<u>目标或者意图的不确定性</u>，比如左右转的决定；以及<u>控制的不确定性</u>，比如转弯时需要的细粒度运动。因此，我们可以通过对目标设定条件，然后将其边缘化，从而对概率分布进行分解：
+p(SF​∣X)=∫τ∈τ(CP​)​p(τ∣X)p(SF​∣τ,X)dτ​,
+$$p(S_F​∣X)=∫_{τ∈τ(C_P​)}​p(τ∣X)p(S_F​∣τ,X)d_τ​, \tag{1}$$
+
+其中 $\tau(C_P)$ 表示取决于观察到的背景 $C_P$ ​的合理目标空间。
+
+在这个公式下，我们的主要见解是，对于轨迹预测等应用，通过正确设计目标空间 $\tau τ ( C_P )$（如目标位置），目标分布 $ p(\tau|X)$ 可以很好地捕捉意图不确定性。一旦目标确定，我们会进一步证明控制不确定性（如轨迹）可以通过简单的单模态分布可靠地建模。我们用一组离散位置来模拟目标空间 τ $\tau{C_P}$，将 $p(\tau|X)$ 的估计主要转化为一个分类任务。与隐变分模型相比，我们的模型以明确的目标分布的形式提供了更好的可解释性，并且在设计目标空间 $\tau{C_P}$ 时可以自然地结合专家知识（如道路拓扑）。
+
+我们的整体框架有三个概念阶段。第一阶段是**目标预测**，其目标是用基于观察背景 $X$ 的目标空间 $\tau$ 的离散集合对意图不确定性进行建模，并且输出目标分布 $p(\tau|X)$ 。第二个阶段是**目标条件运动估计**，它用单模态分布对从初始状态到目标可能的未来运动进行建模。前两个阶段产生了以下概率预测 $p(S_F|X) = \sum_{\tau\in\tau(C_P)}p(\tau|X)p(S_F|\tau, X)$。
+
+许多下游应用，例如实时行为预测，需要一小组具有代表性的未来预测，而不是所有可能未来的完整分布。我们的最终阶段，**评分和选择**，就是为此目的量身定制的。我们从所有代表性预测上学习一个评分函数 $\phi(S_F)$，并选择一个最终的多样化预测集。
+
+![执行echo $PATH的结果](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/TNT_Model_Overview.png)
+
 
 #### 场景编码VectorNet
 
