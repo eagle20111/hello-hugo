@@ -13,7 +13,10 @@ mermaid: false
 draft: false
 ---
 
-`link:` https://chenllliang.github.io/2020/02/04/dataloader/
+`link:` https://chenllliang.github.io/2020/02/04/dataloader/  
+`distributed training with dataloader and dataset:` https://blog.csdn.net/zyq12345678/article/details/90268668
+
+https://cloud.tencent.com/developer/article/1877393
 
 ## Dataset
 
