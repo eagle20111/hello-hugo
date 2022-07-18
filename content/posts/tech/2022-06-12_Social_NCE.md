@@ -27,7 +27,7 @@ Due to the ill-distributed training Data, it's <u><font color=red>difficult to c
 Modeling the negative samples through self-supervision:
 - <font color=red>a social contrastive loss</font>: regularizes the extracted motion representation by discerning the ground-truth positive events from synthetic negative ones;
 - <font color=red>Construct negative samples</font> based on prior knowledge of rare but dangerous circumstances.
-  > a social sampling strategy (informed): construct the positive enven from the ground-truth location of the primary agent and the negative events from the regions of other neighbors. given that one location cannot be occupied by multiple agents at the same time.
+  > a social sampling strategy (informed): construct the positive event from the ground-truth location of the primary agent and the negative events from the regions of other neighbors. given that one location cannot be occupied by multiple agents at the same time.
 
 
 ## Method: <font color=red>*Contrastive Learning + Social NCE*</font>
