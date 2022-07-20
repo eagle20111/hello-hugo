@@ -92,8 +92,7 @@ draft: false
     conda config --set show_channel_urls yes
     ```
 
-
-##三、 Cmake Installation
+## 三、 Cmake Installation
 
 `Ref Link:` https://blog.csdn.net/liushao1031177/article/details/119799007
   
