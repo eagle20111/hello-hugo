@@ -17,7 +17,7 @@ draft: false
 ## 一、 apt-get source update
 1. apt-get source 
      change the `/ect/apt/sources.list` file to [aliyun source](https://developer.aliyun.com/mirror/ubuntu)
-2. [add sudo user in root](https://blog.csdn.net/acelove40/article/details/54343629)
+2. add sudo user in root[link](https://blog.csdn.net/acelove40/article/details/54343629)
     ```shell
     adduser [name]
     ```
@@ -73,7 +73,7 @@ draft: false
     nano ~/.condarc
     ```
 
-    paste the following channels into your `~/.condarc` file: `ref link:`https://blog.csdn.net/weixin_34910922/article/details/116721774
+    paste the following channels into your `~/.condarc` file:[ref link](https://blog.csdn.net/weixin_34910922/article/details/116721774)
     ```text
     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
@@ -94,7 +94,7 @@ draft: false
 
 ## 三、 Cmake Installation
 
-`Ref Link:` https://blog.csdn.net/liushao1031177/article/details/119799007
+[Ref Link](https://blog.csdn.net/liushao1031177/article/details/119799007)
   
   1. Download cmake source file:
       ```shell
@@ -116,10 +116,14 @@ draft: false
 
 ## 四、 openmpi installation
 
-`ref link:` https://blog.csdn.net/songbaiyao/article/details/72858184
-
+([Ref Link](https://blog.csdn.net/songbaiyao/article/details/72858184))
+Install `openmpi` with command line:
 ```shell
 sudo apt-get install openmpi- bin openmpi-doc libopenmpi-dev
+```
+在conda下安装openmapi:
+```shell
+conda install openmpi
 ```
 
 
