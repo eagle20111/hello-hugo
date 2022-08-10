@@ -7,7 +7,7 @@ author: ["Jian"]
 cover:
     image: ""
     alt: ""
-tags: []
+tags: ["distributed training"]
 katex: true
 mermaid: false
 draft: false
