@@ -15,7 +15,18 @@ draft: true
 ## Here I document some notes about data structure types about c++
 
 - stack
-- map/unordered_map
-- set/unordered_set
+- map/multimap
+- set/multiset(底层实现机制)
+- unordered_map/unordered_set
 - queue/priority_queue/deque
 - list
+- TreeNode
+
+```c++
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) { }
+}
+```
