@@ -16,7 +16,7 @@ draft: false
 
 ## 一、 apt-get source update
 1. apt-get source 
-     change the `/ect/apt/sources.list` file to [aliyun source](https://developer.aliyun.com/mirror/ubuntu)
+     change the `/etc/apt/sources.list` file to [aliyun source](https://developer.aliyun.com/mirror/ubuntu)
 2. add sudo user in root[link](https://blog.csdn.net/acelove40/article/details/54343629)
     ```shell
     adduser [name]
@@ -34,7 +34,7 @@ draft: false
     ```text
     # sudoers file.
     #
-    # This file MUST be edited with the 'visudo' command as root.
+    # This file MUST be edited with the 'vi sudo' command as root.
     #
     # See the sudoers man page for the details on how to write a sudoers file.
     #
@@ -119,7 +119,7 @@ draft: false
 ([Ref Link](https://blog.csdn.net/songbaiyao/article/details/72858184))
 Install `openmpi` with command line:
 ```shell
-sudo apt-get install openmpi- bin openmpi-doc libopenmpi-dev
+sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 ```
 在conda下安装openmapi:
 ```shell

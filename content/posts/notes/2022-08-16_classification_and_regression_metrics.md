@@ -10,7 +10,7 @@ cover:
 tags: ["ML", "classify"]
 katex: true
 mermaid: false
-draft: true
+draft: false
 ---
 ref:
 [1] https://www.cnblogs.com/rushup0930/p/13359513.html
