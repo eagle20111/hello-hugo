@@ -126,6 +126,23 @@ sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 conda install openmpi
 ```
 
+## 五、 Anaconda下安装jupyter notebook
+
+1、 安装jupyter notebook
+    `conda intall jupyter notebook`
+
+2、 安装nbextensions
+    ```
+    pip install jupyter_contrib_nbextensions
+    jupyter contrib nbextension install --user
+    ```
+3、 安装nbextensions_configurator
+    ```
+    pip install jupyter_nbextensions_configurator
+    jupyter nbextensions_configurator enable --user
+    ```
+4、 在`codemirror.css`文件中更改字体
+
 
 
 
