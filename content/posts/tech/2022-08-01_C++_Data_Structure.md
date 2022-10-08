@@ -7,7 +7,7 @@ author: ["Jian"]
 cover:
     image: ""
     alt: ""
-tags: ["c++"]
+tags: ["c++","STL"]
 katex: true
 mermaid: false
 draft: false
