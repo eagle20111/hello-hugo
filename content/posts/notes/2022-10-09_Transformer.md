@@ -12,6 +12,90 @@ katex: true
 mermaid: false
 draft: false
 ---
+## Transformer Family
+
+reference:
+[1]. [The Transformer Family ](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/)
+[2]. [Attention](https://lilianweng.github.io/posts/2018-06-24-attention/)
+
+### Notations
+|Symbol|Meaning|
+|---|---|
+|$d$|The model size / hidden state dimension / positional encoding size.|
+|$h$|The number of heads in multi-head attention layer.|
+|$L$|The segment length of input sequence.|
+|$X \in \mathbb R ^ {L \times d}$|The input sequence where each element has been mapped into an embedding vector of shape , same as the model size.|
+|$W^k \in \mathbb R ^ {d \times d^k}$|The key weight matrix.|
+|$W^q \in \mathbb R ^ {d \times d^k}$|The query weight matrix.|
+|$W^v \in \mathbb R ^ {d \times d^k}$|The value weight matrix.Often we have $d_k = d_v = d$.|
+|$W^K_i, W^q_i \in \mathbb R ^ {d \times d^k / h}; W^v_i \in \mathbb R^{d x d_v / h}$|The weight matrices per head.|
+|$W^o \in \mathbb d_v \times d$|The output weight matrix.|
+|$Q = XW^q \in \mathbb R^{L \times d_q}$|The query embedding inputs.|
+|$K = XW^k \in \mathbb R^{L \times d_k}$|The key embedding inputs.|
+|$V = XW^v \in \mathbb R^{L \times d_v}$|The value embedding inputs.|
+|$S_i$|A collection of key positions for the -th query to attend to.|
+|$A \in \mathbb R ^ {L \times L}$|The self-attention matrix between a input sequence of lenght $L$ and itself. $A = softmax (Q K^T/\sqrt{(d_k)} )$|
+|$a_ij \ in A $|The scalar attention score between query $q_i$ and key $k_j$.|
+|$P \in \mathbb R ^ {L \times d}$|position encoding matrix, where the $i-th$ row is the positional encoding for input $x_i$.|
+
+### Attention and Self-Attention
+
+Attention is a mechanism in the neural network that a model can learn to make predictions by **selectively attending to a given set of data**. The amount of attention is quantified by learned weights and thus the output is usually formed as a weighted average.
+
+Self-attention is a type of attention mechanism where the model makes prediction for one part of a data sample using other parts of the observation about the same sample. Conceptually, it feels quite similar to non-local means. Also note that self-attention is permutation-invariant; in other words, it is an operation on sets.
+
+There are various forms of attention / self-attention, Transformer ([Vaswani et al., 2017](https://arxiv.org/abs/1706.03762)) relies on the scaled dot-product attention: given a query matrix $Q$, a key matrix $K$ and a value matrix $V$, the output is a weighted sum of the value vectors, where the weight assigned to each value slot is determined by the dot-product of the query with the corresponding key:
+
+$$\text{Attention}(Q, K, V) = softmax(\frac{QK^T}{\sqrt{d_k}})V$$
+
+And for a query and a key vector $q_i, k_j \in \mathbb R ^ d$ (row vectors in query and key matrices), we have a scalar score:
+
+$$a_{ij} = softmax(\frac{q_i k_j^T}{\sqrt{d_k}}) = \frac{\exp(q_i k_j^T)}{\sqrt{d_k}\sum_{r \in S_i}(q_i k_j^T)}$$
+
+where $S_i$ is a collection of key positions for the $i$-th query to attend to.
+
+See my old [post](https://lilianweng.github.io/posts/2018-06-24-attention/#a-family-of-attention-mechanisms) for other types of attention if interested.
+
+### Multi-Head Self-Attention
+
+The multi-head self-attention module is a key component in Transformer. Rather than only computing the attention once, the multi-head mechanism splits the inputs into smaller chunks and then computes the scaled dot-product attention over each subspace in parallel. The independent attention outputs are simply concatenated and linearly transformed into expected dimensions. 
+
+$$\text{MulitHeadAttention}(X_q, X_k, X_v) = [\text{head}_1,;...; \text{head}_h] W^o, where \text{head}_i = \text{Attention}(X_qW_i^q, X_kW_i^k, X_vW_i^v)$$
+
+where $[.;.]$ is a concatenation operation. $W_i^q, W_i^k \in \mathbb R^{d \times d_{k} / h}$, $W_i^v \in \mathbb R^{d \times d_{v} / h}$ are weight matrices to map input embeddings of size $L \times d$ into query, key and value matrices. And $W^o \in \mathbb R ^ {d_v \times d}$ is the output linear transformation. All the weights should be learned during training.
+
+![Fig. 1. Illustration of the multi-head scaled dot-product attention mechanism. ](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_multi-head-attention.png)
+
+### Transformer
+
+The Transformer (which will be referred to as “vanilla Transformer” to distinguish it from other enhanced versions; [Vaswani, et al., 2017](https://arxiv.org/abs/1706.03762)) model has an encoder-decoder architecture, as commonly used in many [NMT](https://lilianweng.github.io/posts/2018-06-24-attention/#born-for-translation) models. Later decoder-only Transformer was shown to achieve great performance in language modeling tasks, like in [GPT and BERT](https://lilianweng.github.io/posts/2019-01-31-lm/#openai-gpt).
+
+**Encoder-Decoder Architecture**
+
+The encoder generates an attention-based representation with capability to locate a specific piece of information from a large context. It consists of a stack of 6 identity modules, each containing two submodules, a multi-head self-attention layer and a point-wise fully connected feed-forward network. By point-wise, it means that it applies the same linear transformation (with same weights) to each element in the sequence. This can also be viewed as a convolutional layer with filter size 1. Each submodule has a residual connection and layer normalization. All the submodules output data of the same dimension $d$.
+
+The function of Transformer decoder is to retrieve information from the encoded representation. The architecture is quite similar to the encoder, except that the decoder contains two multi-head attention submodules instead of one in each identical repeating module. The first multi-head attention submodule is masked to prevent positions from attending to the future.
+
+![Fig. 2. The architecture of the vanilla Transformer model ](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_vanilla_transformer_model.png)
+
+**Positional Encoding**
+
+Because self-attention operation is permutation invariant, it is important to use proper **positional encoding** to provide order information to the model. The positional encoding $P \in \mathbb R ^ {L \times d}$ has the same dimension as the input embedding, so it can be added on the input directly. The vanilla Transformer considered two types of encodings:
+
+(1). Sinusoidal positional encoding is defined as follows, given the token $i = 1, ..., L$ position and the dimension $\delta = 1, ..., d$:
+
+$$ \text{PE}(i, \delta)  = \left\{
+    \begin{aligned}
+\sin\big(\frac{i}{10000^{2\delta'/d}}\big) , if \delta&=2\delta'\\
+\cos\big(\frac{i}{10000^{2\delta'/d}}\big) , if \delta&=2\delta'+1 \\
+\end{aligned}
+\right.$$
+
+In this way each dimension of the positional encoding corresponds to a sinusoid of different wavelengths in different dimensions, from $2\pi$ to 10000 * $2\pi$.
+
+![Fig. 2. Sinusoidal positional encoding](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_sinusoidal_positional_encoding.png)
+
+(2). Learned positional encoding, as its name suggested, assigns each element with a learned column vector which encodes its absolute position ([Gehring, et al. 2017](https://arxiv.org/abs/1705.03122)).
 
 ## 视觉Transformer入门
 
@@ -22,7 +106,7 @@ transformer结构是google在17年的Attention Is All You Need论文中提出，
 
 一般讲解transformer都会以机器翻译任务为例子讲解，机器翻译任务是指将一种语言转换得到另一种语言，例如英语翻译为中文任务。从最上层来看，如下所示：
 
-![vanilla transformer](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_vision_transformer_exampler.jpeg)
+![vanilla transformer](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_vision_transformer_example.jpeg)
 
 #### 1.1 早期seq2seq
 
@@ -30,11 +114,11 @@ transformer结构是google在17年的Attention Is All You Need论文中提出，
 
 ![seq2seq](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_seq2seq.jpeg)
 
-encoder和decoder在早期一般是RNN模块(因为其可以==捕获时序信息==)，后来引入了LSTM或者GRU模块，不管内部组件是啥，其核心思想都是<font color=red>通过Encoder编码成一个表示向量，即上下文编码向量，然后交给Decoder来进行解码，翻译成目标语言</font>。一个采用典型RNN进行编码码翻译的可视化图如下：
+encoder和decoder在早期一般是RNN模块(因为其可以==捕获时序信息==)，后来引入了LSTM或者GRU模块，不管内部组件是啥，其核心思想都是<font color=red>通过Encoder编码成一个表示向量，即上下文编码向量，然后交给Decoder来进行解码，翻译成目标语言</font>。一个采用典型RNN进行编码翻译的可视化图如下：
 
 ![seq2seq rnn](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_seq2seq_rnn.jpeg)
 
-可以看出，其解码过程是==顺序进行==，每次仅解码出一个单词。对于CV领域初学者来说，RNN模块构建的seq2seq算法，理解到这个程度就可以了，不需要深入探讨如何进行训练。但是上述结构其实有**缺陷**，具体来说是：<font color=red>(缺陷)</font>
+可以看出，其解码过程是<mark>顺序进行</mark>，每次仅解码出一个单词。对于CV领域初学者来说，RNN模块构建的seq2seq算法，理解到这个程度就可以了，不需要深入探讨如何进行训练。但是上述结构其实有**缺陷**，具体来说是：<font color=red>(缺陷)</font>
 
 - 不论输入和输出的语句长度是什么，中间的上下文向量长度都是固定的，一旦长度过长，仅仅靠一个<font color=red>固定长度的上下文向量明显不合理</font>
 - 仅仅利用上下文向量解码，会有<font color=red>信息瓶颈</font>，长度过长时候信息可能会丢失
@@ -45,7 +129,7 @@ encoder和decoder在早期一般是RNN模块(因为其可以==捕获时序信息
 
 基于上述缺陷进而提出带有注意力机制Attention的seq2seq，同样可以应用于RNN、LSTM或者GRU模块中。注意力机制Attention对人类来说非常好理解，假设给定一张图片，我们会自动聚焦到一些关键信息位置，而不需要逐行扫描全图。此处的attention也是同一个意思，其**本质是对输入的自适应加权**，结合cv领域的senet中的se模块就能够理解了。
 
-![cv attention](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_cv_attention.jpeg)
+![cv attention](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_cv_attention.jpeg#center)
 
 se模块最终是学习出一个$1 \times 1 \times c$的向量，然后逐通道乘以原始输入，从而对特征图的每个通道进行加权即通道注意力，对attention进行抽象，不管啥领域其机制都可以归纳为下图：
 
@@ -62,9 +146,9 @@ se模块最终是学习出一个$1 \times 1 \times c$的向量，然后逐通道
 ```python
 # 假设q是(1,N,512),N就是最大标签化后的list长度，k是(1,M,512),M可以等于N，也可以不相等
 # (1,N,512) x (1,512,M)-->(1,N,M)
-attn = torch.matmul(q, k.transpose(2, 3))
+attn = torch.matmul(q, k.transpose(2, 3)) # query compare with keys
 # softmax转化为概率，输出(1,N,M)，表示q中每个n和每个m的相关性
-attn=F.softmax(attn, dim=-1)
+attn=F.softmax(attn, dim=-1) 
 # (1,N,M) x (1,M,512)-->(1,N,512)，V和k的shape相同
 output = torch.matmul(attn, v)
 ```
@@ -73,7 +157,7 @@ output = torch.matmul(attn, v)
 ![seq2seq rnn att](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_seq2seq_rnn_att.jpeg)
 
 
-**在没有attention时候，不同解码阶段都仅仅利用了同一个编码层的最后一个隐含输出，加入attention后可以通过在每个解码时间步输入的都是不同的上下文向量**，以上图为例，解码阶段会将第一个开启解码标志<START>(也就是Q)与编码器的每一个时间步的隐含状态(一系列Key和Value)进行点乘计算相似性得到每一时间步的相似性分数，然后通过softmax转化为概率分布，然后将概率分布和对应位置向量进行加权求和得到新的上下文向量，最后输入解码器中进行解码输出，其详细解码可视化如下：
+**在没有attention时候，不同解码阶段都仅仅利用了同一个编码层的最后一个隐含输出，加入attention后可以通过在每个解码时间步输入的都是不同的上下文向量**，以上图为例，解码阶段会将第一个开启解码标志<START>(也就是Q)与编码器的每一个时间步的隐含状态(一系列Key和Value)进行<u>点乘计算相似性</u>得到每一时间步的相似性分数，然后通过<u>softmax转化为概率分布</u>，然后将概率分布和对应位置向量进行加权求和得到新的上下文向量，最后输入解码器中进行解码输出，其详细解码可视化如下：
 
 ![seq2seq rnn att](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_seq2seq_rnn_att_decoder.jpeg)
 
@@ -173,7 +257,7 @@ sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
 
 ![Transformer_selfdef_positional_encoding](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_selfdef_positional_encoding.jpeg)
 
-如此编码的优点是能够扩展到未知的序列长度，例如前向时候有特别长的句子，其可视化如下：
+**如此编码的优点是能够扩展到未知的序列长度**，例如前向时候有特别长的句子，其可视化如下：
 
 ![Transformer_selfdef_positional_encoding viz](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_selfdef_positional_encoding_viz.jpeg)
 
@@ -191,7 +275,7 @@ PE(pos+k, 2i) = PE(pos, 2i) \times PE(k, 2i+1) + PE(pos, 2i+1) \times PE(k,2i) \
 PE(pos+k, 2i + 1) = PE(pos, 2i + 1) \times PE(k, 2i+1) - PE(pos, 2i) \times PE(k,2i)
 \end{aligned}\right.$
 
-假设k=1，那么下一个位置的编码向量可以由前面的编码向量线性表示，等价于以一种非常容易学会的方式告诉了网络单词之间的绝对位置，让模型能够轻松学习到相对位置信息。注意编码方式不是唯一的，将单词嵌入向量和位置编码向量相加就可以得到编码器的真正输入了，其输出shape是(b,N,512)。
+假设k=1，那么下一个位置的编码向量可以由前面的编码向量线性表示，等价于<font color=red>以一种非常容易学会的方式告诉了网络单词之间的绝对位置，让模型能够轻松学习到相对位置信息</font>。注意编码方式不是唯一的，将单词嵌入向量和位置编码向量相加就可以得到编码器的真正输入了，其输出shape是(b,N,512)。
 
 ##### 1.4.2 编码器前向过程
 
@@ -207,12 +291,11 @@ PE(pos+k, 2i + 1) = PE(pos, 2i + 1) \times PE(k, 2i+1) - PE(pos, 2i) \times PE(k
 
 (1) 自注意力层
 
-通过前面分析我们知道自注意力层其实就是attention操作，并且**由于其QKV来自同一个输入，故称为自注意力层**。我想大家应该能想到这里attention层作用，在参考资料1博客里面举了个简单例子来说明attention的作用：假设我们想要翻译的输入句子为The animal didn't cross the street because it was too tired，这个“it”在这个句子是指什么呢？它指的是street还是这个animal呢？这对于人类来说是一个简单的问题，但是对于算法则不是。当模型处理这个单词“it”的时候，自注意力机制会允许“it”与“animal”建立联系即随着模型处理输入序列的每个单词，自注意力会关注整个输入序列的所有单词，帮助模型对本单词更好地进行编码。实际上训练完成后确实如此，google提供了可视化工具，如下所示：
+通过前面分析我们知道自注意力层其实就是attention操作，并且**由于其QKV来自同一个输入，故称为自注意力层**。我想大家应该能想到这里attention层作用，在参考资料1博客里面举了个简单例子来说明attention的作用：假设我们想要翻译的输入句子为The animal didn't cross the street because it was too tired，这个“it”在这个句子是指什么呢？它指的是street还是这个animal呢？这对于人类来说是一个简单的问题，但是对于算法则不是。<font color=green>当模型处理这个单词“it”的时候，自注意力机制会允许“it”与“animal”建立联系，即随着模型处理输入序列的每个单词，自注意力会关注整个输入序列的所有单词，帮助模型对本单词更好地进行编码</font>。实际上训练完成后确实如此，google提供了可视化工具，如下所示：
 
 ![Transformer self att viz](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_self_att_viz.jpeg)
 
 上述是从宏观角度思考，如果从输入输出流角度思考，也比较容易：
-
 
 ![Transformer self att viz2](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_self_att_viz2.jpeg)
 
@@ -229,10 +312,10 @@ PE(pos+k, 2i + 1) = PE(pos, 2i + 1) \times PE(k, 2i+1) - PE(pos, 2i) \times PE(k
 
 ![Transformer self att viz4](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_self_att_viz4.jpeg)
 
-上面的操作很不错，但是还有改进空间，论文中又增加一种叫做“多头”注意力（“multi-headed” attention）的机制进一步完善了自注意力层，并在两方面提高了注意力层的性能：
+上面的操作很不错，但是还有改进空间，论文中又增加一种叫做<font color=red>“多头”注意力(“multi-headed” attention)</font>的机制进一步完善了自注意力层，并在两方面提高了注意力层的性能：
 
-- 它扩展了模型专注于不同位置的能力。在上面的例子中，虽然每个编码都在z1中有或多或少的体现，但是它可能被实际的单词本身所支配。如果我们翻译一个句子，比如“The animal didn’t cross the street because it was too tired”，我们会想知道“it”指的是哪个词，这时模型的“多头”注意机制会起到作用。
-- 它给出了注意力层的多个“表示子空间",对于“多头”注意机制，有多个查询/键/值权重矩阵集(Transformer使用8个注意力头，因此我们对于每个编码器/解码器有8个矩阵集合)。
+- **<font color=red>它扩展了模型专注于不同位置的能力</font>**。在上面的例子中，虽然每个编码都在z1中有或多或少的体现，但是它可能被实际的单词本身所支配。如果我们翻译一个句子，比如“The animal didn’t cross the street because it was too tired”，我们会想知道“it”指的是哪个词，这时模型的“多头”注意机制会起到作用。
+- 它**<font color=red>给出了注意力层的多个"表示子空间"</font>**,对于“多头”注意机制，有多个查询/键/值权重矩阵集(Transformer使用8个注意力头，因此我们对于每个编码器/解码器有8个矩阵集合)。
 
 ![Transformer multihead att viz](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_multihead_att_viz.jpeg)
 
@@ -389,7 +472,7 @@ class EncoderLayer(nn.Module):
         return enc_output, enc_slf_attn
 ```
 
-将上述编码过程重复n遍即可，除了第一个模块输入是单词嵌入向量与位置编码的和外，其余编码层输入是上一个编码器输出即后面的编码器输入不需要位置编码向量。如果考虑n个编码器的运行过程，如下所示：
+将上述编码过程重复n遍即可，除了第一个模块输入是单词嵌入向量与位置编码的和外，其余编码层输入是上一个编码器输出，即后面的编码器输入**不需要位置编码向量**。如果考虑n个编码器的运行过程，如下所示：
 
 ```python
 
@@ -433,13 +516,13 @@ class Encoder(nn.Module):
 
 (1) 目标单词嵌入
 
-这个操作和源单词嵌入过程完全相同，维度也是512，假设输出是i am a student，那么需要对这4个单词也利用word2vec算法转化为4x512的矩阵，作为第一个解码器的单词嵌入输入。
+这个操作和源单词嵌入过程完全相同，维度也是512，假设输出是i am a student，那么需要对这4个单词也利用word2vec算法转化为4x512的矩阵，**作为第一个解码器的单词嵌入输入**。
 
 (2) 位置编码
 
-同样的也需要对解码器输入引入位置编码，做法和编码器部分完全相同，且将目标单词嵌入向量和位置编码向量相加即可作为第一个解码器输入。
+同样的也需要对解码器输入引入**位置编码**，做法和编码器部分完全相同，且将目标单词嵌入向量和位置编码向量相加，即可作为第一个解码器输入。
 
-和编码器单词嵌入不同的地方是在进行目标单词嵌入前，还需要将目标单词即是i am a student右移动一位，新增加的一个位置采用提前定义好的标志位BOS_WORD代替，现在就变成[BOS_WORD,i,am,a,student]，为啥要右移？因为解码过程和seq2seq一样是顺序解码的，需要提供一个开始解码标志，。不然第一个时间步的解码单词i是如何输出的呢？具体解码过程其实是：输入BOS_WORD，解码器输出i；输入前面已经解码的BOS_WORD和i，解码器输出am...，输入已经解码的BOS_WORD、i、am、a和student，解码器输出解码结束标志位EOS_WORD,每次解码都会利用前面已经解码输出的所有单词嵌入信息
+<font color=red>和编码器单词嵌入不同的地方</font>是在进行目标单词嵌入前，还需要将目标单词即是i am a student右移动一位，新增加的一个位置采用提前定义好的标志位BOS_WORD代替，现在就变成[BOS_WORD,i,am,a,student]，**为啥要右移？**<mark>因为解码过程和seq2seq一样是顺序解码的，需要提供一个开始解码标志</mark >。不然第一个时间步的解码单词i是如何输出的呢？具体解码过程其实是：输入BOS_WORD，解码器输出i；输入前面已经解码的BOS_WORD和i，解码器输出am...，输入已经解码的BOS_WORD、i、am、a和student，解码器输出解码结束标志位EOS_WORD,每次解码都会利用前面已经解码输出的所有单词嵌入信息
 
 下面有个非常清晰的gif图，一目了然：
 
@@ -451,7 +534,7 @@ class Encoder(nn.Module):
 
 仔细观察解码器结构，其包括：**带有mask的MultiHeadAttention**、**MultiHeadAttention**和**前馈神经网络层**三个组件，带有mask的MultiHeadAttention和MultiHeadAttention结构和代码写法是完全相同，唯一区别是是否输入了mask。
 
-为啥要mask？原因依然是顺序解码导致的。试想模型训练好了，开始进行翻译(测试)，其流程就是上面写的：**输入BOS_WORD，解码器输出i；输入前面已经解码的BOS_WORD和i，解码器输出am...，输入已经解码的BOS_WORD、i、am、a和student，解码器输出解码结束标志位EOS_WORD,每次解码都会利用前面已经解码输出的所有单词嵌入信息**，这个测试过程是没有问题，但是训练时候我肯定不想采用上述顺序解码类似rnn即一个一个目标单词嵌入向量顺序输入训练，**肯定想采用类似编码器中的矩阵并行算法，一步就把所有目标单词预测出来**。要实现这个功能就可以参考编码器的操作，把目标单词嵌入向量组成矩阵一次输入即可，但是在解码am时候，不能利用到后面单词a和student的目标单词嵌入向量信息，否则这就是作弊(测试时候不可能能未卜先知)。为此引入mask，目的是构成下三角矩阵，右上角全部设置为负无穷(相当于忽略)，从而实现**当解码第一个字的时候，第一个字只能与第一个字计算相关性，当解出第二个字的时候，只能计算出第二个字与第一个字和第二个字的相关性**。具体是：在解码器中，自注意力层只被允许处理输出序列中更靠前的那些位置，在softmax步骤前，它会把后面的位置给隐去（把它们设为-inf）。
+为啥要mask？原因依然是顺序解码导致的。试想模型训练好了，开始进行翻译(测试)，其流程就是上面写的：**输入BOS_WORD，解码器输出i；输入前面已经解码的BOS_WORD和i，解码器输出am...，输入已经解码的BOS_WORD、i、am、a和student，解码器输出解码结束标志位EOS_WORD,每次解码都会利用前面已经解码输出的所有单词嵌入信息**，这个测试过程是没有问题，但是训练时候我肯定不想采用上述顺序解码类似rnn, 即一个一个目标单词嵌入向量顺序输入训练，**肯定想采用类似编码器中的矩阵并行算法，一步就把所有目标单词预测出来**。要实现这个功能就可以参考编码器的操作，把<mark>目标单词嵌入向量组成矩阵一次输入即可</mark>，但是在解码am时候，不能利用到后面单词a和student的目标单词嵌入向量信息，否则这就是作弊(测试时候不可能能未卜先知)。为此引入mask，目的是构成下三角矩阵，右上角全部设置为负无穷(相当于忽略)，从而实现**当解码第一个字的时候，第一个字只能与第一个字计算相关性，当解出第二个字的时候，只能计算出第二个字与第一个字和第二个字的相关性**。具体是：<u>在解码器中，自注意力层只被允许处理输出序列中更靠前的那些位置，在softmax步骤前，它会把后面的位置给隐去（把它们设为-inf）</u>。
 
 还有个非常重要点需要知道(看图示可以发现)：**解码器内部的带有mask的MultiHeadAttention的qkv向量输入来自目标单词嵌入或者前一个解码器输出，三者是相同的，但是后面的MultiHeadAttention的qkv向量中的kv来自最后一层编码器的输入，而q来自带有mask的MultiHeadAttention模块的输出**。
 
