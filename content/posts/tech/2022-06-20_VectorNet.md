@@ -14,9 +14,12 @@ mermaid: false
 draft: false
 ---
 
-`ref link`: https://blog.csdn.net/qq_41897558/article/details/120087113  
-`ref code`: https://github.com/xk-huang/yet-another-vectornet  
-            https://github.com/DQSSSSS/VectorNet
+`ref link`:   
+[1] https://blog.csdn.net/qq_41897558/article/details/120087113    
+[2] https://zhuanlan.zhihu.com/p/355131328
+`ref code`:   
+[1]https://github.com/xk-huang/yet-another-vectornet  
+[2]https://github.com/DQSSSSS/VectorNet
 ## Novel Highlights
 
  (1) 使用矢量化的高精地图以及障碍物的历史轨迹，从而避免有损渲染以及ConvNet编码(计算开销比较大)。
@@ -122,3 +125,25 @@ $$p(y) = p(y∣μ,Σ)=1(2π)n/2∣Σ∣1/2exp−12(y−μ)⊤Σ−1(y−μ)$$
 Huber 损失函数为:
 
 $$ L(Y|f(x))= \begin{cases} \frac{1}{2} (Y-f(x))^2, & |Y-f(x)|<= \delta \\\\ \delta |Y-f(x)| - \frac{1}{2}\delta^2, & |Y-f(x)| > \delta \end{cases} $$
+
+## 整理
+
+**VectorNet数据处理部分:**
+
+- 对actor的处理:
+
+  - 输入: 取轨迹点，每两个轨迹点构建vector, 形式为(x1, x2, y1, y2), 其他特征(object type, timestamp, track_id)
+
+- 对lane node的处理:
+   
+   - 输入: 针对lane segment 的点，求polyline，原则上求lane segment的左右边界的点的向量(x_start, x_end, y_start, y_end, turn_direction, traffic_control, is_intersection, lane_id) 
+
+**网络部分:**
+
+- 构建subgraphnet: 针对每一个polyline，通过mlp和maxpool构构建subgraphnet
+
+- 构建globalgraphnet: 以每个polyline作为graph node，构建全局图网络，采用全链接，通过自注意力机制$GNN(P) = softmax(P_Q, P_K)^T(P_V)$
+
+**轨迹生成:**
+
+将全局网络的节点特征，通过mlp进行轨迹生成。
