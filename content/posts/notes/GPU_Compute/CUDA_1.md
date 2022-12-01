@@ -10,7 +10,7 @@ cover:
 tags: []
 katex: true
 mermaid: false
-draft: true
+draft: false
 ---
 
 [1] https://blog.csdn.net/Augusdi/article/details/12187291
@@ -73,17 +73,10 @@ Windows Vista, Windows 7, Windows 8, Windows Server 2003, and Windows Server 200
 
 如果安装正确，执行deviceQuery.exe文件会得到GPU设备的相应信息。如果没有安装支持CUDA的GPU也会得出GPU的信息，其中CUDA Capability Major/Minor version number信息为9999.9999。
 
-Microsoft Windows上更详细的安装信息请查看：
+Microsoft Windows上更详细的安装信息请查看：http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-microsoft-windows/index.html 。
 
-http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-microsoft-windows/index.html 。
-
-       Mac OS X的安装：
-
-http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-mac-os-x/index.html 。
-
-       Linux的安装：
-
-http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html 。
+Mac OS X的安装：http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-mac-os-x/index.html 。
+Linux的安装：http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/index.html 。
 
 
 ### 4.第一个CUDA程序
@@ -227,7 +220,7 @@ device_launch_parameters.h头文件包含了内核函数的5个变量threadIdx�
 
 #### 5.1. 基本概念
 
-CUDA编程中需要注意一些基本概念，分别为：主机、设备、运行时API、驱动API、warp、bank、函数类型限定符、变量类型限定符、thread、block、grid、计算能力、SIMT、内置变量、纹理、CUDA数组等。
+CUDA编程中需要注意一些基本概念，分别为：主机(host)、设备(device)、运行时API、驱动API、warp、bank、函数类型限定符、变量类型限定符、thread、block、grid、计算能力、SIMT、内置变量、纹理、CUDA数组等。
 
 主机(host)：可理解为CPU与内存的组合。
 
@@ -261,6 +254,41 @@ SIMT：单指令多线程，与单指令多数据（SIMD）类似。一条指令
 
 CUDA数组：区别于线性存储器，对数据进行了对齐等的处理，包括一维、二维和三维。其中的数据为：一元、二元或四元组。
 
+**CUDA编程模型基础**
+
+在给出CUDA的编程实例之前，这里先对CUDA编程模型中的一些概念及基础知识做个简单介绍。CUDA编程模型是一个异构模型，需要CPU和GPU协同工作。在CUDA中，host和device是两个重要的概念，我们用host指代CPU及其内存，而用device指代GPU及其内存。CUDA程序中既包含host程序，又包含device程序，它们分别在CPU和GPU上运行。同时，host与device之间可以进行通信，这样它们之间可以进行数据拷贝。典型的CUDA程序的执行流程如下：
+
+    分配host内存，并进行数据初始化；分配device内存，并从host将数据拷贝到device上；调用CUDA的核函数在device上完成指定的运算；将device上的运算结果拷贝到host上；释放device和host上分配的内存。
+
+上面流程中最重要的一个过程是调用CUDA的核函数来执行并行计算，kernel是CUDA中一个重要的概念，kernel是在device上线程中并行执行的函数，核函数用__global__符号声明，在调用时需要用<<<grid, block>>>来指定kernel要执行的线程数量，在CUDA中，每一个线程都要执行核函数，并且每个线程会分配一个唯一的线程号thread ID，这个ID值可以通过核函数的内置变量threadIdx来获得。
+
+由于GPU实际上是异构模型，所以需要区分host和device上的代码，在CUDA中是通过函数类型限定词开区别host和device上的函数，主要的三个函数类型限定词如下：
+
+    __global__：在device上执行，从host中调用（一些特定的GPU也可以从device上调用），返回类型必须是void，不支持可变参数参数，不能成为类成员函数。注意用__global__定义的kernel是异步的，这意味着host不会等待kernel执行完就执行下一步。__device__：在device上执行，单仅可以从device中调用，不可以和__global__同时用。__host__：在host上执行，仅可以从host上调用，一般省略不写，不可以和__global__同时用，但可和__device__，此时函数会在device和host都编译。
+
+要深刻理解kernel，必须要对kernel的线程层次结构有一个清晰的认识。首先GPU上很多并行化的轻量级线程。kernel在device上执行时实际上是启动很多线程，一个kernel所启动的所有线程称为一个网格（grid），同一个网格上的线程共享相同的全局内存空间，grid是线程结构的第一层次，而网格又可以分为很多线程块（block），一个线程块里面包含很多线程，这是第二个层次。线程两层组织结构如下图所示，这是一个gird和block均为2-dim的线程组织。grid和block都是定义为dim3类型的变量，dim3可以看成是包含三个无符号整数（x，y，z）成员的结构体变量，在定义时，缺省值初始化为1。因此grid和block可以灵活地定义为1-dim，2-dim以及3-dim结构，对于图中结构（主要水平方向为x轴），定义的grid和block如下所示，kernel在调用时也必须通过执行配置<<<grid, block>>>来指定kernel所使用的线程数及结构。
+
+
+所以，一个线程需要两个内置的坐标变量（blockIdx，threadIdx）来唯一标识，它们都是dim3类型变量，其中blockIdx指明线程所在grid中的位置，而threaIdx指明线程所在block中的位置，如图中的Thread (1,1)满足：
+
+```c
+threadIdx.x = 1
+threadIdx.y = 1
+blockIdx.x = 1
+blockIdx.y = 1
+```
+一个线程块上的线程是放在同一个流式多处理器（SM)上的，但是单个SM的资源有限，这导致线程块中的线程数是有限制的，现代GPUs的线程块可支持的线程数可达1024个。有时候，我们要知道一个线程在blcok中的全局ID，此时就必须还要知道block的组织结构，这是通过线程的内置变量blockDim来获得。它获取线程块各个维度的大小。对于一个2-dim的block ，线程 的ID值为 ，如果是3-dim的block ，线程 的ID值为
+
+。另外线程还有内置变量gridDim，用于获得网格块各个维度的大小。
+
+kernel的这种线程组织结构天然适合vector,matrix等运算，如我们将利用上图2-dim结构实现两个矩阵的加法，每个线程负责处理每个位置的两个元素相加，代码如下所示。线程块大小为(16, 16)，然后将N*N大小的矩阵均分为不同的线程块来执行加法运算。
+
+此外这里简单介绍一下CUDA的内存模型，如下图所示。可以看到，每个线程有自己的私有本地内存（Local Memory），而每个线程块有包含共享内存（Shared Memory）,可以被线程块中所有线程共享，其生命周期与线程块一致。此外，所有的线程都可以访问全局内存（Global Memory）。还可以访问一些只读内存块：常量内存（Constant Memory）和纹理内存（Texture Memory）。内存结构涉及到程序优化，这里不深入探讨它们。
+
+
+还有重要一点，你需要对GPU的硬件实现有一个基本的认识。上面说到了kernel的线程组织层次，那么一个kernel实际上会启动很多线程，这些线程是逻辑上并行的，但是在物理层却并不一定。这其实和CPU的多线程有类似之处，多线程如果没有多核支持，在物理层也是无法实现并行的。但是好在GPU存在很多CUDA核心，充分利用CUDA核心可以充分发挥GPU的并行计算能力。GPU硬件的一个核心组件是SM，前面已经说过，SM是英文名是 Streaming Multiprocessor，翻译过来就是流式多处理器。SM的核心组件包括CUDA核心，共享内存，寄存器等，SM可以并发地执行数百个线程，并发能力就取决于SM所拥有的资源数。当一个kernel被执行时，它的gird中的线程块被分配到SM上，一个线程块只能在一个SM上被调度。SM一般可以调度多个线程块，这要看SM本身的能力。那么有可能一个kernel的各个线程块被分配多个SM，所以grid只是逻辑层，而SM才是执行的物理层。SM采用的是SIMT (Single-Instruction, Multiple-Thread，单指令多线程)架构，基本的执行单元是线程束（warps)，线程束包含32个线程，这些线程同时执行相同的指令，但是每个线程都包含自己的指令地址计数器和寄存器状态，也有自己独立的执行路径。所以尽管线程束中的线程同时从同一程序地址执行，但是可能具有不同的行为，比如遇到了分支结构，一些线程可能进入这个分支，但是另外一些有可能不执行，它们只能死等，因为GPU规定线程束中所有线程在同一周期执行相同的指令，线程束分化会导致性能下降。当线程块被划分到某个SM上时，它将进一步划分为多个线程束，因为这才是SM的基本执行单元，但是一个SM同时并发的线程束数是有限的。这是因为资源限制，SM要为每个线程块分配共享内存，而也要为每个线程束中的线程分配独立的寄存器。所以SM的配置会影响其所支持的线程块和线程束并发数量。总之，就是网格和线程块只是逻辑划分，一个kernel的所有线程其实在物理层是不一定同时并发的。所以kernel的grid和block的配置不同，性能会出现差异，这点是要特别注意的。还有，由于SM的基本执行单元是包含32个线程的线程束，所以block大小一般要设置为32的倍数。
+
+
 #### 5.2. 线程层次结构
 
 CUDA线程的层次结构，由小到大依次为线程(thread)、线程块(block)、线程块网格(grid)。一维、二维或三维的线程组组成一个线程块，一维、二维或三维的线程块组组成一个线程块网格。
@@ -268,13 +296,33 @@ CUDA线程的层次结构，由小到大依次为线程(thread)、线程块(bloc
 下图是由二维的线程块组组成的线程块网络，其中线程块是由二维的线程组组成。
 
 
-
 图1 NVidia GPU的硬件结构是，一组流处理器组成一个多处理器，一个或多个多处理器组成一个GPU。其中流处理器，可以理解为处理计算的核心单元。多处理器类似于多核CPU。NVidia GPU从DX10（DirectX10）开始出现了Tesla、Fermi、Kepler架构，不同的架构多处理器中流处理器数量都有差别。
 
+在进行CUDA编程前，可以先检查一下自己的GPU的硬件配置，这样才可以有的放矢，可以通过下面的程序获得GPU的配置属性：
 
+```c
+int dev = 0;
+    cudaDeviceProp devProp;
+    CHECK(cudaGetDeviceProperties(&devProp, dev));
+    std::cout << "使用GPU device " << dev << ": " << devProp.name << std::endl;
+    std::cout << "SM的数量：" << devProp.multiProcessorCount << std::endl;
+    std::cout << "每个线程块的共享内存大小：" << devProp.sharedMemPerBlock / 1024.0 << " KB" << std::endl;
+    std::cout << "每个线程块的最大线程数：" << devProp.maxThreadsPerBlock << std::endl;
+    std::cout << "每个EM的最大线程数：" << devProp.maxThreadsPerMultiProcessor << std::endl;
+    std::cout << "每个SM的最大线程束数：" << devProp.maxThreadsPerMultiProcessor / 32 << std::endl;
+
+    // 输出如下
+    使用GPU device 0: GeForce GT 730
+    SM的数量：2
+    每个线程块的共享内存大小：48 KB
+    每个线程块的最大线程数：1024
+    每个EM的最大线程数：2048
+    每个EM的最大线程束数：64
+```
+ref: https://zhuanlan.zhihu.com/p/34587739
 ### 5.3. 存储器层次结构
 
-CUDA存储器有：寄存器、共享存储器、常量存储器、本地存储器、全局存储器、纹理存储器等。其中寄存器和本地存储器是线程私有的，共享存储器是对线程块中的所有线程可见，常量存储器、全局存储器和纹理存储器是对网格中所有线程可见。
+CUDA存储器有：寄存器(register)、共享存储器(shared memory)、常量存储器(constant memory)、本地存储器(local memory)、全局存储器(global memory)、纹理存储器等。其中寄存器和本地存储器是线程(thread)私有的，共享存储器是对线程块(block)中的所有线程可见，常量存储器、全局存储器和纹理存储器是对网格(grid)中所有线程可见。
 
 下图解释了存储器的层次结构：
 
@@ -287,8 +335,6 @@ CUDA存储器有：寄存器、共享存储器、常量存储器、本地存储�
 ##### 5.4.1. 初始化
 
 运行时API不存在显示初始化函数，初始化会在首次调用运行时函数时完成。虽然不需要调用初始化函数进行初始化，但是退出时需要调用退出函数cudaThreadExit()释放资源。
-
- 
 
 ##### 5.4.2. 设备管理
 
@@ -364,7 +410,6 @@ void main()
 ·cudaGetSymbolSize()
 
 主机代码中使用cudaGetSymbolAddress()获取__constant__或__device__定义的变量地址。设备代码中可通过提取__device__、__shared__或__constant__变量的指针获取变量地址。
-
 
 ###### 5.4.3.3. 线性存储器
 
