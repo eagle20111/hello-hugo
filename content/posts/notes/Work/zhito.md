@@ -250,11 +250,11 @@ draft: false
   - mgn = cls[row_idcs, min_idcs].unsqueeze() - cls 将cls最小的分值 减去 cls分值
   - mask0：筛选出每条距离fde最小的轨迹，fde < 2 的轨迹
     mask1：筛选出距离减去fde最小轨迹距离 < 0.2 的轨迹
-  - 求出mgn[mask0 * mask1]: 取min_dist < 2 但是拍出距离它比较近的轨迹点
+  - 求出mgn[mask0 * mask1]: 取min_dist < 2 但是排除距离它比较近的轨迹点
   - mask = mgn < 0.2
   - 最后计算cls和reg的loss
-    - cls_loss += self.config["mgn"] * mask.sum() - mgn[mask].sum 
-    $cls_loss = max(0, {c_k} + \epsilon - \hat{c_k})$
+    - cls_loss += self.config["mgn"] * mask.sum() - mgn[mask].sum   
+    $\text{cls}_\text{loss} = max(0, {c_k} + \epsilon - \hat{c_k})$
     - reg_loss = self.reg_loss(reg[has_preds], gt_preds[has_preds]) # 预测值和真值的huber loss
 
 ### 在移植以及部署过程中，碰到的问题以及解决方法

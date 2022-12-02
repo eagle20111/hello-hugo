@@ -202,17 +202,17 @@ device_launch_parameters.h头文件包含了内核函数的5个变量threadIdx�
 
 对其中CUDA运行时API函数的解释：
 
-·cudaSetDevice()：选择设备（GPU）。（可以不使用，不使用的情况下，默认选择设备0）
+  - cudaSetDevice()：选择设备（GPU）。（可以不使用，不使用的情况下，默认选择设备0）
 
-·cudaMalloc()：动态分配显存。
+  - cudaMalloc()：动态分配显存。
 
-·cudaMemcpy()：设备与主机之内的数据拷贝。
+  - cudaMemcpy()：设备与主机之内的数据拷贝。
 
-·cudaThreadSynchronize()：同步所有设备上的线程，等待所有线程结束。
+  - cudaThreadSynchronize()：同步所有设备上的线程，等待所有线程结束。
 
-·cudaFree():释放由cudaMalloc分配的显存。
+  - cudaFree():释放由cudaMalloc分配的显存。
 
-·cudaThreadExit():结束CUDA上下文环境，释放其中的资源。
+  - cudaThreadExit():结束CUDA上下文环境，释放其中的资源。
 
 这些函数的具体介绍在 http://docs.nvidia.com/cuda/cuda-runtime-api/index.html 中。
 
@@ -440,3 +440,5 @@ CUDA数组是使用cudaMallocArray()、cudaMalloc3DArray()分配的，使用cuda
     内核<<<…>>>的第四个参数为哪个流。
 
     CUDA编程指南中有对流具体实现的讲解。
+
+    https://blog.csdn.net/a925907195/article/details/39500915
