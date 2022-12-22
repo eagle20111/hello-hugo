@@ -103,7 +103,7 @@ draft: false
   - 输出: actor net output (M x 128)
 
   ActorNet 网络结果：
-  - groups: 
+  - groups:
       ```c++
       group: Res1d(3, 32)     Res1d(32, 32)
       group: Res1d(32, 64)    Res1d(64, 64)
@@ -116,26 +116,26 @@ draft: false
                 (31 x 128 x 5)             (31 x 128 x 5)
     groups[2] Res1d(128, 128)  => conv1d(128, 128)     ====>  interpolate (31 x 128 x 10)
               Res1d(64, 128)                                      ||
-             /\                                                   ||  
+             /\                                                   ||
              || (31 x 64 x 10)             (31 x 128 x 10)        \/
-    groups[2] Res1d(128, 128)  => conv1d(64, 128)     ====>    sum (31 x 128 x 10)    
-              Res1d(64, 128)                                      || 
+    groups[2] Res1d(128, 128)  => conv1d(64, 128)     ====>    sum (31 x 128 x 10)
+              Res1d(64, 128)                                      ||
              /\                                               interpolate (31 x 128 x 20)
              || (31 x 32 x 20)               (31 x 128 x 20)      ||
-    groups[2] Res1d(128, 128)  => conv1d(32, 128)     ====>    sum (31 x 128 x 20)            
+    groups[2] Res1d(128, 128)  => conv1d(32, 128)     ====>    sum (31 x 128 x 20)
               Res1d(64, 128)                                      ||
-             /\                                                  res1d(128, 128)  
+             /\                                                  res1d(128, 128)
              ||                                                   ||  [:,:, -1]
         input: 31 x 3 x 20                                    output: 31 x 128
-    ``` 
+    ```
 (4)、MapNet(): 提取lane node的特征
   - 输入: graph['idcs', 'ctrs', 'feats', 'turn', 'control', 'intersect', 'pre', 'suc', 'left', 'right']
   - 输出: feat, graph['idcs'], graph['ctrs']
     - graph['idcs']: lane node 的index
       - len(graph['ctrs'][0]): 1206
-      - len(graph['ctrs'][1]): 954 
+      - len(graph['ctrs'][1]): 954
     - graph['ctrs']: 2160 x 2
-  - 网络结构: 
+  - 网络结构:
     - self.input: Linear(2, 128) Linear(128, 128)
     - self.seg: Linear(2, 128) Linear(128, 128)
 
@@ -159,7 +159,7 @@ draft: false
     suc0 ~ suc5  temp.index_add_(0, graph[pre][i]['u'], self.feat(graph[k1][k2]['v']))
     解释: 把feat的第v行(value)加到temp的第u行上
     对pre0 ~ pre5 / suc0 ~ suc5 / left / right执行相同操作 (图注意力)
-    || 
+    ||
     然后经过self.fusr['norm'] 和 relu模块加上 resblock
     ||
     得到输出: feat: n x 128
@@ -175,11 +175,11 @@ draft: false
     - feat = self.meta(Linear(128, 128))
     - 针对feat(lane node feature), graph['idcs'], graph['ctrs'], actors, actor_idcsm, actor_ctrs
       循环指行两次graph attention 操作
-  
+
   - Atten网络结构；
     - 输入: agts, agts_idcs, agts_ctrs, ctx, ctx_idcs, ctx_ctrs， dist_th
-    - 流程: 
-      ```c++   
+    - 流程:
+      ```c++
       - agts ======================================> resblock
       ||
       agts_ctrs 和 ctx_ctrs 两两求distance
@@ -188,7 +188,7 @@ draft: false
       idcs = torch.nonzero(mask)
       hi.append(idcs[:, 0]) => row_idcs for agts
       wi.append(idcs[:, 1]) => col_idcs for ctxs
-      || 
+      ||
       dist = agt_cts[hi] - ctx_ctrs[wi] 根据threshold筛选出来的agent node 和context node 求distance
       ||  self.dist((2, n_ctx) (n_ctx, n_ctx))
       dist = self.dist(dist): n x n_ctx
@@ -226,12 +226,12 @@ draft: false
     - pred[3] [LinearRes(128, 128), Linear(128, 2 x 30)]
     - pred[4] [LinearRes(128, 128), Linear(128, 2 x 30)]
     - pred[5] [LinearRes(128, 128), Linear(128, 2 x 30)]
-  - 流程: 
+  - 流程:
     ```c++
      根据actor_feats分别输入到PredNet中
       `Preds[n* 120, n* 120, n* 120, n* 120, n* 120, n* 120]`
        ||
-       [n * 1 * 120, n * 1 * 120, n * 1 * 120, n * 1 * 120, n * 1 * 120] 
+       [n * 1 * 120, n * 1 * 120, n * 1 * 120, n * 1 * 120, n * 1 * 120]
        || torch.cat()
        n x 6 x 120
        ||reg.resize()
@@ -253,7 +253,7 @@ draft: false
   - 求出mgn[mask0 * mask1]: 取min_dist < 2 但是排除距离它比较近的轨迹点
   - mask = mgn < 0.2
   - 最后计算cls和reg的loss
-    - cls_loss += self.config["mgn"] * mask.sum() - mgn[mask].sum   
+    - cls_loss += self.config["mgn"] * mask.sum() - mgn[mask].sum
     $\text{cls}_\text{loss} = max(0, {c_k} + \epsilon - \hat{c_k})$
     - reg_loss = self.reg_loss(reg[has_preds], gt_preds[has_preds]) # 预测值和真值的huber loss
 
@@ -273,13 +273,129 @@ draft: false
     - 原因: torch.index_add_() 重复索引的实现
      - __global__ 函数
        ```c
-       __global__ void scatter_elements_op(float *output, const int *index, const float *update, const int ncolumns)
-      {
+       __global__ void scatter_elements_op(float *output, const int *index, const float *update, const int ncolumns) {
         int idx = blockDim.x * blockIdx.x + threadIdx.x;
         int transformidx = index[idx] * ncolumns + idx % ncolumns;
         atomicAdd(&output[transformidx], update[idx]);
-      }
-      ```
-    - 
+       }
+       ```
+    - atomicAdd() 实现原理
 
-  - torch.nonzero() 操作无法实现，注意力机制的修改 
+  - torch.nonzero() 操作无法实现，注意力机制的修改
+
+### L3 基于规则的预测模型开发
+
+#### 逻辑
+
+1. 执行`prediction_actor.cc`
+2. 执行`PredictionActor::PredictionEndToEndProc()`函数:
+  - 获取定位信息、感知信息
+  - 在`MessageProcess::OnPerception()`函数中执行一下两个函数:
+    - `EvaluatorManager::Instance()->Run()`: 判断障碍物的运行意图，给相应的lane sequence赋值概率，确定障碍物将要运动的lane sequence
+    - `PredictorManager::Instance()->Run()`：根据evaluator获得的lane sequence, 获得相应的轨迹点或者路径点
+**Evaluator 逻辑**
+3. `EvaluatorManager::Run()`: 根据obstacleContainer中的每一个障碍物执行`EvaluateObstacle()`
+  - `EvaluateObstacle()`: 针对障碍物的类型选择相应的Evaluator
+    - 如果障碍物在道路上(`OnLane() == true`)  ==> 执行Evaluate()
+    - 如果障碍物不在道路上，则通过`ModifyPriorityForOffLane()`给障碍修改谨慎等级
+      - 如果障碍不在道路上， 筛选障碍物BoundingBox最左边和最右边的点，如果其中有一个点在ego_sequence上，则认为障碍物侵占自车车道，将priority改为Caution </br>
+
+    3.1. 如果障碍物在车道上，调用evaluator的纯虚函数，根据相应的Evaluator执行相应的Evaluator(), 在高速场景下对vehicle类型障碍物采用HighwayCVEvaluator.
+      - 通过`HighwayCVEvaluator()`执行`Evalute()`函数
+       - 对障碍物设定相应的Evaluator type
+       - 执行`checkEgoFailed()`: 判断跟ego vehicle相关的pointer是否为空。如果相关ego vehicle的参数为nullpointer， 则设置current lane 的sequence概率为1. 认为障碍物会沿着当前道路行驶，因为无法参照自车进行预测。
+       - 执行`obs_on_ego_lane = ObstacleOnEgoLane()`: 通过obstacle sequence和ego sequence是否overlapped, 判断obstacle是否在ego vehicle的车道上
+       - 判断谨慎等级为ignore的车:
+         - 如果车在ego vehicle前方而谨慎等级为ignore，则判断
+           - 如果obstacle在自车车道上
+           - 如果obstacle在ego 左边车道上
+           - 如果obstacle在ego 右边车道上
+         - 则将障碍物的谨慎等级改为caution并且将障碍物当前道路sequence的概率设为1.
+       - 执行`SetObstacleLateralLanePosition()`：标定障碍物相对于ego的侧向位置
+         - 如果障碍物在ego lane 上，设lane type 为 `LaneAssignType_same`
+         - 如果障碍物不在ego lane上
+           - 把障碍物的pos投影到ego lane上，如果pro_l > 0
+              - 如果谨慎等级为ignore，则设obstacle的lane相对ego vehicle的位置为: left left
+              - 如果谨慎等级为caution，则设obstacle的lane相对ego vehicle的位置为: left
+           - 把障碍物的pos投影到ego lane上，如果pro_l < 0
+              - 如果谨慎等级为ignore，则设obstacle的lane相对ego vehicle的位置为: right right
+              - 如果谨慎等级为caution，则设obstacle的lane相对ego vehicle的位置为: right
+       - 当obstacle的current lane数量>1时，执行`SetSplitLaneObstacle()`:
+         - 对障碍物的每一条current lane进行判断:
+           - 判断当前的current lane是否corrected(纠偏而且是OneToTwo())
+           - 如果当前道路是split类型而且不是OneToTwo纠偏， 则把当前道路改为split
+       - 当obstacle的current lane数量<=1时, 执行`CheckSplitRampLatExceedDistance()`:
+         - 针对障碍物当前(index = 0)的lane sequence中的每一条lane segment， 如果lane segment所处的lane 是ramp driving， 则修改`l_exceed_lane_distance = 1.5m`
+       - 执行`GetLateralPointByLane()`函数:
+         - 把障碍物boundingbox最左边的点和最右边的点投影到自车ego lane上
+         - 如果障碍物的左、右点都不在ego sequence上，而且ego vehicle 和 obstacle 不在同一条 lane上，且障碍物的谨慎等级不是ignore， 那么把障碍物的谨慎等级改为normal
+       - use_ramp_mode = true
+         - `SetIsOnRamp(false)`
+         - `SetMergeSequenceIndex(-1)`
+         - `SetMergeRelativeDistance(Flag_param)`
+         - `SetProbabilityForMergeLane(obs, ego, left_neighbor, right_neighbor)`:
+           - 如果是merge车道而且不是OnToTwo纠偏，将障碍物的谨慎等级改为caution, 将当前lane sequence的概率设为1
+           - `SetIsOnRamp(true)`
+           - `ChangeIntent()`: 根据speed来判断障碍物的纵向加减速意图
+           - `SetLaneType(MERGE)`
+           - 如果障碍物的lane sequence和ego lane sequence相交， 或者障碍物lane sequence和ego vehicle的左侧或者右侧，则将当前的lane sequence和probability设为1
+       - 最后执行`EvaluateProbabilityByLaneSequence()`:
+         - 如果障碍物没有压左车道，也没有压右车道，或者障碍物和ego vehicle在同一车道,则将所有的current lane sequence的概率置1
+         - 如果障碍物压左车道且obstacle lane sequence与ego的left neighbor相交， 则将该left lane sequence的概率置1
+         - 如果障碍物压右车道且obstacle lane sequence与ego的left neighbor相交， 则将该right lane sequence的概率置1
+
+**Predictor 逻辑**
+3. `PredictorManager::Run()`: 根据obstacleContainer中的每一个障碍物执行`PredicteObstacle()`
+
+  - 根据Obstacle的类型，调用相应的Predictor
+    - 以vehicle为例: 执行`RunVehiclePredictor()`
+    - 对于静止或者ignore的obstacle， 执行`RunEmptyPredictor()`
+  - vehicle on lane => 执行 move sequence predictor
+  - vehicle off lane => 执行 lane sequence predictor
+
+  - 以 move sequence predictor 为例
+    - 确定预测轨迹时间长度
+      - 如果障碍物在匝道上，预测轨迹为12秒
+      - 如果障碍物不在匝道上，预测轨迹为7秒
+    - 执行`FilterLaneSequenceWithMerge()`:
+      - 对于障碍物的lane graph中的每一条lane sequence
+        - 如果lane sequence所在lane的类型为parking, 则把相应的enable_lane_sequence置为false, 相当于过滤该条lane sequence
+        - 如果lane sequence的类型既不是左转，也不是右转，也不是onto，也过滤掉该条lane sequence
+        - 执行`distance = GetLaneChangeDistWithADC()` => 纵向距离
+          - 如果 distance 处于(-50, 200)之间
+            - 如果当前判断的sequence就是汇入的sequence
+              - 判断是否有碰撞风险
+              - 判断是否有侧向变道意图
+              - 如果有碰撞风险或者没有左右变道意图，则把当前的sequence过滤掉
+        - 如果distance小于threshold
+          - 如果车没有merge到ego sequence， 则过滤掉sequence
+      - 对于每一条sequence
+        - 如果enable_lane_sequence[i] 为true
+          - LaneSequenceWithMaxProb(设置不变道sequence的最大概率)
+          - LaneChangeWithMaxProb(设置变道sequence的最大概率)
+    - 对于每一条lane sequence
+      - 如果概率为0 或者 enable_lane_sequence[i] 为false， 则不生成轨迹
+      - 如果车要停止，则执行`DrawConstantAccelerationTrajectory()`
+      - 如果车不停止（保持巡航模式），则执行`DrawMoveSequenceTrajectory()`
+    - 对于`DrawConstantAccelerationTrajectory()`：
+      - 根据障碍物的position和相应的lane info得到障碍物的`lane_l`和`lane_s`
+      - total_num = (total_time) / period 计算轨迹点的数量
+      - 根据$lane_s = v \times t + \frac{1}{2} \times a \times t^2$ 和 $speed = at$ 求出相应的lane_s 和lane_l
+      - trajectory 由速度speed、lane_id、lane_s、 lane_l标记
+    - 对于`DrawMoveSequenceTrajectory()`：
+      - 首先获取障碍物当前帧的位置信息
+      - 通过侧向速度计算得出到侧向终点的时间
+      - 对于每条lane sequence中的每一块lane segment
+        - 计算distance_to_merge, 计算距离交汇点的纵向距离
+        - 如果有道路汇入，则更信time_to_lat_end_state
+      - 限制车辆加速度:如果加速度acc处于最大值与最小值之间， 大大取大， 小小取小
+      - GetLaneStartPoint(): 根据position取得障碍物的起始点，用lane_s、lane_l表示
+      - 进行先横后纵规划:
+        - GetLateralPolynomial(): 获得侧向多项式的系数 (四个参数/三次多项式)
+        - GetLongitualPolynomial()：获得纵向的多项式系数 (五个参数/四次多项式)
+      - 对于每一个轨迹点，计算lane_l和lane_s
+        - 如果自车(ego vehicle) 比障碍物早到起始点，停止延伸轨迹
+        - 如果lane_s超多当前车道lane 的total_s, 停止延伸轨迹
+      - 定义lane_speed (四次多项式一阶导数) 和 lane_acc(四次多项式二阶导数)
+      - 最后生成轨迹点：
+        - 如果lane_s超过当前lane的total_s，lane_s截断并且lane segment index + 1

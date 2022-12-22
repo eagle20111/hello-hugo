@@ -12,12 +12,14 @@ katex: true
 mermaid: false
 draft: false
 ---
-## Transformer Family
 
 reference:
 [1]. [The Transformer Family ](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/)
 [2]. [Attention](https://lilianweng.github.io/posts/2018-06-24-attention/)
+[3]. [细节考究](https://zhuanlan.zhihu.com/p/60821628)
 
+
+## Transformer Family
 ### Notations
 |Symbol|Meaning|
 |---|---|
@@ -58,7 +60,7 @@ See my old [post](https://lilianweng.github.io/posts/2018-06-24-attention/#a-fam
 
 ### Multi-Head Self-Attention
 
-The multi-head self-attention module is a key component in Transformer. Rather than only computing the attention once, the multi-head mechanism splits the inputs into smaller chunks and then computes the scaled dot-product attention over each subspace in parallel. The independent attention outputs are simply concatenated and linearly transformed into expected dimensions. 
+The multi-head self-attention module is a key component in Transformer. Rather than only computing the attention once, the multi-head mechanism splits the inputs into smaller chunks and then computes the scaled dot-product attention over each subspace in parallel. The independent attention outputs are simply concatenated and linearly transformed into expected dimensions.
 
 $$\text{MulitHeadAttention}(X_q, X_k, X_v) = [\text{head}_1,;...; \text{head}_h] W^o, where \text{head}_i = \text{Attention}(X_qW_i^q, X_kW_i^k, X_vW_i^v)$$
 
@@ -148,7 +150,7 @@ se模块最终是学习出一个$1 \times 1 \times c$的向量，然后逐通道
 # (1,N,512) x (1,512,M)-->(1,N,M)
 attn = torch.matmul(q, k.transpose(2, 3)) # query compare with keys
 # softmax转化为概率，输出(1,N,M)，表示q中每个n和每个m的相关性
-attn=F.softmax(attn, dim=-1) 
+attn=F.softmax(attn, dim=-1)
 # (1,N,M) x (1,M,512)-->(1,N,512)，V和k的shape相同
 output = torch.matmul(attn, v)
 ```
@@ -195,7 +197,7 @@ google所提基于transformer的seq2seq整体结构如下所示：
 1. Q和所有K计算相似性；
 2. 对相似性采用softmax转化为概率分布；
 3. 将概率分布和V进行一一对应相乘，最后相加得到新的和Q一样长的向量输出即可.
- 
+
 重点是下面要讲的transformer结构。
 
 下面按照 **编码器输入数据处理**->**编码器运行**->**解码器输入数据处理**->**解码器运行**->**分类head** 的实际运行流程进行讲解。
@@ -621,7 +623,7 @@ class Decoder(nn.Module):
         dec_output = self.dropout(self.position_enc(self.trg_word_emb(trg_seq)))
         dec_output = self.layer_norm(dec_output)
         # 遍历每个解码器
-        for dec_layer in self.layer_stack:  
+        for dec_layer in self.layer_stack:
             # 需要输入3个信息：目标单词嵌入+位置编码、最后一个编码器输出enc_output
             # 和dec_enc_attn_mask，解码时候不能看到未来单词信息
             dec_output, dec_slf_attn, dec_enc_attn = dec_layer(
@@ -814,7 +816,7 @@ detr是facebook提出的引入transformer到目标检测领域的算法，效果
 
 整个思想看起来非常简单，相比faster rcnn或者yolo算法那就简单太多了，因为其不需要设置先验anchor，超参几乎没有，也不需要nms(因为输出的无序集合没有重复情况)，并且在代码程度相比faster rcnn那就不知道简单多少倍了，通过简单修改就可以应用于全景分割任务。可以推测，如果transformer真正大规模应用于CV领域，那么对初学者来说就是福音了，理解transformer就几乎等于理解了整个cv领域了(当然也可能是坏事)。
 
-##### 2.2.1 detr核心思想分析 
+##### 2.2.1 detr核心思想分析
 
 相比faster rcnn等做法，detr最大特点是将目标检测问题转化为无序集合预测问题。论文中特意指出faster rcnn这种设置一大堆anchor，然后基于anchor进行分类和回归其实属于代理做法即不是最直接做法，目标检测任务就是输出无序集合，而faster rcnn等算法通过各种操作，并结合复杂后处理最终才得到无序集合属于绕路了，而detr就比较纯粹了。
 
@@ -857,14 +859,14 @@ Hungarian意思就是匈牙利，也就是前面的L_match，上述意思是需�
 # detr分类输出，num_queries=100，shape是(b,100,92)
 bs, num_queries = outputs["pred_logits"].shape[:2]
 # 得到概率输出(bx100,92)
-out_prob = outputs["pred_logits"].flatten(0, 1).softmax(-1) 
+out_prob = outputs["pred_logits"].flatten(0, 1).softmax(-1)
 # 得到bbox分支输出(bx100,4)
 out_bbox = outputs["pred_boxes"].flatten(0, 1)
 
 # 准备分类target shape=(m,)里面存储的是类别索引，m包括了整个batch内部的所有gt bbox
-tgt_ids = torch.cat([v["labels"] for v in targets]) 
+tgt_ids = torch.cat([v["labels"] for v in targets])
 # 准备bbox target shape=(m,4)，已经归一化了
-tgt_bbox = torch.cat([v["boxes"] for v in targets])  
+tgt_bbox = torch.cat([v["boxes"] for v in targets])
 
 #核心
 #bx100,92->bx100,m，对于每个预测结果，把目前gt里面有的所有类别值提取出来，其余值不需要参与匹配
@@ -878,7 +880,7 @@ cost_giou = -generalized_box_iou(box_cxcywh_to_xyxy(out_bbox), box_cxcywh_to_xyx
 #得到最终的广义距离bx100,m，距离越小越可能是最优匹配
 C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
 # bx100,m--> batch,100,m
-C = C.view(bs, num_queries, -1).cpu() 
+C = C.view(bs, num_queries, -1).cpu()
 
 #计算每个batch内部有多少物体，后续计算时候按照单张图片进行匹配，没必要batch级别匹配,徒增计算
 sizes = [len(v["boxes"]) for v in targets]
@@ -894,7 +896,7 @@ def loss_labels(self, outputs, targets, indices, num_boxes, log=True):
     #shape是(b,100,92)
     src_logits = outputs['pred_logits']
 　　#得到匹配后索引，作用在label上
-    idx = self._get_src_permutation_idx(indices) 
+    idx = self._get_src_permutation_idx(indices)
     #得到匹配后的分类target
     target_classes_o = torch.cat([t["labels"][J] for t, (_, J) in zip(targets, indices)])
     #加入背景(self.num_classes)，补齐bx100个
@@ -963,11 +965,11 @@ src = src.flatten(2).permute(2, 0, 1)
 #用于表示动态shape，是pytorch中tensor新特性https://github.com/pytorch/nestedtensor
 x = tensor_list.tensors # 原始tensor数据
 # 附加的mask，shape是b,h,w 全是false
-mask = tensor_list.mask  
+mask = tensor_list.mask
 not_mask = ~mask
 # 因为图像是2d的，所以位置编码也分为x,y方向
 # 1 1 1 1 ..  2 2 2 2... 3 3 3...
-y_embed = not_mask.cumsum(1, dtype=torch.float32) 
+y_embed = not_mask.cumsum(1, dtype=torch.float32)
 # 1 2 3 4 ... 1 2 3 4...
 x_embed = not_mask.cumsum(2, dtype=torch.float32)
 if self.normalize:
@@ -1174,7 +1176,7 @@ self.bbox_embed = MLP(256, 256, 4, 3)
 # hs是(6,b,100,256)，outputs_class输出(6,b,100,92)，表示6个分类分支
 outputs_class = self.class_embed(hs)
 # 输出(6,b,100,4)，表示6个bbox坐标回归分支
-outputs_coord = self.bbox_embed(hs).sigmoid() 
+outputs_coord = self.bbox_embed(hs).sigmoid()
 # 取最后一个解码器输出即可，分类输出(b,100,92)，bbox回归输出(b,100,4)
 out = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}
 if self.aux_loss:
@@ -1311,13 +1313,13 @@ detr整体做法非常简单，基本上没有改动原始transformer结构，�
 本文从transformer发展历程入手，并且深入介绍了transformer思想和实现细节；最后结合计算机视觉领域的几篇有典型代表文章进行深入分析，希望能够给cv领域想快速理解transformer的初学者一点点帮助。
 
 ### 4 参考资料
-[1] http://jalammar.github.io/illustrated-transformer/  
-[2] https://zhuanlan.zhihu.com/p/54356280  
-[3] https://zhuanlan.zhihu.com/p/44731789  
-[4] https://looperxx.github.io/CS224n-2019-08-Machine%20Translation,%20Sequence-to-sequence%20and%20Attention/  
-[5] https://github.com/lucidrains/vit-pytorch  
-[6] https://github.com/jadore801120/  attention-is-all-you-need-pytorch  
-[7] https://github.com/facebookresearch/detr  
+[1] http://jalammar.github.io/illustrated-transformer/
+[2] https://zhuanlan.zhihu.com/p/54356280
+[3] https://zhuanlan.zhihu.com/p/44731789
+[4] https://looperxx.github.io/CS224n-2019-08-Machine%20Translation,%20Sequence-to-sequence%20and%20Attention/
+[5] https://github.com/lucidrains/vit-pytorch
+[6] https://github.com/jadore801120/  attention-is-all-you-need-pytorch
+[7] https://github.com/facebookresearch/detr
 
 ref:
 [1]. https://mp.weixin.qq.com/s/Tb0Zh5n_3dEYwInU6sJUhA
@@ -1427,5 +1429,5 @@ Zhao等针对传统注意力机制无法捕获多智能体之间交互的问题�
 
 
 
-ref: 
+ref:
 [1]. https://mp.weixin.qq.com/s/yCcsHNXeIBdCVuUwpUVy3w
