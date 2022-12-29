@@ -10,7 +10,7 @@ cover:
 tags: []
 katex: true
 mermaid: false
-draft: true
+draft: false
 ---
 
 ref:</br>
@@ -906,6 +906,686 @@ int main(){
     return 0;
 }
 ```
+
+程序中的 vair_fun() 函数有 2 个参数，一个是 count，另一个就是 … 可变参数。我们可以很容易在函数内部使用 count 参数，但要想使用参数包中的参数，需要借助<cstdarg>头文件中的 va_start、va_arg 以及 va_end 这 3 个带参数的宏：
+
+  - va_start(args, count)：args 是 va_list 类型的变量，我们可以简单的将其视为 char * 类型。借助 count 参数，找到可变参数的起始位置并赋值给 args；
+  - va_arg(args, int)：调用 va_start 找到可变参数起始位置的前提下，通过指明参数类型为 int，va_arg 就可以将可变参数中的第一个参数返回；
+  - va_end(args)：不再使用 args 变量后，应及时调用 va_end 宏清理 args 变量。
+
+> 注意，借助 va_arg 获取参数包中的参数时，va_arg 不具备自行终止的能力，所以程序中借助 count 参数控制 va_arg 的执行次数，继而将所有的参数读取出来。控制 va_arg 执行次数还有其他方法，比如读取到指定数据时终止。
+
+
+使用 … 可变参数的过程中，需注意以下几点：
+  - … 可变参数必须作为函数的最后一个参数，且一个函数最多只能拥有 1 个可变参数。</br>
+  - 可变参数的前面至少要有 1 个有名参数（例如上面例子中的 count 参数）；</br>
+  - 当可变参数中包含 char 类型的参数时，va_arg 宏要以 int 类型的方式读取；当可变参数中包含 short 类型的参数时，va_arg 宏要以 double 类型的方式读取。</br>
+
+需要注意的是，`…`可变参数的方法仅适用于函数参数，并不适用于模板参数。C++11 标准中，提供了一种实现</font color=red>可变模板参数</font>的方法。
+
+**可变参数模板**
+
+C++ 11 标准发布之前，函数模板和类模板只能设定固定数量的模板参数。C++11 标准对模板的功能进行了扩展，允许模板中包含任意数量的模板参数，这样的模板又称可变参数模板。
+
+（1）可变参数函数模板
+
+先讲解函数模板，如下定义了一个可变参数的函数模板：
+
+```c++
+template<typename... T>
+void vair_fun(T...args) {
+    //函数体
+}
+```
+
+模板参数中， typename（或者 class）后跟 … 就表明 T 是一个可变模板参数，它可以接收多种数据类型，又称模板参数包。vair_fun() 函数中，args 参数的类型用 T… 表示，表示 args 参数可以接收任意个参数，又称函数参数包。
+
+这也就意味着，此函数模板最终实例化出的 vair_fun() 函数可以指定任意类型、任意数量的参数。例如，我们可以这样使用这个函数模板：
+
+```c++
+vair_fun();
+vair_fun(1, "abc");
+vair_fun(1, "abc", 1.23);
+```
+
+使用可变参数模板的难点在于，如何在模板函数内部“解开”参数包（使用包内的数据），这里给大家介绍两种简单的方法。
+
+[递归方式解包]
+
+先看一个实例：
+
+```c++
+#include <iostream>
+using namespace std;
+//模板函数递归的出口
+void vir_fun() {
+}
+template <typename T, typename... args>
+void vir_fun(T argc, args... argv)
+{
+    cout << argc << endl;
+    //开始递归，将第一个参数外的 argv 参数包重新传递给 vir_fun
+    vir_fun(argv...);
+}
+int main()
+{
+    vir_fun(1, "http://www.biancheng.net", 2.34);
+    return 0;
+}
+```
+执行结果为：
+
+```
+1
+http://www.biancheng.net
+2.34
+```
+分析一个程序的执行流程：
+
+ - 首先，main() 函数调用 vir_fun() 模板函数时，根据所传实参的值，可以很轻易地判断出模板参数 T 的类型为 int，函数参数 argc 的值为 1，剩余的模板参数和函数参数都分别位于 args 和 argv 中；</br>
+  - vir_fun() 函数中，首先输出了 argc 的值（为 1），然后重复调用自身，同时将函数参数包 argv 中的数据作为实参传递给形参 argc 和 argv；</br>
+  - 再次执行 vir_fun() 函数，此时模板参数 T 的类型为 char*，输出 argc 的值为 “http:www.biancheng.net”。再次调用自身，继续将 argv 包中的数据作为实参；</br>
+  - 再次执行 vir_fun() 函数，此时模板参数 T 的类型为 double，输出 argc 的值为 2.34。再次调用自身，将空的 argv 包作为实参；</br>
+  - 由于 argv 包没有数据，此时会调用无任何形参、函数体为空的 vir_fun() 函数，最终执行结束。</br>
+
+> 以递归方式解包，一定要设置递归结束的出口。例如本例中，无形参、函数体为空的 vir_fun() 函数就是递归结束的出口。
+
+[非递归方法解包]
+
+借助逗号表达式和初始化列表，也可以解开参数包。
+
+以 vir_fun() 函数为例，下面程序演示了非递归方法解包的过程：
+
+```c++
+#include <iostream>
+using namespace std;
+template <typename T>
+void dispaly(T t) {
+    cout << t << endl;
+}
+template <typename... args>
+void vir_fun(args... argv)
+{
+    //逗号表达式+初始化列表
+    int arr[] = { (dispaly(argv),0)... };
+}
+int main()
+{
+    vir_fun(1, "http://www.biancheng.net", 2.34);
+    return 0;
+}
+```
+这里重点分析一下第 13 行代码，我们以{ }初始化列表的方式对数组 arr 进行了初始化， (display(argv),0)… 会依次展开为 (display(1),0)、(display(“http://www.biancheng.net”),0) 和 (display(2.34),0)。也就是说，第 13 行代码和如下代码是等价的：
+```c++
+int arr[] = { (dispaly(1),0), (dispaly("http://www.biancheng.net"),0), (dispaly(2.34),0) };
+```
+
+可以看到，每个元素都是一个逗号表达式，以 (display(1), 0) 为例，它会先计算 display(1)，然后将 0 作为整个表达式的值返回给数组，因此 arr 数组最终存储的都是 0。arr 数组纯粹是为了将参数包展开，没有发挥其它作用。
+
+(2) 可变参数类模板
+
+C++11 标准中，类模板中的模板参数也可以是一个可变参数。C++ 11 标准提供的 typle 元组类就是一个典型的可变参数模板类，它的定义如下：
+
+```c++
+template <typename... Types>
+class tuple;
+```
+
+和固定模板参数的类不同，typle 模板类实例化时，可以接收任意数量、任意类型的模板参数，例如：
+
+```c++
+
+std:tuple<> tp0;
+std::tuple<int> tp1 = std::make_tuple(1);
+std::tuple<int, double> tp2 = std::make_tuple(1, 2.34);
+std::tuple<int, double, string> tp3 = std::make_tuple(1, 2.34, "http://www.biancheng.net");
+```
+
+如下代码展示了一个支持可变参数的类模板：
+```c++
+#include <iostream>
+//声明模板类demo
+template<typename... Values> class demo;
+//继承式递归的出口
+template<> class demo<> {};
+//以继承的方式解包
+template<typename Head, typename... Tail>
+class demo<Head, Tail...>
+    : private demo<Tail...>
+{
+public:
+    demo(Head v, Tail... vtail) : m_head(v), demo<Tail...>(vtail...) {
+        dis_head();
+    }
+    void dis_head() { std::cout << m_head << std::endl; }
+protected:
+    Head m_head;
+};
+int main() {
+    demo<int, float, std::string> t(1, 2.34, "http://www.biancheng.net");
+    return 0;
+}
+```
+
+程序中，demo 模板参数中的 Tail 就是一个参数包，解包的方式是以“递归+继承”的方式实现的。具体来讲，demo<Head, Tail…> 类实例化时，由于其继承自 demo<Tail…> 类，因此父类也会实例化，一直递归至 Tail 参数包为空，此时会调用模板参数列表为空的 demo 模板类。
+
+程序的输出结果为：
+```shell
+http://www.biancheng.net
+2.34
+1
+```
+
+可变参数模板类还有其它的解包方法，这里不再一一赘述，感兴趣的读者可以自行做深入的研究。
+
+## C++11 tuple元组详解
+
+C++11 标准新引入了一种类模板，命名为 tuple（中文可直译为元组）。tuple 最大的特点是：实例化的对象可以存储任意数量、任意类型的数据。
+
+tuple 的应用场景很广泛，例如当需要存储多个不同类型的元素时，可以使用 tuple；当函数需要返回多个数据时，可以将这些数据存储在 tuple 中，函数只需返回一个 tuple 对象即可。
+
+本节，我们将给大家详细地讲解 tuple 的用法。
+
+**tuple对象的创建**
+
+tuple 本质是一个以可变模板参数定义的类模板，它定义在 头文件并位于 std 命名空间中。因此要想使用 tuple 类模板，程序中需要首先引入以下代码：
+
+```c++
+#include <tuple>
+using std::tuple;
+```
+
+实例化 tuple 模板类对象常用的方法有两种，一种是借助该类的构造函数，另一种是借助 make_tuple() 函数。
+
+(1) 类的构造函数
+
+tuple 模板类提供有很多构造函数，包括:
+
+```c++
+1) 默认构造函数
+constexpr tuple();
+2) 拷贝构造函数
+tuple (const tuple& tpl);
+3) 移动构造函数
+tuple (tuple&& tpl);
+4) 隐式类型转换构造函数
+template <class... UTypes>
+    tuple (const tuple<UTypes...>& tpl); //左值方式
+template <class... UTypes>
+    tuple (tuple<UTypes...>&& tpl);      //右值方式
+5) 支持初始化列表的构造函数
+explicit tuple (const Types&... elems);  //左值方式
+template <class... UTypes>
+    explicit tuple (UTypes&&... elems);  //右值方式
+6) 将pair对象转换为tuple对象
+template <class U1, class U2>
+    tuple (const pair<U1,U2>& pr);       //左值方式
+template <class U1, class U2>
+    tuple (pair<U1,U2>&& pr);            //右值方式
+```
+举个例子：
+```c++
+#include <iostream>     // std::cout
+#include <tuple>        // std::tuple
+using std::tuple;
+int main()
+{
+    std::tuple<int, char> first;                             // 1)   first{}
+    std::tuple<int, char> second(first);                     // 2)   second{}
+    std::tuple<int, char> third(std::make_tuple(20, 'b'));   // 3)   third{20,'b'}
+    std::tuple<long, char> fourth(third);                    // 4)的左值方式, fourth{20,'b'}
+    std::tuple<int, char> fifth(10, 'a');                    // 5)的右值方式, fifth{10.'a'}
+    std::tuple<int, char> sixth(std::make_pair(30, 'c'));    // 6)的右值方式, sixth{30,''c}
+    return 0;
+}
+```
+
+(2) make_tuple()函数
+
+上面程序中，我们已经用到了 make_tuple() 函数，它以模板的形式定义在 头文件中，功能是创建一个 tuple 右值对象（或者临时对象）。
+
+对于 make_tuple() 函数创建了 tuple 对象，我们可以上面程序中那样作为移动构造函数的参数，也可以这样用：
+
+```c++
+auto first = std::make_tuple (10,'a');   // tuple < int, char >
+const int a = 0; int b[3];
+auto second = std::make_tuple (a,b);     // tuple < int, int* >
+```
+
+程序中分别创建了 first 和 second 两个 tuple 对象，它们的类型可以直接用 auto 表示。
+
+**tuple常用函数**
+
+为了方便您在实际开发中使用 tuple 对象，tupe 模板类提供了一个功能实用的成员函数， 头文件中也提供了一些和操作 tuple 对象相关的函数模板和类模板，如表 1 所示。
+
+|               函数或类模板                  |           描 述                     |
+| ----------------------------------------- | ---------------------------------- |
+| tup1.swap(tup2) swap(tup1, tup2) | tup1 和 tup2 表示类型相同的两个 tuple 对象，tuple 模板类中定义有一个 swap() 成员函数， 头文件还提供了一个同名的 swap() 全局函数。 swap() 函数的功能是交换两个 tuple 对象存储的内容。 |
+|get(tup)|tup 表示某个 tuple 对象，num 是一个整数，get() 是 头文件提供的全局函数，功能是返回 tup 对象中第 num+1 个元素。|
+|tuple_size::value|tuple_size 是定义在 头文件的类模板，它只有一个成员变量 value，功能是获取某个 tuple 对象中元素的个数，type 为该tuple 对象的类型。|
+|tuple_element<I, type>::type|tuple_element 是定义在 头文件的类模板，它只有一个成员变量 type，功能是获取某个 tuple 对象第 I+1 个元素的类型。|
+|forward_as_tuple<args…>|args… 表示 tuple 对象存储的多个元素，该函数的功能是创建一个 tuple 对象，内部存储的 args… 元素都是右值引用形式的。|
+|tie(args…) = tup|tup 表示某个 tuple 对象，tie() 是 头文件提供的，功能是将 tup 内存储的元素逐一赋值给 args… 指定的左值变量。|
+|tuple_cat(args…)|args… 表示多个 tuple 对象，该函数是 头文件提供的，功能是创建一个 tuple 对象，此对象包含 args… 指定的所有 tuple 对象内的元素。|
+
+> tuple 模板类对赋值运算符 = 进行了重载，使得同类型的 tuple 对象可以直接赋值。此外，tuple 模板类还重载了 ==、!=、<、>、>=、<= 这几个比较运算符，同类型的 tuple 对象可以相互比较（逐个比较各个元素）。
+
+下面的程序给您演示了表 1 中一部分函数模板和类模板的功能：
+
+```c++
+#include <iostream>
+#include <tuple>
+int main()
+{
+    int size;
+    //创建一个 tuple 对象存储 10 和 'x'
+    std::tuple<int, char> mytuple(10, 'x');
+    //计算 mytuple 存储元素的个数
+    size = std::tuple_size<decltype(mytuple)>::value;
+    //输出 mytuple 中存储的元素
+    std::cout << std::get<0>(mytuple) << " " << std::get<1>(mytuple) << std::endl;
+    //修改指定的元素
+    std::get<0>(mytuple) = 100;
+    std::cout << std::get<0>(mytuple) << std::endl;
+    //使用 makde_tuple() 创建一个 tuple 对象
+    auto bar = std::make_tuple("test", 3.1, 14);
+    //拆解 bar 对象，分别赋值给 mystr、mydou、myint
+    const char* mystr = nullptr;
+    double mydou;
+    int myint;
+    //使用 tie() 时，如果不想接受某个元素的值，实参可以用 std::ignore 代替
+    std::tie(mystr, mydou, myint) = bar;
+    //std::tie(std::ignore, std::ignore, myint) = bar;  //只接收第 3 个整形值
+    //将 mytuple 和 bar 中的元素整合到 1 个 tuple 对象中
+    auto mycat = std::tuple_cat(mytuple, bar);
+    size = std::tuple_size<decltype(mycat)>::value;
+    std::cout << size << std::endl;
+    return 0;
+}
+```
+
+程序执行结果为：
+```shell
+10 x
+100
+5
+```
+
+## C++11列表初始化（统一了初始化方式）
+
+我们知道，在 C++98/03 中的对象初始化方法有很多种，请看下面的代码：
+```c++
+//初始化列表
+int i_arr[3] = { 1, 2, 3 };  //普通数组
+struct A
+{
+    int x;
+    struct B
+    {
+        int i;
+        int j;
+    } b;
+} a = { 1, { 2, 3 } };  //POD类型
+//拷贝初始化（copy-initialization）
+int i = 0;
+class Foo
+{
+    public:
+    Foo(int) {}
+} foo = 123;  //需要拷贝构造函数
+//直接初始化（direct-initialization）
+int j(0);
+Foo bar(123);
+```
+这些不同的初始化方法，都有各自的适用范围和作用。最关键的是，这些种类繁多的初始化方法，没有一种可以通用所有情况。
+
+为了统一初始化方式，并且让初始化行为具有确定的效果，C++11 中提出了列表初始化（List-initialization）的概念。
+
+POD 类型即 plain old data 类型，简单来说，是可以直接使用 memcpy 复制的对象。
+
+**统一的初始化**
+在上面我们已经看到了，对于普通数组和 POD 类型，C++98/03 可以使用初始化列表（initializer list）进行初始化:
+```c++
+int i_arr[3] = { 1, 2, 3 };
+long l_arr[] = { 1, 3, 2, 4 };
+struct A
+{
+    int x;
+    int y;
+} a = { 1, 2 };
+```
+但是这种初始化方式的适用性非常狭窄，只有上面提到的这两种数据类型可以使用初始化列表。
+
+<font color=red><u>在 C++11 中，初始化列表的适用性被大大增加了，它现在可以用于任何类型对象的初始化。</u></font> 请看下面的代码。
+
+【实例】通过初始化列表初始化对象。
+
+```c++
+class Foo
+{
+public:
+    Foo(int) {}
+private:
+    Foo(const Foo &);
+};
+int main(void)
+{
+    Foo a1(123);
+    Foo a2 = 123;  //error: 'Foo::Foo(const Foo &)' is private
+    Foo a3 = { 123 };
+    Foo a4 { 123 };
+    int a5 = { 3 };
+    int a6 { 3 };
+    return 0;
+}
+```
+
+在上例中，a3、a4 使用了新的初始化方式来初始化对象，效果如同 a1 的直接初始化。
+
+a5、a6 则是基本数据类型的列表初始化方式。可以看到，它们的形式都是统一的。
+
+这里需要注意的是，a3 虽然使用了等于号，但它仍然是列表初始化，因此，私有的拷贝构造并不会影响到它。
+
+a4 和 a6 的写法，是 C++98/03 所不具备的。在 C++11 中，可以直接在变量名后面跟上初始化列表，来进行对象的初始化。
+
+这种变量名后面跟上初始化列表方法同样适用于普通数组和 POD 类型的初始化：
+
+
+```c++
+int i_arr[3] { 1, 2, 3 };  //普通数组
+struct A
+{
+    int x;
+    struct B
+    {
+        int i;
+        int j;
+    } b;
+} a { 1, { 2, 3 } };  //POD类型
+```
+
+在初始化时，{}前面的等于号是否书写对初始化行为没有影响。
+
+另外，如同读者所想的那样，new 操作符等可以用圆括号进行初始化的地方，也可以使用初始化列表：
+```c++
+int* a = new int { 123 };
+double b = double { 12.12 };
+int* arr = new int[3] { 1, 2, 3 };
+```
+指针 a 指向了一个 new 操作符返回的内存，通过初始化列表方式在内存初始化时指定了值为 123。
+
+b 则是对匿名对象使用列表初始化后，再进行拷贝初始化。
+
+这里让人眼前一亮的是 arr 的初始化方式。堆上动态分配的数组终于也可以使用初始化列表进行初始化了。
+
+除了上面所述的内容之外，列表初始化还可以直接使用在函数的返回值上：
+
+```c++
+struct Foo
+{
+    Foo(int, double) {}
+};
+Foo func(void)
+{
+    return { 123, 321.0 };
+}
+```
+
+这里的 return 语句就如同返回了一个 Foo(123, 321.0)。
+
+由上面的这些例子可以看到，在 C++11 中使用初始化列表是非常便利的。它不仅统一了各种对象的初始化方式，而且还使代码的书写更加简单清晰。
+
+
+## C++11 lambda匿名函数用法详解
+
+lambda 源自希腊字母表中第 11 位的 λ，在计算机科学领域，它则是被用来表示一种匿名函数。所谓匿名函数，简单地理解就是没有名称的函数，又常被称为 lambda 函数或者 lambda 表达式。
+
+继 Python、Java、C#、PHP 等众多高级编程语言都支持 lambda 匿名函数后，C++11 标准终于引入了 lambda，本节将带领大家系统地学习 lambda 表达式的具体用法。
+
+**lambda匿名函数的定义**
+
+定义一个 lambda 匿名函数很简单，可以套用如下的语法格式：
+
+```
+[外部变量访问方式说明符] (参数) mutable noexcept/throw() -> 返回值类型
+{
+函数体;
+};
+```
+其中各部分的含义分别为：</br>
+
+    1. [外部变量方位方式说明符]
+    [ ] 方括号用于向编译器表明当前是一个 lambda 表达式，其不能被省略。在方括号内部，可以注明当前 lambda 函数的函数体中可以使用哪些“外部变量”。
+    > 所谓外部变量，指的是和当前 lambda 表达式位于同一作用域内的所有局部变量。</br>
+    2. (参数)
+    和普通函数的定义一样，lambda 匿名函数也可以接收外部传递的多个参数。和普通函数不同的是，如果不需要传递参数，可以连同 () 小括号一起省略；
+    3. mutable
+    此关键字可以省略，如果使用则之前的 () 小括号将不能省略（参数个数可以为 0）。默认情况下，对于以值传递方式引入的外部变量，不允许在 lambda 表达式内部修改它们的值（可以理解为这部分变量都是 const 常量）。而如果想修改它们，就必须使用 mutable 关键字。
+    > 对于以值传递方式引入的外部变量，lambda 表达式修改的是拷贝的那一份，并不会修改真正的外部变量；
+    4. noexcept/throw()
+    可以省略，如果使用，在之前的 () 小括号将不能省略（参数个数可以为 0）。默认情况下，lambda 函数的函数体中可以抛出任何类型的异常。而标注 noexcept 关键字，则表示函数体内不会抛出任何异常；使用 throw() 可以指定 lambda 函数内部可以抛出的异常类型。</br>
+    值得一提的是，如果 lambda 函数标有 noexcept 而函数体内抛出了异常，又或者使用 throw() 限定了异常类型而函数体内抛出了非指定类型的异常，这些异常无法使用 try-catch 捕获，会导致程序执行失败（本节后续会给出实例）。
+    5. -> 返回值类型
+    指明 lambda 匿名函数的返回值类型。值得一提的是，如果 lambda 函数体内只有一个 return 语句，或者该函数返回 void，则编译器可以自行推断出返回值类型，此情况下可以直接省略-> 返回值类型。
+    6. 函数体
+    和普通函数一样，lambda 匿名函数包含的内部代码都放置在函数体中。该函数体内除了可以使用指定传递进来的参数之外，还可以使用指定的外部变量以及全局范围内的所有全局变量。
+
+需要注意的是，外部变量会受到以值传递还是以引用传递方式引入的影响，而全局变量则不会。换句话说，在 lambda 表达式内可以使用任意一个全局变量，必要时还可以直接修改它们的值。
+
+> 其中，红色标识的参数是定义 lambda 表达式时必须写的，而绿色标识的参数可以省略。
+
+比如，如下就定义了一个最简单的 lambda 匿名函数：
+```c++
+[]{}
+```
+显然，此 lambda 匿名函数未引入任何外部变量（[] 内为空），也没有传递任何参数，没有指定 mutable、noexcept 等关键字，没有返回值和函数体。所以，这是一个没有任何功能的 lambda 匿名函数。
+
+**lambda匿名函数中的[外部变量]**
+
+对于 lambda 匿名函数的使用，令多数初学者感到困惑的就是 [外部变量] 的使用。其实很简单，无非表 1 所示的这几种编写格式。
+
+|外部变量格式|功能|
+|------|-------|
+|[]|空方括号表示当前 lambda 匿名函数中不导入任何外部变量。|
+|[=]|只有一个 = 等号，表示以值传递的方式导入所有外部变量；|
+|[&]|只有一个 & 符号，表示以引用传递的方式导入所有外部变量；|
+|[val1, val2, ...]|表示以值传递的方式导入 val1、val2 等指定的外部变量，同时多个变量之间没有先后次序；|
+|[&val1, &val2, ...]|表示以引用传递的方式导入 val1、val2等指定的外部变量，多个变量之间没有前后次序；|
+|[val, &val2,...]|以上 2 种方式还可以混合使用，变量之间没有前后次序。|
+|[=， &val1,...]|表示除 val1 以引用传递的方式导入外，其它外部变量都以值传递的方式导入。|
+|[this]|表示以值传递的方式导入当前的 this 指针。|
+
+> 注意，单个外部变量不允许以相同的传递方式导入多次。例如 [=，val1] 中，val1 先后被以值传递的方式导入了 2 次，这是非法的。
+
+【例 1】lambda 匿名函数的定义和使用。
+```c++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+int main()
+{
+    int num[4] = {4, 2, 3, 1};
+    //对 a 数组中的元素进行排序
+    sort(num, num+4, [=](int x, int y) -> bool{ return x < y; } );
+    for(int n : num){
+        cout << n << " ";
+    }
+    return 0;
+}
+```
+
+程序执行结果为：
+```
+1 2 3 4
+```
+
+程序第 9 行通过调用 sort() 函数实现了对 num 数组中元素的升序排序，其中就用到了 lambda 匿名函数。而如果使用普通函数，需以如下代码实现：
+
+```c++
+#include <iostream>
+#include <algorithm>
+using namespace std;
+//自定义的升序排序规则
+bool sort_up(int x,int y){
+return  x < y;
+}
+int main()
+{
+    int num[4] = {4, 2, 3, 1};
+    //对 a 数组中的元素进行排序
+    sort(num, num+4, sort_up);
+    for(int n : num){
+        cout << n << " ";
+    }
+    return 0;
+}
+```
+此程序中 sort_up() 函数的功能和上一个程序中的 lambda 匿名函数完全相同。显然在类似的场景中，使用 lambda 匿名函数更有优势。
+
+除此之外，虽然 lambda 匿名函数没有函数名称，但我们仍可以为其手动设置一个名称，比如：
+
+```c++
+#include <iostream>
+using namespace std;
+int main()
+{
+    //display 即为 lambda 匿名函数的函数名
+    auto display = [](int a,int b) -> void{cout << a << " " << b;};
+    //调用 lambda 函数
+    display(10,20);
+    return 0;
+}
+
+```
+程序执行结果为：
+```shell
+10 20
+```
+可以看到，程序中使用 auto 关键字为 lambda 匿名函数设定了一个函数名，由此我们即可在作用域内调用该函数。
+
+【例 2】值传递和引用传递的区别
+
+```c++
+#include <iostream>
+using namespace std;
+//全局变量
+int all_num = 0;
+int main()
+{
+    //局部变量
+    int num_1 = 1;
+    int num_2 = 2;
+    int num_3 = 3;
+    cout << "lambda1:\n";
+    auto lambda1 = [=]{
+        //全局变量可以访问甚至修改
+        all_num = 10;
+        //函数体内只能使用外部变量，而无法对它们进行修改
+        cout << num_1 << " "
+             << num_2 << " "
+             << num_3 << endl;
+    };
+    lambda1();
+    cout << all_num <<endl;
+    cout << "lambda2:\n";
+    auto lambda2 = [&]{
+        all_num = 100;
+        num_1 = 10;
+        num_2 = 20;
+        num_3 = 30;
+        cout << num_1 << " "
+             << num_2 << " "
+             << num_3 << endl;
+    };
+    lambda2();
+    cout << all_num << endl;
+    return 0;
+}
+```
+
+程序执行结果为：
+```c++
+lambda1:
+1 2 3
+10
+lambda2:
+10 20 30
+100
+```
+
+可以看到，在创建 lambda1 和 lambda2 匿名函数的作用域中，有 num_1、num_2 和 num_3 这 3 个局部变量，另外还有 all_num 全局变量。
+
+其中，lambda1 匿名函数是以 [=] 值传递的方式导入的局部变量，这意味着默认情况下，此函数内部无法修改这 3 个局部变量的值，但全局变量 all_num 除外。相对地，lambda2 匿名函数以 [&] 引用传递的方式导入这 3 个局部变量，因此在该函数的内部不就可以访问这 3 个局部变量，还可以任意修改它们。同样，也可以访问甚至修改全局变量。
+
+> 感兴趣的读者，可自行尝试在 lambda1 匿名函数中修改 num_1、num_2 或者 num_3 的值，观察编译器的报错信息。
+
+当然，如果我们想在 lambda1 匿名函数的基础上修改外部变量的值，可以借助 mutable 关键字，例如：
+
+```c++
+auto lambda1 = [=]() mutable{
+    num_1 = 10;
+    num_2 = 20;
+    num_3 = 30;
+    //函数体内只能使用外部变量，而无法对它们进行修改
+    cout << num_1 << " "
+         << num_2 << " "
+         << num_3 << endl;
+};
+```
+
+由此，就可以在 lambda1 匿名函数中修改外部变量的值。但需要注意的是，这里修改的仅是 num_1、num_2、num_3 拷贝的那一份的值，真正外部变量的值并不会发生改变。
+
+【例 3】执行抛出异常类型
+
+```c++
+#include <iostream>
+using namespace std;
+int main()
+{
+    auto except = []()throw(int) {
+        throw 10;
+    };
+    try {
+        except();
+    }
+    catch (int) {
+        cout << "捕获到了整形异常";
+    }
+    return 0;
+}
+```
+
+程序执行结果为：
+```shell
+捕获到了整形异常
+```
+可以看到，except 匿名数组中指定函数体中可以抛出整形异常，因此当函数体中真正发生整形异常时，可以借助 try-catch 块成功捕获并处理。
+
+在此基础上，在看一下反例：
+
+```c++
+#include <iostream>
+using namespace std;
+int main()
+{
+    auto except1 = []()noexcept{
+        throw 100;
+    };
+    auto except2 = []()throw(char){
+        throw 10;
+    };
+    try{
+        except1();
+        except2();
+    }catch(int){
+        cout << "捕获到了整形异常"<< endl;
+    }
+    return 0;
+}
+```
+此程序运行会直接崩溃，原因很简单，except1 匿名函数指定了函数体中不发生任何异常，但函数体中却发生了整形异常；except2 匿名函数指定函数体可能会发生字符异常，但函数体中却发生了整形异常。由于指定异常类型和真正发生的异常类型不匹配，导致 try-catch 无法捕获，最终程序运行崩溃。</br>
+
+> 如果不使用 noexcept 或者 throw()，则 lambda 匿名函数的函数体中允许发生任何类型的异常。</br>
 
 
 

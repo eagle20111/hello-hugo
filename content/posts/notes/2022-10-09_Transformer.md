@@ -1425,9 +1425,205 @@ Zhao等针对传统注意力机制无法捕获多智能体之间交互的问题�
 [12]G. Xie, A. Shangguan, F. Rong, W. Ji, M. Weigang, and X. Hei, “Motion trajectory prediction based on a cnn-lstm sequential model,” Science China Information Sciences, 2020.
 
 
-
-
-
-
 ref:
 [1]. https://mp.weixin.qq.com/s/yCcsHNXeIBdCVuUwpUVy3w
+
+
+## Transformer 详解
+[B站讲解视频](https://www.bilibili.com/video/BV1mk4y1q7eK?p=1)
+参考连接: https://wmathor.com/index.php/archives/1438/
+
+Transformer 是谷歌大脑在 2017 年底发表的论文 [attention is all you need](https://arxiv.org/pdf/1706.03762.pdf) 中所提出的 seq2seq 模型。现在已经取得了大范围的应用和扩展，而 BERT 就是从 Transformer 中衍生出来的预训练语言模型
+
+这篇文章分为以下几个部分
+    - Transformer 直观认识
+    - Positional Encoding
+    - Self Attention Mechanism
+    - 残差连接和 Layer Normalization
+    - Transformer Encoder 整体结构
+    - Transformer Decoder 整体结构
+    - 总结
+    - 参考文章
+
+
+
+### 0. Transformer 直观认识
+
+Transformer 和 LSTM 的最大区别，就是 LSTM 的训练是迭代的、串行的，必须要等当前字处理完，才可以处理下一个字。而 Transformer 的训练时并行的，即所有字是同时训练的，这样就大大增加了计算效率。Transformer 使用了位置嵌入 (Positional Encoding) 来理解语言的顺序，使用自注意力机制（Self Attention Mechanism）和全连接层进行计算，这些后面会讲到
+
+Transformer 模型主要分为两大部分，分别是 Encoder 和 Decoder。Encoder 负责把输入（语言序列）隐射成隐藏层（下图中第 2 步用九宫格代表的部分），然后解码器再把隐藏层映射为自然语言序列。例如下图机器翻译的例子（Decoder 输出的时候，是通过 N 层 Decoder Layer 才输出一个 token，并不是通过一层 Decoder Layer 就输出一个 token）
+
+
+![general architecture](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_1.png#center)
+
+本篇文章大部分内容在于解释 Encoder 部分，即把自然语言序列映射为隐藏层的数学表达的过程。理解了 Encoder 的结构，再理解 Decoder 就很简单了
+
+![general architecture -- encoder](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_2.png#center)
+
+上图为 Transformer Encoder Block 结构图，注意：下面的内容标题编号分别对应着图中 1,2,3,4 个方框的序号
+
+### 1. Positional Encoding
+
+由于 Transformer 模型没有循环神经网络的迭代操作，所以我们必须提供每个字的位置信息给 Transformer，这样它才能识别出语言中的顺序关系
+
+现在定义一个**位置嵌入**的概念，也就是 Positional Encoding，位置嵌入的维度为 [max_sequence_length, embedding_dimension], 位置嵌入的维度与词向量的维度是相同的，都是 embedding_dimension。max_sequence_length 属于超参数，指的是限定每个句子最长由多少个词构成
+
+注意，我们一般以字为单位训练 Transformer 模型。首先初始化字编码的大小为 [vocab_size, embedding_dimension]，vocab_size 为字库中所有字的数量，embedding_dimension 为字向量的维度，对应到 PyTorch 中，其实就是 nn.Embedding(vocab_size, embedding_dimension)
+
+论文中使用了 sin 和 cos 函数的线性变换来提供给模型位置信息:
+
+$$\left\{\begin{aligned}
+PE(pos, 2i) = \sin (pos/10000^{2i/d_{model}}) \\
+PE(pos, 2i + 1) = \cos (pos/10000^{2i/d_{model}}) \\
+\end{aligned}\right.$$
+
+
+上式中 $pos$ 指的是一句话中某个字的位置，取值范围是$ [0, max_sequence_length] $ ， $ i $ 指的是字向量的维度序号，取值范围是 [0, embedding_dimension / 2] ， $d_{model}$指的是 embedding_dimension​的值
+
+上面有 sin 和 cos 一组公式，也就是对应着 embedding_dimension 维度的一组奇数和偶数的序号的维度，例如 0,1 一组，2,3 一组，分别用上面的 sin 和 cos 函数做处理，从而产生不同的周期性变化，而位置嵌入在 embedding_dimension​维度上随着维度序号增大，周期变化会越来越慢，最终产生一种包含位置信息的纹理，就像论文原文中第六页讲的，位置嵌入函数的周期从 $ 2\pi $ 到 $10000 * 2 \pi$ 变化，而每一个位置在 embedding_dimension ​维度上都会得到不同周期的 $ \sin $ 和 $ \cos $ 函数的取值组合，从而产生独一的纹理位置信息，最终使得模型学到位置之间的依赖关系和自然语言的时序特性。
+
+如果不理解这里为何这么设计，可以看这篇文章 [Transformer 中的 Positional Encoding](https://wmathor.com/index.php/archives/1453/)
+
+下面画一下位置嵌入，纵向观察，可见随着 embedding_dimension​序号增大，位置嵌入函数的周期变化越来越平缓
+
+```python
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import math
+
+    def get_positional_encoding(max_seq_len, embed_dim):
+        # 初始化一个positional encoding
+        # embed_dim: 字嵌入的维度
+        # max_seq_len: 最大的序列长度
+        positional_encoding = np.array([
+            [pos / np.power(10000, 2 * i / embed_dim) for i in range(embed_dim)]
+            if pos != 0 else np.zeros(embed_dim) for pos in range(max_seq_len)])
+
+        positional_encoding[1:, 0::2] = np.sin(positional_encoding[1:, 0::2])  # dim 2i 偶数
+        positional_encoding[1:, 1::2] = np.cos(positional_encoding[1:, 1::2])  # dim 2i+1 奇数
+        return positional_encoding
+
+    positional_encoding = get_positional_encoding(max_seq_len=100, embed_dim=16)
+    plt.figure(figsize=(10,10))
+    sns.heatmap(positional_encoding)
+    plt.title("Sinusoidal Function")
+    plt.xlabel("hidden dimension")
+    plt.ylabel("sequence length")
+```
+
+
+![positional encoding 1](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_3.png#center)
+
+```python
+    plt.figure(figsize=(8, 5))
+    plt.plot(positional_encoding[1:, 1], label="dimension 1")
+    plt.plot(positional_encoding[1:, 2], label="dimension 2")
+    plt.plot(positional_encoding[1:, 3], label="dimension 3")
+    plt.legend()
+    plt.xlabel("Sequence length")
+    plt.ylabel("Period of Positional Encoding")
+```
+
+![positional encoding 2](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_4.png#center)
+
+### 2. Self Attention Mechanism
+
+对于输入的句子 $ X $，通过 WordEmbedding 得到该句子中每个字的字向量，同时通过 Positional Encoding 得到所有字的位置向量，将其相加（维度相同，可以直接相加），得到该字真正的向量表示。第 $ t $ 个字的向量记作 $ x_t $。
+
+接着我们定义三个矩阵 $ W_Q $, $ W_K $, $ W_V $，使用这三个矩阵分别对所有的字向量进行三次线性变换，于是所有的字向量又衍生出三个新的向量 $ q_t $, $ k_t $, $ v_t $。我们将所有的 $ q_t $ 向量拼成一个大矩阵，记作查询矩阵 $ Q $ ，将所有的 $ k_t $ 向量拼成一个大矩阵，记作键矩阵 $ K $  ，将所有的 $ v_t $ 向量拼成一个大矩阵，记作值矩阵 $ V $ （见下图）
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_5.gif#center)
+
+为了获得第一个字的注意力权重，我们需要用第一个字的查询向量 $ q_1 $ 乘以键矩阵 $ K $（见下图）
+
+```
+                [0, 4, 2]
+    [1, 0, 2] x [1, 4, 3] = [2, 4, 4]
+                [1, 0, 1]
+```
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_6.gif#center)
+
+之后还需要将得到的值经过 softmax，使得它们的和为 1（见下图）
+
+```
+ softmax([2, 4, 4]) = [0.0, 0.5, 0.5]
+```
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_7.png#center)
+
+有了权重之后，将权重其分别乘以对应字的值向量 $ v_t $（见下图）
+
+```
+    0.0 * [1, 2, 3] = [0.0, 0.0, 0.0]
+    0.5 * [2, 8, 0] = [1.0, 4.0, 0.0]
+    0.5 * [2, 6, 3] = [1.0, 3.0, 1.5]
+```
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_8.gif#center)
+
+最后将这些**权重化后的值向量求和**，得到第一个字的输出（见下图）
+
+```
+      [0.0, 0.0, 0.0]
+    + [1.0, 4.0, 0.0]
+    + [1.0, 3.0, 1.5]
+    -----------------
+    = [2.0, 7.0, 1.5]
+```
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_9.gif#center)
+
+对其它的输入向量也执行相同的操作，即可得到通过 self-attention 后的所有输出
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_10.gif#center)
+
+**矩阵计算**
+
+上面介绍的方法需要一个循环遍历所有的字$ x_t $，我们可以把上面的向量计算变成矩阵的形式，从而一次计算出所有时刻的输出
+
+第一步就不是计算某个时刻的$ q_t $, $ k_t $, $ v_t $了，而是一次计算所有时刻的 $
+Q $, $ K $, $ V $。计算过程如下图所示，这里的输入是一个矩阵 $ X $，矩阵第 $ t $ 行为第 $ t $ 个词的向量表示 $x_t$
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_11.png#center)
+
+
+接下来将 $ Q $ 和 $K_T$ 相乘，然后除以 $ \sqrt{d_k} $（这是论文中提到的一个 trick），经过 softmax 以后再乘以 $ V $ 得到输出
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_12.png#center)
+
+
+**Multi-Head Attention**
+
+这篇论文还提出了 Multi-Head Attention 的概念。其实很简单，前面定义的一组 $Q $, $ K $, $ V $, 可以让一个词 attend to 相关的词，我们可以定义多组 $Q $, $ K $, $ V $，让它们分别关注不同的上下文。计算 $Q $, $ K $, $ V $ 的过程还是一样，只不过线性变换的矩阵从一组 $ W^Q $, $ W^K $, $ W^V $ 变成了多组$ W^Q_0 $, $ W^K_0 $, $ W^V_0 $  ，$ W^Q_1 $, $ W^K_1 $, $ W^V_1 $ ，… 如下图所示:
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_13.png#center)
+
+对于输入矩阵 $ X $ ，每一组 $ Q $ 、$ K $ 和 $ V $ 都可以得到一个输出矩阵 $ Z $ 。如下图所示
+
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_14.png#center)
+
+**Padding Mask**
+![q k v](https://github.com/jianye0428/hello-hugo/raw/master/img/posts/notes/2022-10-09_Transformer/Transformer_xiangjie_15.png#center)
+
+
+上面 Self Attention 的计算过程中，我们通常使用 mini-batch 来计算，也就是一次计算多句话，即 $ X $ 的维度是 `[batch_size, sequence_length]`，sequence_length​是句长，而一个 mini-batch 是由多个不等长的句子组成的，我们需要按照这个 mini-batch 中最大的句长对剩余的句子进行补齐，一般用 0 进行填充，这个过程叫做 padding
+
+但这时在进行 softmax 就会产生问题。回顾 softmax 函数 $\sigma(z_i) = \frac{e^{z_i}}{\sum_K^{j=i} e^{z_j}}$，$e^0$ 是 1，是有值的，这样的话 softmax 中被 padding 的部分就参与了运算，相当于让无效的部分参与了运算，这可能会产生很大的隐患。因此需要做一个 mask 操作，让这些无效的区域不参与运算，一般是给无效区域加一个很大的负数偏置，即
+
+$$\left\{\begin{aligned}
+Z_{illegal} = Z_{illegal} + bias_{illegal} \\
+bias_{illegal}-> -\infin \\
+\end{aligned}\right.$$
+
+
+### 3. 残差连接和 Layer Normalization
+
+**残差连接**
+
+### 4. Transformer Encoder 整体结构
+### 5. Transformer Decoder 整体结构
+### 6. 总结
+### 7. 参考文章
+

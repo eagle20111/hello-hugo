@@ -43,7 +43,7 @@ Frenet坐标系是参考线上的坐标系，是一个动坐标系。Frenet坐�
 frenet坐标系和cartesian坐标系的转换关系可以可以参考如下论文[https://link.zhihu.com/?target=https%3A//www.researchgate.net/profile/Moritz-Werling/publication/224156269_Optimal_Trajectory_Generation_for_Dynamic_Street_Scenarios_in_a_Frenet_Frame/links/54f749df0cf210398e9277af/Optimal-Trajectory-Generation-for-Dynamic-Street-Scenarios-in-a-Frenet-Frame.pdf]
 
  如下所示是两个坐标系之间的变换公式。
-
+ref:https://blog.csdn.net/u013468614/article/details/108748016
 cartesian坐标系到frenet坐标系的变换公式：
 
 frenet坐标系到cartesian坐标系的变换公式：
