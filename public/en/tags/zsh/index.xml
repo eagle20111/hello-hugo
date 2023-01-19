@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>zsh on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/zsh/</link>
+    <description>Recent content in zsh on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 09 May 2022 11:54:06 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/zsh/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Ubuntu 22.04 | zsh 以及 oh-my-zsh的安装和配置</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-05-09_zsh_installation/</link>
+      <pubDate>Mon, 09 May 2022 11:54:06 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-05-09_zsh_installation/</guid>
+      <description>zsh说明 zsh是一个Linux下强大的shell, 由于大多数Linux产品安装以及默认使用bash shell, 但是丝毫不影响极客们对zsh的热衷, 几</description>
+    </item>
+    
+  </channel>
+</rss>

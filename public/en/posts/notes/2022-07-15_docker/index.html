@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Docker安装及学习 | Jian&#39;s Blog</title>
+<meta name="keywords" content="docker">
+<meta name="description" content="docker 入门教程 Ref Link: [1] https://ruanyifeng.com/blog/2018/02/docker-tutorial.html [2] https://cloud.tencent.com/developer/article/1885678 [3] 「Docker」 - 保存镜像 [4] 如何制作Docker镜像(image)? 一、Docker 是什么？ &amp;&amp; Docker 的用途 Docker 属于 Linux 容器的">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="Docker安装及学习" />
+<meta property="og:description" content="docker 入门教程 Ref Link: [1] https://ruanyifeng.com/blog/2018/02/docker-tutorial.html [2] https://cloud.tencent.com/developer/article/1885678 [3] 「Docker」 - 保存镜像 [4] 如何制作Docker镜像(image)? 一、Docker 是什么？ &amp;&amp; Docker 的用途 Docker 属于 Linux 容器的" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-07-14T17:42:53&#43;08:00" />
+<meta property="article:modified_time" content="2022-07-14T17:42:53&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="Docker安装及学习"/>
+<meta name="twitter:description" content="docker 入门教程 Ref Link: [1] https://ruanyifeng.com/blog/2018/02/docker-tutorial.html [2] https://cloud.tencent.com/developer/article/1885678 [3] 「Docker」 - 保存镜像 [4] 如何制作Docker镜像(image)? 一、Docker 是什么？ &amp;&amp; Docker 的用途 Docker 属于 Linux 容器的"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Docker安装及学习",
+      "item": "https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Docker安装及学习",
+  "name": "Docker安装及学习",
+  "description": "docker 入门教程 Ref Link: [1] https://ruanyifeng.com/blog/2018/02/docker-tutorial.html [2] https://cloud.tencent.com/developer/article/1885678 [3] 「Docker」 - 保存镜像 [4] 如何制作Docker镜像(image)? 一、Docker 是什么？ \u0026amp;\u0026amp; Docker 的用途 Docker 属于 Linux 容器的",
+  "keywords": [
+    "docker"
+  ],
+  "articleBody": "docker 入门教程 Ref Link:\n[1] https://ruanyifeng.com/blog/2018/02/docker-tutorial.html\n[2] https://cloud.tencent.com/developer/article/1885678\n[3] 「Docker」 - 保存镜像\n[4] 如何制作Docker镜像(image)?\n一、Docker 是什么？ \u0026\u0026 Docker 的用途 Docker 属于 Linux 容器的一种封装，提供简单易用的容器使用接口。它是目前最流行的 Linux 容器解决方案。\nDocker 将应用程序与该程序的依赖，打包在一个文件里面。运行这个文件，就会生成一个虚拟容器。程序在这个虚拟容器里运行，就好像在真实的物理机上运行一样。有了 Docker，就不用担心环境问题。\n总体来说，Docker 的接口相当简单，用户可以方便地创建和使用容器，把自己的应用放入容器。容器还可以进行版本管理、复制、分享、修改，就像管理普通的代码一样。\n二、docker 安装 参考连接:ubuntu下docker的安装\n安装完成后，运行下面的命令，验证是否安装成功。\n1 2 3 docker version # or docker info Docker 需要用户具有 sudo 权限，为了避免每次命令都输入sudo，可以把用户加入 Docker 用户组。\n1 2 # 创建docker用户组 sudo groupadd docker 1 2 # 应用用户加入docker用户组 sudo usermod -aG docker $USER 1 2 # 重启docker服务 sudo systemctl restart docker 1 2 su root su ${USER} Docker是服务器–客户端(server–client)架构。命令行运行docker命令的时候，需要本机有 Docker 服务。如果这项服务没有启动，可以用下面的命令启动:\n1 2 3 4 5 # service 命令的用法 sudo service docker start # systemctl 命令的用法 sudo systemctl start docker 三、image 文件 Docker 把应用程序及其依赖，打包在 image 文件里面。只有通过这个文件，才能生成 Docker 容器。image 文件可以看作是容器的模板。Docker 根据 image 文件生成容器的实例。同一个 image 文件，可以生成多个同时运行的容器实例。\nimage 是二进制文件。实际开发中，一个 image 文件往往通过继承另一个 image 文件，加上一些个性化设置而生成。举例来说，你可以在 Ubuntu 的 image 基础上，往里面加入 Apache 服务器，形成你的 image。\n1 2 3 4 5 # 列出本机的所有 image 文件。 $ docker image ls # 删除 image 文件 $ docker image rm [imageName] image 文件是通用的，一台机器的 image 文件拷贝到另一台机器，照样可以使用。一般来说，为了节省时间，我们应该尽量使用别人制作好的 image 文件，而不是自己制作。即使要定制，也应该基于别人的 image 文件进行加工，而不是从零开始制作。\n为了方便共享，image 文件制作完成后，可以上传到网上的仓库。Docker 的官方仓库 Docker Hub 是最重要、最常用的 image 仓库。此外，出售自己制作的 image 文件也是可以的。\n四、实例：hello world 首先，运行下面的命令，将 image 文件从仓库抓取到本地。\n1 docker image pull library/hello-world 上面代码中，docker image pull是抓取 image 文件的命令。library/hello-world是 image 文件在仓库里面的位置，其中library是 image 文件所在的组，hello-world是 image 文件的名字。\n由于 Docker 官方提供的 image 文件，都放在library组里面，所以它的是默认组，可以省略。因此，上面的命令可以写成下面这样。\n1 docker image pull hello-world 抓取成功以后，就可以在本机看到这个 image 文件了。\n1 docker image ls 运行image:\n1 docker container run hello-world docker container run命令会从 image 文件，生成一个正在运行的容器实例。\n注意，docker container run命令具有自动抓取 image 文件的功能。如果发现本地没有指定的 image 文件，就会从仓库自动抓取。因此，前面的docker image pull命令并不是必需的步骤。\n如果运行成功，你会在屏幕上读到下面的输出。\n1 2 3 4 5 6 7 $ docker container run hello-world Hello from Docker! This message shows that your installation appears to be working correctly. ... ... 输出这段提示以后，hello world就会停止运行，容器自动终止。\n有些容器不会自动终止，因为提供的是服务。比如，安装运行 Ubuntu 的 image，就可以在命令行体验 Ubuntu 系统。\n1 $ docker container run -it ubuntu bash 对于那些不会自动终止的容器，必须使用docker container kill命令手动终止。\n1 $ docker container kill [containID] 五、容器文件 image文件生成的容器实例，本身也是一个文件，称为容器文件。也就是说，一旦容器生成，就会同时存在两个文件： image文件和容器文件。而且关闭容器并不会删除容器文件，只是容器停止运行而已。\n上面命令的输出结果之中，包括容器的 ID。很多地方都需要提供这个 ID，比如上一节终止容器运行的docker container kill命令。\n终止运行的容器文件，依然会占据硬盘空间，可以使用docker container rm命令删除。\n1 $ docker container rm [containerID] 运行上面的命令之后，再使用docker container ls --all命令，就会发现被删除的容器文件已经消失了。\n六、 Dockerfile 文件 学会使用 image 文件以后，接下来的问题就是，如何可以生成 image 文件？如果你要推广自己的软件，势必要自己制作 image 文件。\n这就需要用到 Dockerfile 文件。它是一个文本文件，用来配置 image。Docker 根据 该文件生成二进制的 image 文件。\n下面通过一个实例，演示如何编写 Dockerfile 文件。\n七、实例: 下面我以 koa-demos 项目为例，介绍怎么写 Dockerfile 文件，实现让用户在 Docker 容器里面运行 Koa 框架。\n作为准备工作，请先下载源码[]。\n1 2 $ git clone https://github.com/ruanyf/koa-demos.git $ cd koa-demos 7.1 编写 Dockerfile 文件\n首先，在项目的根目录下，新建一个文本文件.dockerignore，写入下面的内容。\n1 2 3 .git node_modules npm-debug.log 上面代码表示，这三个路径要排除，不要打包进入 image 文件。如果你没有路径要排除，这个文件可以不新建。\n然后，在项目的根目录下，新建一个文本文件 Dockerfile，写入下面的内容。\n1 2 3 4 5 FROM node:8.4 COPY . /app WORKDIR /app RUN npm install --registry=https://registry.npm.taobao.org EXPOSE 3000 上面代码一共五行，含义如下。\nFROM node:8.4：该 image 文件继承官方的 node image，冒号表示标签，这里标签是8.4，即8.4版本的 node。 COPY . /app：将当前目录下的所有文件（除了.dockerignore排除的路径），都拷贝进入 image 文件的/app目录。 WORKDIR /app：指定接下来的工作路径为/app。 RUN npm install：在/app目录下，运行npm install命令安装依赖。注意，安装后所有的依赖，都将打包进入 image 文件。 EXPOSE 3000：将容器 3000 端口暴露出来， 允许外部连接这个端口。 7.2 创建image文件\n有了 Dockerfile 文件以后，就可以使用docker image build命令创建 image 文件了。\n1 2 3 $ docker image build -t koa-demo . # 或者 $ docker image build -t koa-demo:0.0.1 . 上面代码中，-t参数用来指定 image 文件的名字，后面还可以用冒号指定标签。如果不指定，默认的标签就是latest。最后的那个点表示 Dockerfile 文件所在的路径，上例是当前路径，所以是一个点。\n如果运行成功，就可以看到新生成的 image 文件koa-demo了。\n1 docker image ls 7.3 生成容器\ndocker container run命令会从 image 文件生成容器。\n1 2 3 4 $ docker container run -p 8000:3000 -it koa-demo /bin/bash # 或者 $ docker container run -p 8000:3000 -it koa-demo:0.0.1 /bin/bash 上面命令的各个参数含义如下：\np参数：容器的 3000 端口映射到本机的 8000 端口。 it参数：容器的 Shell 映射到当前的 Shell，然后你在本机窗口输入的命令，就会传入容器。 koa-demo:0.0.1：image 文件的名字（如果有标签，还需要提供标签，默认是 latest 标签）。 /bin/bash：容器启动以后，内部第一个执行的命令。这里是启动 Bash，保证用户可以使用 Shell。 如果一切正常，运行上面的命令以后，就会返回一个命令行提示符。\n1 root@66d80f4aaf1e:/app# 这表示你已经在容器里面了，返回的提示符就是容器内部的 Shell 提示符。执行下面的命令。\n1 root@66d80f4aaf1e:/app# node demos/01.js 这时，Koa 框架已经运行起来了。打开本机的浏览器，访问 http://127.0.0.1:8000，网页显示\"Not Found\"，这是因为这个 demo 没有写路由。\n这个例子中，Node 进程运行在 Docker 容器的虚拟环境里面，进程接触到的文件系统和网络接口都是虚拟的，与本机的文件系统和网络接口是隔离的，因此需要定义容器与物理机的端口映射（map）。\n现在，在容器的命令行，按下 Ctrl + c 停止 Node 进程，然后按下 Ctrl + d （或者输入 exit）退出容器。此外，也可以用docker container kill终止容器运行。\n1 2 3 4 5 6 # 在本机的另一个终端窗口，查出容器的 ID $ docker container ls # 停止指定的容器运行 $ docker container kill [containerID] 容器停止运行之后，并不会消失，用下面的命令删除容器文件。\n1 2 3 4 5 6 # 查出容器的 ID $ docker container ls --all # 删除指定的容器文件 $ docker container rm [containerID] 也可以使用docker container run命令的–rm参数，在容器终止运行后自动删除容器文件。\n1 $ docker container run --rm -p 8000:3000 -it koa-demo /bin/bash 7.4 CMD命令\n上一节的例子里面，容器启动以后，需要手动输入命令node demos/01.js。我们可以把这个命令写在 Dockerfile 里面，这样容器启动以后，这个命令就已经执行了，不用再手动输入了。\n1 2 3 4 5 6 FROM node:8.4 COPY . /app WORKDIR /app RUN npm install --registry=https://registry.npm.taobao.org EXPOSE 3000 CMD node demos/01.js 上面的 Dockerfile 里面，多了最后一行CMD node demos/01.js，它表示容器启动后自动执行node demos/01.js。\n你可能会问，RUN命令与CMD命令的区别在哪里？简单说，RUN命令在 image 文件的构建阶段执行，执行结果都会打包进入 image 文件；CMD命令则是在容器启动后执行。另外，一个 Dockerfile 可以包含多个RUN命令，但是只能有一个CMD命令。\n注意，指定了CMD命令以后，docker container run命令就不能附加命令了（比如前面的/bin/bash），否则它会覆盖CMD命令。现在，启动容器可以使用下面的命令。\n1 $ docker container run --rm -p 8000:3000 -it koa-demo:0.0.1 7.5 发布 image 文件\n容器运行成功后，就确认了 image 文件的有效性。这时，我们就可以考虑把 image 文件分享到网上，让其他人使用。\n首先，去 hub.docker.com 或 cloud.docker.com 注册一个账户。然后，用下面的命令登录。\n1 $ docker login 接着，为本地的 image 标注用户名和版本。\n1 2 3 4 $ docker image tag [imageName] [username]/[repository]:[tag] # 实例 $ docker image tag koa-demos:0.0.1 ruanyf/koa-demos:0.0.1 也可以不标注用户名，重新构建一下 image 文件。\n1 $ docker image build -t [username]/[repository]:[tag] . 最后，发布 image 文件。\n1 $ docker image push [username]/[repository]:[tag] 发布成功以后，登录 hub.docker.com，就可以看到已经发布的 image 文件。\n八、其他有用的命令 (1) docker container start\n前面的docker container run命令是新建容器，每运行一次，就会新建一个容器。同样的命令运行两次，就会生成两个一模一样的容器文件。如果希望重复使用容器，就要使用docker container start命令，它用来启动已经生成、已经停止运行的容器文件。\n1 $ docker container start [containerID] (2) docker container stop\n前面的docker container kill命令终止容器运行，相当于向容器里面的主进程发出 SIGKILL 信号。而docker container stop命令也是用来终止容器运行，相当于向容器里面的主进程发出 SIGTERM 信号，然后过一段时间再发出 SIGKILL 信号。\n1 docker container stop [containerID] 这两个信号的差别是，应用程序收到 SIGTERM 信号以后，可以自行进行收尾清理工作，但也可以不理会这个信号。如果收到 SIGKILL 信号，就会强行立即终止，那些正在进行中的操作会全部丢失。\n(3) docker container logs\ndocker container logs命令用来查看 docker 容器的输出，即容器里面 Shell 的标准输出。如果docker run命令运行容器的时候，没有使用-it参数，就要用这个命令查看输出。\n1 docker container logs [containerID] (4) docker container exec\ndocker container exec命令用于进入一个正在运行的 docker 容器。如果docker run命令运行容器的时候，没有使用-it参数，就要用这个命令进入容器。一旦进入了容器，就可以在容器的 Shell 执行命令了。\n1 2 $ docker container exec -it [containerID] /bin/bash (5) docker container cp 和 docker cp\ndocker container cp命令用于从正在运行的 Docker 容器里面，将文件拷贝到本机。下面是拷贝到当前目录的写法。 1 docker container cp [containID]:[/path/to/file] . docker cp命令用于从将宿主机内的文件拷贝文件到container中: 1 docker cp [OPTIONS] [src path] [container id]:[dest path] 非常感谢你一直读到了这里，这个系列还有下一篇，介绍如何使用 Docker 搭建真正的网站，欢迎继续阅读。\n(6) docker commit\ndocker commit命令用于保存container的修改。\n1 docker commit -m \"commit message\" [containr ID] [new REPOSITORY:TAG] (7) docker save and docker load docker save 和 docker load 将image文件保存为压缩文件或者加载本地的压缩文件为image。\n1 docker save -o [outputname path] [REPOSITORY:TAG] 1 docker load -i [outputname.tar] ",
+  "wordCount" : "4509",
+  "inLanguage": "en",
+  "datePublished": "2022-07-14T17:42:53+08:00",
+  "dateModified": "2022-07-14T17:42:53+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Docker安装及学习
+    </h1>
+    <div class="post-meta"><span title='2022-07-14 17:42:53 +0800 CST'>2022-07-14</span>&nbsp;·&nbsp;9 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/notes/2022-07-15_Docker.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#docker-%e5%85%a5%e9%97%a8%e6%95%99%e7%a8%8b" aria-label="docker 入门教程">docker 入门教程</a><ul>
+                            
+                    <li>
+                        <a href="#%e4%b8%80docker-%e6%98%af%e4%bb%80%e4%b9%88--docker-%e7%9a%84%e7%94%a8%e9%80%94" aria-label="一、Docker 是什么？ &amp;amp;&amp;amp; Docker 的用途">一、Docker 是什么？ &amp;&amp; Docker 的用途</a></li>
+                    <li>
+                        <a href="#%e4%ba%8cdocker-%e5%ae%89%e8%a3%85" aria-label="二、docker 安装">二、docker 安装</a></li>
+                    <li>
+                        <a href="#%e4%b8%89image-%e6%96%87%e4%bb%b6" aria-label="三、image 文件">三、image 文件</a></li>
+                    <li>
+                        <a href="#%e5%9b%9b%e5%ae%9e%e4%be%8bhello-world" aria-label="四、实例：hello world">四、实例：hello world</a></li>
+                    <li>
+                        <a href="#%e4%ba%94%e5%ae%b9%e5%99%a8%e6%96%87%e4%bb%b6" aria-label="五、容器文件">五、容器文件</a></li>
+                    <li>
+                        <a href="#%e5%85%ad-dockerfile-%e6%96%87%e4%bb%b6" aria-label="六、 Dockerfile 文件">六、 Dockerfile 文件</a></li>
+                    <li>
+                        <a href="#%e4%b8%83%e5%ae%9e%e4%be%8b" aria-label="七、实例:">七、实例:</a></li>
+                    <li>
+                        <a href="#%e5%85%ab%e5%85%b6%e4%bb%96%e6%9c%89%e7%94%a8%e7%9a%84%e5%91%bd%e4%bb%a4" aria-label="八、其他有用的命令">八、其他有用的命令</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="docker-入门教程">docker 入门教程<a hidden class="anchor" aria-hidden="true" href="#docker-入门教程">#</a></h2>
+<p><code>Ref Link:</code><br>
+[1] <a href="https://ruanyifeng.com/blog/2018/02/docker-tutorial.html">https://ruanyifeng.com/blog/2018/02/docker-tutorial.html</a><br>
+[2] <a href="https://cloud.tencent.com/developer/article/1885678">https://cloud.tencent.com/developer/article/1885678</a><br>
+[3] <a href="https://zhuanlan.zhihu.com/p/57311853">「Docker」 - 保存镜像</a><br>
+[4] <a href="https://zhuanlan.zhihu.com/p/122380334">如何制作Docker镜像(image)?</a></p>
+<h3 id="一docker-是什么--docker-的用途">一、Docker 是什么？ &amp;&amp; Docker 的用途<a hidden class="anchor" aria-hidden="true" href="#一docker-是什么--docker-的用途">#</a></h3>
+<p>Docker 属于 Linux 容器的一种封装，提供简单易用的容器使用接口。它是<em>目前最流行的 Linux 容器解决方案</em>。</p>
+<p>Docker 将应用程序与该程序的依赖，打包在一个文件里面。运行这个文件，就会生成一个虚拟容器。程序在这个虚拟容器里运行，就好像在真实的物理机上运行一样。有了 Docker，就不用担心环境问题。</p>
+<p>总体来说，Docker 的接口相当简单，用户可以方便地创建和使用容器，把自己的应用放入容器。容器还可以进行版本管理、复制、分享、修改，就像管理普通的代码一样。</p>
+<h3 id="二docker-安装">二、docker 安装<a hidden class="anchor" aria-hidden="true" href="#二docker-安装">#</a></h3>
+<p>参考连接:<a href="https://docs.docker.com/engine/install/ubuntu/">ubuntu下docker的安装</a></p>
+<p>安装完成后，运行下面的命令，验证是否安装成功。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker version
+</span></span><span class="line"><span class="cl"><span class="c1"># or </span>
+</span></span><span class="line"><span class="cl">docker info
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Docker 需要用户具有 sudo 权限，为了避免每次命令都输入sudo，可以把用户加入 Docker 用户组。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 创建docker用户组</span>
+</span></span><span class="line"><span class="cl">sudo groupadd docker
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-docker" data-lang="docker"><span class="line"><span class="cl"><span class="c"># 应用用户加入docker用户组</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>sudo usermod -aG docker <span class="nv">$USER</span><span class="err">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 重启docker服务</span>
+</span></span><span class="line"><span class="cl">sudo systemctl restart docker
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">su root
+</span></span><span class="line"><span class="cl">su <span class="si">${</span><span class="nv">USER</span><span class="si">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Docker是<u>服务器&ndash;客户端(server&ndash;client)</u>架构。命令行运行docker命令的时候，需要本机有 Docker 服务。如果这项服务没有启动，可以用下面的命令启动:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># service 命令的用法</span>
+</span></span><span class="line"><span class="cl">sudo service docker start
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># systemctl 命令的用法</span>
+</span></span><span class="line"><span class="cl">sudo systemctl start docker
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="三image-文件">三、image 文件<a hidden class="anchor" aria-hidden="true" href="#三image-文件">#</a></h3>
+<p>Docker 把应用程序及其依赖，打包在 image 文件里面。只有通过这个文件，才能生成 Docker 容器。image 文件可以看作是容器的模板。Docker 根据 image 文件生成容器的实例。同一个 image 文件，可以生成多个同时运行的容器实例。</p>
+<p>image 是二进制文件。实际开发中，一个 image 文件往往通过继承另一个 image 文件，加上一些个性化设置而生成。举例来说，你可以在 Ubuntu 的 image 基础上，往里面加入 Apache 服务器，形成你的 image。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># 列出本机的所有 image 文件。</span>
+</span></span><span class="line"><span class="cl">$ docker image ls
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 删除 image 文件</span>
+</span></span><span class="line"><span class="cl">$ docker image rm <span class="o">[</span>imageName<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>image 文件是通用的，一台机器的 image 文件拷贝到另一台机器，照样可以使用。一般来说，为了节省时间，我们应该尽量使用别人制作好的 image 文件，而不是自己制作。即使要定制，也应该基于别人的 image 文件进行加工，而不是从零开始制作。</p>
+<p>为了方便共享，image 文件制作完成后，可以上传到网上的仓库。Docker 的官方仓库 Docker Hub 是最重要、最常用的 image 仓库。此外，出售自己制作的 image 文件也是可以的。</p>
+<h3 id="四实例hello-world">四、实例：hello world<a hidden class="anchor" aria-hidden="true" href="#四实例hello-world">#</a></h3>
+<p>首先，运行下面的命令，将 image 文件从仓库抓取到本地。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker image pull library/hello-world
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面代码中，<code>docker image pull</code>是抓取 image 文件的命令。<code>library/hello-world</code>是 image 文件在仓库里面的位置，其中<code>library</code>是 image 文件所在的组，<code>hello-world</code>是 image 文件的名字。</p>
+<p>由于 Docker 官方提供的 image 文件，都放在library组里面，所以它的是默认组，可以省略。因此，上面的命令可以写成下面这样。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker image pull hello-world 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>抓取成功以后，就可以在本机看到这个 image 文件了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker image ls
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>运行image:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker container run hello-world
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>docker container run</code>命令会从 image 文件，生成一个正在运行的容器实例。</p>
+<p>注意，<code>docker container run</code>命令具有自动抓取 image 文件的功能。如果发现本地没有指定的 image 文件，就会从仓库自动抓取。因此，前面的<code>docker image pull</code>命令并不是必需的步骤。</p>
+<p>如果运行成功，你会在屏幕上读到下面的输出。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ docker container run hello-world
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Hello from Docker!
+</span></span><span class="line"><span class="cl">This message shows that your installation appears to be working correctly.
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">... ...
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>输出这段提示以后，<code>hello world</code>就会停止运行，容器自动终止。</p>
+<p>有些容器不会自动终止，因为提供的是服务。比如，安装运行 Ubuntu 的 image，就可以在命令行体验 Ubuntu 系统。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker container run -it ubuntu bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对于那些不会自动终止的容器，必须使用<code>docker container kill</code>命令手动终止。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker container <span class="nb">kill</span> <span class="o">[</span>containID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="五容器文件">五、容器文件<a hidden class="anchor" aria-hidden="true" href="#五容器文件">#</a></h3>
+<p>image文件生成的容器实例，本身也是一个文件，称为<strong>容器文件</strong>。也就是说，<u>一旦容器生成，就会同时存在两个文件： image文件和容器文件</u>。而且<u>关闭容器并不会删除容器文件，只是容器停止运行而已</u>。</p>
+<p>上面命令的输出结果之中，包括容器的 ID。很多地方都需要提供这个 ID，比如上一节终止容器运行的<code>docker container kill</code>命令。</p>
+<p>终止运行的容器文件，依然会占据硬盘空间，可以使用<code>docker container rm</code>命令删除。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker container rm <span class="o">[</span>containerID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>运行上面的命令之后，再使用<code>docker container ls --all</code>命令，就会发现被删除的容器文件已经消失了。</p>
+<h3 id="六-dockerfile-文件">六、 Dockerfile 文件<a hidden class="anchor" aria-hidden="true" href="#六-dockerfile-文件">#</a></h3>
+<p>学会使用 image 文件以后，接下来的问题就是，如何可以生成 image 文件？如果你要推广自己的软件，势必要自己制作 image 文件。</p>
+<p>这就需要用到 Dockerfile 文件。它是一个文本文件，用来配置 image。Docker 根据 该文件生成二进制的 image 文件。</p>
+<p>下面通过一个实例，演示如何编写 Dockerfile 文件。</p>
+<h3 id="七实例">七、实例:<a hidden class="anchor" aria-hidden="true" href="#七实例">#</a></h3>
+<p>下面我以 koa-demos 项目为例，介绍怎么写 Dockerfile 文件，实现让用户在 Docker 容器里面运行 Koa 框架。</p>
+<p>作为准备工作，请先下载源码[]。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ git clone https://github.com/ruanyf/koa-demos.git
+</span></span><span class="line"><span class="cl">$ <span class="nb">cd</span> koa-demos
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>7.1 编写 Dockerfile 文件</strong></p>
+<p>首先，在项目的根目录下，新建一个文本文件<code>.dockerignore</code>，写入下面的内容。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">.git
+</span></span><span class="line"><span class="cl">node_modules
+</span></span><span class="line"><span class="cl">npm-debug.log
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面代码表示，这三个路径要排除，<strong>不要打包进入 image 文件</strong>。如果你没有路径要排除，这个文件可以不新建。</p>
+<p>然后，在项目的根目录下，新建一个文本文件 Dockerfile，写入下面的内容。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">FROM node:8.4
+</span></span><span class="line"><span class="cl">COPY . /app
+</span></span><span class="line"><span class="cl">WORKDIR /app
+</span></span><span class="line"><span class="cl">RUN npm install --registry=https://registry.npm.taobao.org
+</span></span><span class="line"><span class="cl">EXPOSE 3000
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面代码一共五行，含义如下。</p>
+<ul>
+<li>FROM node:8.4：该 image 文件继承官方的 node image，冒号表示标签，这里标签是8.4，即8.4版本的 node。</li>
+<li>COPY . /app：将当前目录下的所有文件（除了.dockerignore排除的路径），都拷贝进入 image 文件的/app目录。</li>
+<li>WORKDIR /app：指定接下来的工作路径为/app。</li>
+<li>RUN npm install：在/app目录下，运行npm install命令安装依赖。注意，安装后所有的依赖，都将打包进入 image 文件。</li>
+<li>EXPOSE 3000：将容器 3000 端口暴露出来， 允许外部连接这个端口。</li>
+</ul>
+<p><strong>7.2 创建image文件</strong></p>
+<p>有了 Dockerfile 文件以后，就可以使用<code>docker image build</code>命令创建 image 文件了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker image build -t koa-demo .
+</span></span><span class="line"><span class="cl"><span class="c1"># 或者</span>
+</span></span><span class="line"><span class="cl">$ docker image build -t koa-demo:0.0.1 .
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面代码中，<code>-t</code>参数用来指定 image 文件的名字，后面还可以用冒号指定标签。如果不指定，默认的标签就是latest。<u>最后的那个点表示 Dockerfile 文件所在的路径，上例是当前路径，所以是一个点。</u></p>
+<p>如果运行成功，就可以看到新生成的 image 文件koa-demo了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker image ls
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>7.3</strong> 生成容器</p>
+<p><code>docker container run</code>命令会从 image 文件生成容器。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ docker container run -p 8000:3000 -it koa-demo /bin/bash
+</span></span><span class="line"><span class="cl"><span class="c1"># 或者</span>
+</span></span><span class="line"><span class="cl">$ docker container run -p 8000:3000 -it koa-demo:0.0.1 /bin/bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面命令的各个参数含义如下：</p>
+<ul>
+<li>p参数：容器的 3000 端口映射到本机的 8000 端口。</li>
+<li>it参数：容器的 Shell 映射到当前的 Shell，然后你在本机窗口输入的命令，就会传入容器。</li>
+<li>koa-demo:0.0.1：image 文件的名字（如果有标签，还需要提供标签，默认是 latest 标签）。</li>
+<li>/bin/bash：容器启动以后，内部第一个执行的命令。这里是启动 Bash，保证用户可以使用 Shell。</li>
+</ul>
+<p>如果一切正常，运行上面的命令以后，就会返回一个命令行提示符。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">root@66d80f4aaf1e:/app#
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这表示你已经在容器里面了，返回的提示符就是容器内部的 Shell 提示符。执行下面的命令。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">root@66d80f4aaf1e:/app# node demos/01.js
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这时，Koa 框架已经运行起来了。打开本机的浏览器，访问 http://127.0.0.1:8000，网页显示&quot;Not Found&quot;，这是因为这个 demo 没有写路由。</p>
+<p>这个例子中，Node 进程运行在 Docker 容器的虚拟环境里面，进程接触到的文件系统和网络接口都是虚拟的，与本机的文件系统和网络接口是隔离的，因此需要定义容器与物理机的端口映射（map）。</p>
+<p>现在，在容器的命令行，按下 <code>Ctrl + c</code> 停止 Node 进程，然后按下 <code>Ctrl + d</code> （或者输入 <code>exit</code>）退出容器。此外，也可以用<code>docker container kill</code>终止容器运行。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 在本机的另一个终端窗口，查出容器的 ID</span>
+</span></span><span class="line"><span class="cl">$ docker container ls
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 停止指定的容器运行</span>
+</span></span><span class="line"><span class="cl">$ docker container <span class="nb">kill</span> <span class="o">[</span>containerID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>容器停止运行之后，并不会消失，用下面的命令删除容器文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 查出容器的 ID</span>
+</span></span><span class="line"><span class="cl">$ docker container ls --all
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 删除指定的容器文件</span>
+</span></span><span class="line"><span class="cl">$ docker container rm <span class="o">[</span>containerID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>也可以使用docker container run命令的&ndash;rm参数，在容器终止运行后自动删除容器文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker container run --rm -p 8000:3000 -it koa-demo /bin/bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>7.4 CMD命令</strong></p>
+<p>上一节的例子里面，容器启动以后，需要手动输入命令<code>node demos/01.js</code>。我们可以把这个命令写在 Dockerfile 里面，这样容器启动以后，这个命令就已经执行了，不用再手动输入了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">FROM node:8.4
+</span></span><span class="line"><span class="cl">COPY . /app
+</span></span><span class="line"><span class="cl">WORKDIR /app
+</span></span><span class="line"><span class="cl">RUN npm install --registry=https://registry.npm.taobao.org
+</span></span><span class="line"><span class="cl">EXPOSE 3000
+</span></span><span class="line"><span class="cl">CMD node demos/01.js
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上面的 Dockerfile 里面，多了最后一行<code>CMD node demos/01.js</code>，它表示容器启动后自动执行<code>node demos/01.js</code>。</p>
+<p>你可能会问，RUN命令与CMD命令的区别在哪里？简单说，RUN命令在 image 文件的构建阶段执行，执行结果都会打包进入 image 文件；CMD命令则是在容器启动后执行。另外，一个 Dockerfile 可以包含多个RUN命令，但是只能有一个CMD命令。</p>
+<p>注意，指定了CMD命令以后，docker container run命令就不能附加命令了（比如前面的/bin/bash），否则它会覆盖CMD命令。现在，启动容器可以使用下面的命令。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker container run --rm -p 8000:3000 -it koa-demo:0.0.1
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>7.5 发布 image 文件</strong></p>
+<p>容器运行成功后，就确认了 image 文件的有效性。这时，我们就可以考虑把 image 文件分享到网上，让其他人使用。</p>
+<p>首先，去 hub.docker.com 或 cloud.docker.com 注册一个账户。然后，用下面的命令登录。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker login
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>接着，为本地的 image 标注用户名和版本。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ docker image tag <span class="o">[</span>imageName<span class="o">]</span> <span class="o">[</span>username<span class="o">]</span>/<span class="o">[</span>repository<span class="o">]</span>:<span class="o">[</span>tag<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 实例</span>
+</span></span><span class="line"><span class="cl">$ docker image tag koa-demos:0.0.1 ruanyf/koa-demos:0.0.1
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>也可以不标注用户名，重新构建一下 image 文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker image build -t <span class="o">[</span>username<span class="o">]</span>/<span class="o">[</span>repository<span class="o">]</span>:<span class="o">[</span>tag<span class="o">]</span> .
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后，发布 image 文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker image push <span class="o">[</span>username<span class="o">]</span>/<span class="o">[</span>repository<span class="o">]</span>:<span class="o">[</span>tag<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>发布成功以后，登录 hub.docker.com，就可以看到已经发布的 image 文件。</p>
+<h3 id="八其他有用的命令">八、其他有用的命令<a hidden class="anchor" aria-hidden="true" href="#八其他有用的命令">#</a></h3>
+<p>(1) <code>docker container start</code></p>
+<p>前面的<code>docker container run</code>命令是新建容器，每运行一次，就会新建一个容器。同样的命令运行两次，就会生成两个一模一样的容器文件。如果希望重复使用容器，就要使用<code>docker container start</code>命令，它用来启动已经生成、已经停止运行的容器文件。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">$ docker container start <span class="o">[</span>containerID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>(2) <code>docker container stop</code></p>
+<p>前面的<code>docker container kill</code>命令终止容器运行，相当于向容器里面的主进程发出 SIGKILL 信号。而<code>docker container stop</code>命令也是用来终止容器运行，相当于向容器里面的主进程发出 SIGTERM 信号，然后过一段时间再发出 SIGKILL 信号。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker container stop <span class="o">[</span>containerID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这两个信号的差别是，应用程序收到 SIGTERM 信号以后，可以自行进行收尾清理工作，但也可以不理会这个信号。如果收到 SIGKILL 信号，就会强行立即终止，那些正在进行中的操作会全部丢失。</p>
+<p>(3) <code>docker container logs</code></p>
+<p><code>docker container logs</code>命令用来查看 docker 容器的输出，即容器里面 Shell 的标准输出。如果<code>docker run</code>命令运行容器的时候，没有使用-it参数，就要用这个命令查看输出。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker container logs <span class="o">[</span>containerID<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>(4) <code>docker container exec</code></p>
+<p><code>docker container exec</code>命令用于进入一个正在运行的 docker 容器。如果<code>docker run</code>命令运行容器的时候，没有使用<code>-it</code>参数，就要用这个命令进入容器。一旦进入了容器，就可以在容器的 Shell 执行命令了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">$ docker container <span class="nb">exec</span> -it <span class="o">[</span>containerID<span class="o">]</span> /bin/bash
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>(5) <code>docker container cp</code> 和 <code>docker cp</code></p>
+<ul>
+<li><code>docker container cp</code>命令用于从正在运行的 Docker 容器里面，将文件拷贝到本机。下面是拷贝到当前目录的写法。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker container cp <span class="o">[</span>containID<span class="o">]</span>:<span class="o">[</span>/path/to/file<span class="o">]</span> .
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li><code>docker cp</code>命令用于从将宿主机内的文件拷贝文件到container中:</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">docker cp <span class="o">[</span>OPTIONS<span class="o">]</span> <span class="o">[</span>src path<span class="o">]</span> <span class="o">[</span>container id<span class="o">]</span>:<span class="o">[</span>dest path<span class="o">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>非常感谢你一直读到了这里，这个系列还有<a href="https://www.ruanyifeng.com/blog/2018/02/docker-wordpress-tutorial.html">下一篇</a>，介绍如何使用 Docker 搭建真正的网站，欢迎继续阅读。</p>
+<p>(6) <code>docker commit</code></p>
+<p><code>docker commit</code>命令用于保存container的修改。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-docker" data-lang="docker"><span class="line"><span class="cl">docker commit -m <span class="s2">&#34;commit message&#34;</span> <span class="o">[</span>containr ID<span class="o">]</span> <span class="o">[</span>new REPOSITORY:TAG<span class="o">]</span><span class="err">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>(7) <code>docker save</code> and <code>docker load</code>
+<code>docker save</code> 和 <code>docker load</code> 将image文件保存为压缩文件或者加载本地的压缩文件为image。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-docker" data-lang="docker"><span class="line"><span class="cl">docker save -o <span class="o">[</span>outputname path<span class="o">]</span> <span class="o">[</span>REPOSITORY:TAG<span class="o">]</span><span class="err">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-docker" data-lang="docker"><span class="line"><span class="cl">docker load -i <span class="o">[</span>outputname.tar<span class="o">]</span><span class="err">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://jianye0428.github.io/en/tags/docker/">docker</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/notes/2022-07-19_softwareinstallation/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>Software Installation Notes</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>Target driveN Trajectory: DenseTNT and TNT</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Docker安装及学习 on twitter"
+        href="https://twitter.com/intent/tweet/?text=Docker%e5%ae%89%e8%a3%85%e5%8f%8a%e5%ad%a6%e4%b9%a0&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f&amp;hashtags=docker">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Docker安装及学习 on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f&amp;title=Docker%e5%ae%89%e8%a3%85%e5%8f%8a%e5%ad%a6%e4%b9%a0&amp;summary=Docker%e5%ae%89%e8%a3%85%e5%8f%8a%e5%ad%a6%e4%b9%a0&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Docker安装及学习 on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f&title=Docker%e5%ae%89%e8%a3%85%e5%8f%8a%e5%ad%a6%e4%b9%a0">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Docker安装及学习 on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Docker安装及学习 on whatsapp"
+        href="https://api.whatsapp.com/send?text=Docker%e5%ae%89%e8%a3%85%e5%8f%8a%e5%ad%a6%e4%b9%a0%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Docker安装及学习 on telegram"
+        href="https://telegram.me/share/url?text=Docker%e5%ae%89%e8%a3%85%e5%8f%8a%e5%ad%a6%e4%b9%a0&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2f2022-07-15_docker%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

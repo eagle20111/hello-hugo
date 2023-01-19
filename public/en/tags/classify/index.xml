@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>classify on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/classify/</link>
+    <description>Recent content in classify on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Tue, 16 Aug 2022 15:37:02 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/classify/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>分类问题与回归问题指标综述</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-08-16_classification_and_regression_metrics/</link>
+      <pubDate>Tue, 16 Aug 2022 15:37:02 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-08-16_classification_and_regression_metrics/</guid>
+      <description>ref: [1] https://www.cnblogs.com/rushup0930/p/13359513.html [2] https://blog.csdn.net/u013250861/article/details/123029585#t12 [3] https://blog.csdn.net/wf592523813/article/details/95202448 [4] https://zhuanlan.zhihu.com/p/69101372 classification 分类 主要涉及的知识点： 混淆矩阵、Precision(精准率)、Recall(召回率)、Accuracy(准确率)、F1-</description>
+    </item>
+    
+  </channel>
+</rss>

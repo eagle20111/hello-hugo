@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>distributed training on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/distributed-training/</link>
+    <description>Recent content in distributed training on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Wed, 27 Jul 2022 17:31:57 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/distributed-training/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>[Distributed Training] Horovod_and_Openmpi</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-07-27_horovod_and_openmpi/</link>
+      <pubDate>Wed, 27 Jul 2022 17:31:57 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-07-27_horovod_and_openmpi/</guid>
+      <description>Horovod 介绍 Horovod 是 Uber 开源的深度学习工具，它的发展吸取了Facebook &amp;ldquo;Training ImageNet In 1 Hour&amp;rdquo; 与百度 &amp;ldquo;Ring Allreduce&amp;rdquo; 的优点，在保证分布式训练性能的同时，兼顾了前端的简洁和对不</description>
+    </item>
+    
+  </channel>
+</rss>

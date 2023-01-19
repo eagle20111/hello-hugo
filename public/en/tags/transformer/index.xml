@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>transformer on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/transformer/</link>
+    <description>Recent content in transformer on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 09 Oct 2022 13:24:38 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/transformer/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Transformer Overview</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-10-09_transformer/</link>
+      <pubDate>Sun, 09 Oct 2022 13:24:38 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-10-09_transformer/</guid>
+      <description>reference: [1]. The Transformer Family [2]. Attention [3]. 细节考究 Transformer Family Notations Symbol Meaning $d$ The model size / hidden state dimension / positional encoding size. $h$ The number of heads in multi-head attention layer. $L$ The segment length of input sequence. $X \in \mathbb R ^ {L \times d}$ The input sequence where each element has been mapped into an embedding vector of shape , same</description>
+    </item>
+    
+  </channel>
+</rss>

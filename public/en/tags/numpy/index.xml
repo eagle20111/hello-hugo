@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>numpy on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/numpy/</link>
+    <description>Recent content in numpy on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Tue, 24 May 2022 20:52:49 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/numpy/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Numpy Notes</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-05-24_numpy/</link>
+      <pubDate>Tue, 24 May 2022 20:52:49 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-05-24_numpy/</guid>
+      <description>numpy function 1. np.stack();np.vstack();np.hstack();np.concatenate() 区别 np.concatenate()函数根据指定的维度，对一个元组、列表中的list或者ndarray进行连接 1 2 3 # np.concatenate() numpy.concatenate((a1, a2, ...), axi</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>STL on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/stl/</link>
+    <description>Recent content in STL on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 01 Aug 2022 09:01:45 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/stl/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>C&#43;&#43; STL (Standard Template Library) Containers</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-08-01_c&#43;&#43;_data_structure/</link>
+      <pubDate>Mon, 01 Aug 2022 09:01:45 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-08-01_c&#43;&#43;_data_structure/</guid>
+      <description>C++ STL (Standard Template Library) 总结 C++ STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。</description>
+    </item>
+    
+  </channel>
+</rss>

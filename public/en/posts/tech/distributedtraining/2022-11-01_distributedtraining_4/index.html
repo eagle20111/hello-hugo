@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 | Jian&#39;s Blog</title>
+<meta name="keywords" content="DistributedTraining">
+<meta name="description" content="ref: [1]. https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/ 1. 概述 在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring A">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法" />
+<meta property="og:description" content="ref: [1]. https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/ 1. 概述 在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring A" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-11-01T09:11:20&#43;08:00" />
+<meta property="article:modified_time" content="2022-11-01T09:11:20&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法"/>
+<meta name="twitter:description" content="ref: [1]. https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/ 1. 概述 在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring A"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法",
+      "item": "https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法",
+  "name": "分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法",
+  "description": "ref: [1]. https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/ 1. 概述 在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring A",
+  "keywords": [
+    "DistributedTraining"
+  ],
+  "articleBody": "ref: [1]. https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/\n1. 概述 在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring Allreduce，经典的集合通信拓扑算法还有2D-Ring/Hierarchical Ring AllReduce，halving and doubling AllReduce，Butterfly AllReduce，2D-Torus AllReduce，2D-Mesh AllReduce，double binary tree等。拓扑算法很多，但也不是所有的拓扑算法都能满足实际的生产需求的，这需要具体问题具体分析、具体场景具体设计。\n集合通信的难点在于需要在固定的网络互联结构的约束下进行高效的通信，集合通信拓扑算法与物理网络互联结构强相关，为了发挥网络通信的效率，也不是说就能随意发挥通信拓扑算法，更多的是在效率与成本、带宽与时延、客户要求与质量、创新与产品化等之间进行合理取舍。\n充分发挥训练加速卡与网络的效率是通信拓扑算法的初衷，但除了设计高效的集合通信拓扑算法外，分布式训练中需要解决的通信难题还有：网络是异构的，网络带宽是有限的，主机内PCIE SWITCH是有亲和性的，网络是会出故障的，节点是有落后者效应的，设备成本是需要考虑的，数据中心是有部署约束的，用户是有多租户要求的等，这些属于产品化的范畴不在本文阐述。\n2. 网络互联结构 分布式训练的集合通信拓扑算法与物理的网络互联结构强相关，而网络互联结构又多种多样，因此，本文需要先对网络互联结构进行约束，依据生产中常用的、既定的互联结构设计集合通信算法，网络互联结构描述如下：\n2.1 服务内网络互联结构 以一台集成了8张训练加速卡的服务器为例，如下图:\n这台服务器内的网络互联情况如下：\n1）在这台服务器内，8张训练加速卡通过私有协议连接组成多个主机内的物理ring环，且可双工；\n2）服务期内网络带宽 NVLINK\u003ePCIE switch \u003e QPI；\n3）加速卡1、2、3、4之间两两全互联，加速卡5,、6、7、8之间两两全互联，2、5、3、8之间非全互联；\n4）加速卡1、4与网卡NIC1 挂在同一个PCIE Switch上，具有亲和性，加速卡2、3与网卡NIC2挂在同一个PCIE Switch上，具有亲和性，而PCIE Switch之间也互联，因此 加速卡 1、2、3、4 与网卡NIC 1、NIC2具备亲和性，它们无需通过CPU的QPI线进行通信；\n5）加速卡5、8与网卡NIC3 挂在同一个PCIE Switch上，具有亲和性，加速卡6、7与网卡NIC4挂在同一个PCIE Switch上，具有亲和性，而PCIE Switch之间也互联的，因此 加速卡 5、6、7、8 与网卡NIC 3、NIC4具备亲和性，它们也无需通过CPU的QPI线进行通信；\n6）网卡可根据需要 选择 1张、2张、4张或8张，最多可以采用8张RDMA物理网卡；\n2.2 服务器间网络互联结构 以一个训练加速卡集群为例，如下图是一个常用的CLOS互联架构方案:\n在这个集群内，其网络互联情况如下：\n1）集群内每台服务器自带高速RDMA网卡，通过RDMA 交换机在主机间两两全互联；\n2）交换机组成CLOS架构，分为Spine与Leaf交换机，当然也可以是更为高端的Spine、Leaf合一的高端交换机；\n3）RDMA网卡与Leaf交换机互联，每台服务器的RDMA网卡数量根据成本与性能考虑，可以是1张、2张+每卡虚拟化4卡、4张+每卡虚拟化2卡或8张；\n2.3 高速网卡及其虚拟化使用 RDMA网卡是双工的且可虚拟化，在这里每台服务器可根据成本、性能的考虑选用1张、2张、4张或8张，且在服务器内左右对称，如下图：\n从成本与效率的角度考虑，每台服务器内的网卡可以是以下配置：\n1张物理RDMA网卡，不进行虚拟化，直接用双工通道，适合选用2D/Hierarchical Ring拓扑算法； 2张物理RDMA网卡，可以每张虚拟化出4个虚拟网卡，2X4共8卡，适合选用2D-MESH、2D-Torus拓扑算法； 4张物理RDMA网卡，可每张虚拟化出2个虚拟网卡，4X2共8卡，适合选用2D-MESH、2D-Torus拓扑算法； 8张物理RDMA网卡，不需要虚拟化，直接采用双工通道，适合选用2D-MESH、2D-Torus拓扑算法； 在实际的分布式训练生产集群中，集合通信算法也可以结合RDMA网卡端口（包括虚拟化的）的具体个数进行设计，而拓扑算法的选择也是需要根据成本与效率的进行合理取舍的。\n2.4 网络结构抽象 网络根据连接情况可分为ring结构、mesh结构、 torus 结构以及tree结构，基于以上的服务器内网络互联结构、服务器间网络互联结构以及网卡的具体情况，可以抽象出一个网络结构，即二维环面网络：Torus 网络，而Torus网络横向与纵向都可以看成ring结构，因此相应的拓扑算法基本上就是Ring-Based 集合通信拓扑算法。如下图：\nTORUS网络是常见的大规模并行计算机的互连网络，在上图这个Torus网络里：\n1）横向：主机内8卡通过私有连接协议，比如CXL/CCIX/NVLINK等组成一个或多个ring，如上图的黄色连接线，横向8卡组成二维Torus的横向维度；\n2）纵向：主机间通过RDMA（RoCE/IB）网卡、交换机互联组成1到8个ring，如上图的红色连接线，纵向采用RDMA网卡组成二维Torus的纵向维度；\n3）根据物理网卡数量、网卡虚拟化以及PCIe Switch亲和性的实际情况：\n每台服务器1张网卡可组成主机间一个ring，网卡与XPU0 挂载同一个PCIE switch上，依据最佳实践原则（比如性能、成本、客户要求等），适合选用2D/Hierarchical Ring拓扑算法； 两张网卡可组成主机间两个ring或者经过虚拟化组成8个ring，根据PCIE SWITCH亲和性原则，一张网卡与XPU0挂在同一个pcie switch，另一张网卡与XPU4挂在同一个pcie switch，依据最佳实践原则（比如性能、成本、客户要求等），适合选用2D-MESH、2D-Torus拓扑算法； 4张网卡、8张网卡以此类推，也是根据PCIE SWITCH亲和性原则进行连接，主机间RDMA物理网卡不够就虚拟化网口来凑，并且要服务器内的RDMA出口端口数左右平衡，依据最佳实践原则（比如性能、成本、客户要求等），也是适合选用2D-MESH、2D-Torus拓扑算法，这样才能发挥多张网卡以及XPU的算力优势。 4）更复杂的Torus网络组合关系还可以如下图，从横向只有 主机内的8卡纵向只有主机间的RDMA互联，扩展到 横向与纵向 主机内互联与主机间互联混合，但本文仅限于在横向8卡的二维Torus网络下进行拓扑算法选择与设计，因此不展开讲述。\n3. 常用的通信拓扑算法 Torus 网络结构可以解读本文中的物理网络互联结构的一切，而Torus网络的横向与纵向都可以看成ring结构，因此，相应的集合通信拓扑算法都可以看成是Ring-Based 集合通信拓扑算法。\n3.1 Ring AllReduce 在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。\nRing Allreduce 有两种组合实现策略： 1）先Reduce后broadcast； 2）先ScatterReduce后AllGather，这两个策略执行后都会让每个XPU节点得到一样的平均梯度，如下图所示：\n3.1.1 Reduce +broadcast 在Reduce + broadcast里，reduce先将8张卡的梯度reduce sum到master节点 XPU0 上，再通过broadcast将这个总的平均梯度复制给其他XPU，如下图：\nReduce + broadcast这种策略有几个比较大的缺点： 1）8张卡的数据都reduce sum到一张卡，假设每张卡的梯度是100MB，8张卡就是800MB，这可能存在XPU 0计算很久，而其他7张卡空闲的情况存在，整体效率不高； 2）XPU0 的网络带宽可能会成为瓶颈，8张卡的数据都只能通过XPU0的互联网络进行reduce和broadcast，在数据量比较大的场景 XPU0的带宽成为瓶颈； 3）8张XPU不都是两两全互联的，因此，要把8张卡的数据一次Reduce或broadcast，这一点受限于网络互联条件做不到，那么就需要采用 ring或tree的策略进行reduce或broadcast，这样效率也不高。\n3.1.2 ScatterReduce + AllGather Ring AllReduce 的Ring ScatterReduce + Ring AllGather策略组合里，每个 XPU只会从前向接受数据，并发送数据给后向，其算法主要分为：\nScatterReduce：这一步会先scatter拆分数据块再进行reduce，并且在执行完毕后，每张XPU都会包括一个完整的经过融合的同维梯度； AllGather：这一步会进行全局Gather同步，最后所有 XPU都会得到完整的大的整个梯度； Ring ScatterReduce + Ring AllGather是效率比较高的 Ring AllReduce 组合策略，这个策略考虑到了XPU上的梯度可能很大的情况，比如一个梯度有400MB，在scatterreduce阶段就会先被拆分成 ring上XPU个数份，比如主机内XPU个数等于8，那么 这400MB 就会被 拆分成8份，每份50MB，从而减少了加速卡的计算量以及节约带宽。此外，scatterReduce通过将数据拆分成小块，同时并发进行scatterReduce，从而将通信时间隐藏在计算时间内进而提高Ring AllReduce的效率。\n3.1.2.1 ScatterReduce 首先， ScatterReduce先将梯度拆分为N个更小的块，N等于ring里XPU个数，8张卡就拆分成8份，然后进行N-1次scatterreduce迭代。在第一轮迭代中XPU 0上的A0传递给XPU1上A1并相加，XPU1上的B1传递给XPU2上的B2并相加，XPU 2上的C2传递给XPU3上C3并相加，XPU3上的D3传递给XPU4上的D4并相加，以此类推，过程如下图左侧：\n接下来，XPU还会进行N-2次 ScatterReduce 迭代，在每次迭代过程中，XPU都会从前向接收一个小梯度块并累加到自己的梯度块中，并且也会向其后向发送一个小梯度块，每个XPU接收和发送的小梯度块在每次迭代中都是不同的，这样经过迭代，到最后，每个XPU将有一个完整的同维梯度，该块梯度中包含所有XPU中该块对应的所有梯度的总和，如上图右侧的累加和部分。\n3.1.2.2 Allgather 在scatterReduce迭代完成之后，每个XPU都会得到一个同维度的完整的梯度累加值，将这些完整的累加值复制到其他的加速卡后，才算完成allReduce。Allgather的迭代次数与scatterReduce是相同的，也都需要进行N-1次（N是ring上的XPU卡数）迭代，但是不同于ScatterReduce的是allGather没有reduce的过程，只有数值的复制。这样迭代到最后，每个XPU都得到大的拆分前的梯度的完整累加值，如下图演示了这一过程，从第一次迭代开始，到最后AllGather拿到整体的结果。这里头的具体过程就不在这里描述了，可以查相关资料。\nRing AllReduce 实现简单，在ring较少时，效率也较高，但是在ring比较大时需要的网络节点跳数变得比较大，通信时延增加，因此效率也会降低。比如，一个1000张XPU的 ring，这里头网络的跳数 是N-1= 1000-1 =999， 同时传输的过程中，传输效率还受效率最低、带宽最低的XPU的限制，这时网络上的时延会变得巨高，这个时候ring allreduce拓扑算法就变得不大适用这个场景，同时如果在异构网络里涉及网络的不同连接方式，Ring AllReduce也不大适合使用，因此就需要采用另外的更适合网络结构的更高效的集合通信拓扑算法来进行优化。\n3.2 2D-Ring AllReduce 如果一台2.1里的服务器只配置了一张RDMA网卡，每台服务器通过RDMA交换机互联，这个集群的网络是异构的（如下图），那么Ring AllReduce拓扑算法就不适用了，这个时候，对于这个网络拓扑结构比较适合的是2D-Ring AllReduce也叫Hierarchical Ring AllReduce。\n经过抽象，可以将这个网络结构表达成如下的Torus结构：\n横向：每台服务器8个XPU节点，每个XPU节点通过私有协议网络互联；\n纵向：每台服务器通过一张RDMA网卡NIC 0 通过交换机互联，这个网卡NIC0 与XPU0 挂在同一个PCIE switch上，满足具备亲和性条件，XPU0上的梯度可以通过NIC 0 与其他服务器上的XPU进行全局规约。\n2D-Ring AllReduce的过程如下图所示：\n第1步，先进行主机内Ring AllReduce，也可以是 Ring Reduce或者根据主机内的互联情况选用的分层reduce方式，将8张卡上的梯度累加到Master节点 XPU0 上；\n第2步，进行主机间XPU 0的 Ring AllReduce，将每台服务器的XPU0上的数据进行全局规约；\n第3步，进行主机内Broadcast，将XPU0上的梯度复制到服务器内的其他XPU上\n2D-Ring AllReduce能充分发挥异构网络的优势，将主机内、主机间的网络带宽充分利用起来。但是XPU的利用率也不是很高，比如在做主机间的Ring AllReduce，每台服务器内的其他7张XPU是处于空闲状态的。\n再假设，如果每台服务器配置了 2张/4张/8张RDMA网卡，这个时候 2D-RING AllReduce又难以将网络的优势发挥出来，那么就需要选用 2D-Torus/2D-Mesh AllReduce拓扑算法。\n3.3 2D-Torus AllReduce 考虑到服务器内PCIE SWITCH 的亲和性问题，2D-Torus至少需要配备2张 左右对称的RDMA网卡才能发挥这个拓扑算法的优势。在这个集群里主机内每张卡都通过私有的通信协议组成Ring，而主机间，可以通过RDMA网卡（包括虚拟化出来的）与RDMA交换机将XPU两两互联，这个网络也是异构的，如下图所示：\n经过抽象，可以将这个网络结构表达成如下的Torus结构：\n横向：每台服务器8个XPU节点，每个XPU节点通过私有协议网络互联； 纵向：每台服务器通过至少2张RDMA网卡NIC 0 /NIC 1通过交换机互联，这个网卡NIC0 与XPU0、1、2、3 挂在同一个PCIE switch上，具备亲和性条件，XPU0、1、2、3上的梯度数据可以通过NIC 0 与其他服务器上的XPU进行交换。网卡NIC1 与XPU4、5、6、7 挂在同一个PCIE switch上，具备亲和性条件，XPU4、5、6、7上的梯度数据可以通过NIC 1 与其他服务器上的XPU进行交换； 当然如果网卡是4个或者8个，也可以根据PCIE SWITCH的亲和性情况合理安排XPU与NIC的对应关系。 2D-Torus AllReduce的过程如下图所示：\n第1步，横向，先进行主机内Ring ScatterReduce，将主机内8张卡上的梯度进行拆分与规约，这样经过迭代，到最后每个XPU将有一个完整的同维梯度，该块梯度包含所有XPU中该块所对应的所有梯度的总和（参考3.1.2.1 scatterReduce)\n第2步，纵向，进行主机间N个（N等于服务器内XPU个数，这里是8个）纵向的 Ring AllReduce，将每台服务器的XPU0-XPU7上的数据进行集群内纵向全局规约；\n第3步，横向，进行主机内AllGather，将XPUi(i=0-7)上的梯度复制到服务器内的其他XPU上；\n2D-Torus AllReduce能充分挖掘XPU的效率以及发挥异构网络里多网卡的优势，将XPU以及主机内、主机间的网络带宽优势充分利用起来。此外，除了 2D-Torus AllReduce外，2D-Mesh AllReduce也能发挥类似效率。\n3.4 2D-Mesh AllReduce 2D-Mesh AllReduce的主要思想也是分层，与2D-Torus AllReduce类似，都是水平和垂直两个方向，但是有点差异，如下图所示：\n不同于2D-Torus AllReduce的拓扑算法，2D-Mesh AllReduce 过程是：\n第1步，横向，先进行主机内Ring AllReduce 将主机内的8张XPU的梯度都进行规约；\n第2步，纵向，进行主机间N个（N等于主机内XPU个数，这里是8个）纵向的 Ring AllReduce；\n经过这两步，完成了整体的梯度累加，2D-Mesh AllReduce 也能充分发挥XPU与多网卡异构网络的优势，将XPU与主机内、主机间的网络带宽优势充分利用起来。这里的2D-Mesh与Google论文上的有点差异，主要是吸取了其分层的思想而不是复制其一样的设计。理论上2D-Mesh AllReduce对比 2D-Torus AllReduce，主机间AllReduce用的是 主机内8卡的全局梯度，数据量会比ScatterReduce部分来的大点，因此效率也会相应降低一点。\n4. 问题探讨 如下图所示，基于Torus网络的结构，组合Ring AllReduce，2D-Ring AllReduce, 2D-Mesh AllReduce，2D-Torus AllReduce还能构建 3D-Ring/Mesh/Torus AllReduce拓扑算法，但是这些拓扑算法的效率需要进行实践才能证实，也许在规模较大的集群里才能发挥出3D 拓扑算法的优势。\n关于 3D-Ring/Mesh/Torus AllReduce的拓扑算法，这里就不在阐述，可作为研究使用。\n5. 小结 本文讲述了分布式训练里最常用的几个网络结构以及通信拓扑算法：\nRing AllReduce 的最佳组合是 ScatterReduce + AllGather； 2D-Ring AllReduce = 主机内 ringAllReduce/Ring Reduce +主机间 RingAllReduce + 主机内Broadcast； 2D-Torus AllReduce = 主机内 Ring ReduceScatter + 主机间N个Ring AllReduce + 主机内Ring AllGather； 2D-Mesh AllReduce = 主机内Ring AllReduce + 主机间N个Ring AllReduce; Ring AllReduce适合主机内互联Ring的情况使用，2D-Ring AllReduce适合一台服务器配置了一张网卡的异构网络场景，2D-Torus AllReduce与2D-Mesh AllReduce适合一台服务器配置了2/4/8张网卡的异构网络场景。\n集合通信拓扑算法多种多样，但基于成本以及效率的取舍考虑，可生产适用的其实也不多，除了理论上的理解之外更重要的是自己编写代码去实践落地。除此之外，还需要解决网络带宽有限、网络容易出故障、落后者效应、部署约束、多租户等产品化的质量要求。\nREF: [1] https://www.changping.me\n[2] 《volta-architecture-whitepaper》\n[3] 2D-HRA: Two-Dimensional Hierarchical Ring-based All-reduce Algorithm in Large-Scale Distributed Machine Learning\n[4] Massively Distributed SGD: ImageNet/ResNet-50 Training in a Flash\n[5] https://zhuanlan.zhihu.com/p/79030485 , 腾讯机智团队分享–AllReduce算法的前世今生\n[6] https://zhuanlan.zhihu.com/p/370548366, ring allreduce和tree allreduce的具体区别是什么？\n[7] https://zhuanlan.zhihu.com/p/184942777 , 分布式深度学习初探\n[8] https://arxiv.org/abs/1811.06992 ， Image Classification at Supercomputer Scale\n",
+  "wordCount" : "7488",
+  "inLanguage": "en",
+  "datePublished": "2022-11-01T09:11:20+08:00",
+  "dateModified": "2022-11-01T09:11:20+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法
+    </h1>
+    <div class="post-meta"><span title='2022-11-01 09:11:20 +0800 CST'>2022-11-01</span>&nbsp;·&nbsp;15 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#1-%e6%a6%82%e8%bf%b0" aria-label="1. 概述">1. 概述</a></li>
+                    <li>
+                        <a href="#2-%e7%bd%91%e7%bb%9c%e4%ba%92%e8%81%94%e7%bb%93%e6%9e%84" aria-label="2. 网络互联结构">2. 网络互联结构</a><ul>
+                            
+                    <li>
+                        <a href="#21-%e6%9c%8d%e5%8a%a1%e5%86%85%e7%bd%91%e7%bb%9c%e4%ba%92%e8%81%94%e7%bb%93%e6%9e%84" aria-label="2.1 服务内网络互联结构">2.1 服务内网络互联结构</a></li>
+                    <li>
+                        <a href="#22-%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%97%b4%e7%bd%91%e7%bb%9c%e4%ba%92%e8%81%94%e7%bb%93%e6%9e%84" aria-label="2.2 服务器间网络互联结构">2.2 服务器间网络互联结构</a></li>
+                    <li>
+                        <a href="#23-%e9%ab%98%e9%80%9f%e7%bd%91%e5%8d%a1%e5%8f%8a%e5%85%b6%e8%99%9a%e6%8b%9f%e5%8c%96%e4%bd%bf%e7%94%a8" aria-label="2.3 高速网卡及其虚拟化使用">2.3 高速网卡及其虚拟化使用</a></li>
+                    <li>
+                        <a href="#24-%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e6%8a%bd%e8%b1%a1" aria-label="2.4 网络结构抽象">2.4 网络结构抽象</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#3-%e5%b8%b8%e7%94%a8%e7%9a%84%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95" aria-label="3. 常用的通信拓扑算法">3. 常用的通信拓扑算法</a><ul>
+                            
+                    <li>
+                        <a href="#31-ring-allreduce" aria-label="3.1 Ring AllReduce">3.1 Ring AllReduce</a><ul>
+                            
+                    <li>
+                        <a href="#311-reduce-broadcast" aria-label="3.1.1 Reduce &#43;broadcast">3.1.1 Reduce +broadcast</a></li>
+                    <li>
+                        <a href="#312-scatterreduce--allgather" aria-label="3.1.2 ScatterReduce &#43; AllGather">3.1.2 ScatterReduce + AllGather</a><ul>
+                            
+                    <li>
+                        <a href="#3121-scatterreduce" aria-label="3.1.2.1 ScatterReduce">3.1.2.1 ScatterReduce</a></li>
+                    <li>
+                        <a href="#3122-allgather" aria-label="3.1.2.2 Allgather">3.1.2.2 Allgather</a></li></ul>
+                    </li></ul>
+                    </li>
+                    <li>
+                        <a href="#32-2d-ring-allreduce" aria-label="3.2 2D-Ring AllReduce">3.2 2D-Ring AllReduce</a></li>
+                    <li>
+                        <a href="#33-2d-torus-allreduce" aria-label="3.3 2D-Torus AllReduce">3.3 2D-Torus AllReduce</a></li>
+                    <li>
+                        <a href="#34-2d-mesh-allreduce" aria-label="3.4 2D-Mesh AllReduce">3.4 2D-Mesh AllReduce</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#4-%e9%97%ae%e9%a2%98%e6%8e%a2%e8%ae%a8" aria-label="4. 问题探讨">4. 问题探讨</a></li>
+                    <li>
+                        <a href="#5-%e5%b0%8f%e7%bb%93" aria-label="5. 小结">5. 小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>ref:
+[1]. <a href="https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/">https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/</a></p>
+<h2 id="1-概述">1. 概述<a hidden class="anchor" aria-hidden="true" href="#1-概述">#</a></h2>
+<p>在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring Allreduce，经典的集合通信拓扑算法还有2D-Ring/Hierarchical Ring AllReduce，halving and doubling AllReduce，Butterfly AllReduce，2D-Torus AllReduce，2D-Mesh AllReduce，double binary tree等。拓扑算法很多，但也不是所有的拓扑算法都能满足实际的生产需求的，这需要具体问题具体分析、具体场景具体设计。</p>
+<p>集合通信的<strong>难点</strong>在于需要在固定的网络互联结构的约束下进行高效的通信，集合通信拓扑算法与物理网络互联结构强相关，为了发挥网络通信的效率，也不是说就能随意发挥通信拓扑算法，更多的是在<strong>效率与成本</strong>、<strong>带宽与时延</strong>、<strong>客户要求与质量</strong>、<strong>创新与产品化</strong>等之间进行合理取舍。</p>
+<p>充分发挥训练加速卡与网络的效率是通信拓扑算法的初衷，但除了设计高效的集合通信拓扑算法外，分布式训练中需要解决的通信难题还有：网络是异构的，网络带宽是有限的，主机内PCIE SWITCH是有亲和性的，网络是会出故障的，节点是有落后者效应的，设备成本是需要考虑的，数据中心是有部署约束的，用户是有多租户要求的等，这些属于产品化的范畴不在本文阐述。</p>
+<h2 id="2-网络互联结构">2. 网络互联结构<a hidden class="anchor" aria-hidden="true" href="#2-网络互联结构">#</a></h2>
+<p>分布式训练的集合通信拓扑算法与物理的网络互联结构强相关，而网络互联结构又多种多样，因此，本文需要先对网络互联结构进行约束，依据生产中常用的、既定的互联结构设计集合通信算法，网络互联结构描述如下：</p>
+<h3 id="21-服务内网络互联结构">2.1 服务内网络互联结构<a hidden class="anchor" aria-hidden="true" href="#21-服务内网络互联结构">#</a></h3>
+<p>以一台集成了8张训练加速卡的服务器为例，如下图:</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_architecture.png#center" alt="volta-architecture"  />
+</p>
+<p>这台服务器内的网络互联情况如下：</p>
+<p>1）在这台服务器内，8张训练加速卡通过私有协议连接组成多个主机内的物理ring环，且可双工；</p>
+<p>2）服务期内网络带宽 NVLINK&gt;PCIE switch &gt; QPI；</p>
+<p>3）加速卡1、2、3、4之间两两全互联，加速卡5,、6、7、8之间两两全互联，2、5、3、8之间非全互联；</p>
+<p>4）加速卡1、4与网卡NIC1 挂在同一个PCIE Switch上，具有亲和性，加速卡2、3与网卡NIC2挂在同一个PCIE Switch上，具有亲和性，而PCIE Switch之间也互联，因此 加速卡 1、2、3、4 与网卡NIC 1、NIC2具备亲和性，它们无需通过CPU的QPI线进行通信；</p>
+<p>5）加速卡5、8与网卡NIC3 挂在同一个PCIE Switch上，具有亲和性，加速卡6、7与网卡NIC4挂在同一个PCIE Switch上，具有亲和性，而PCIE Switch之间也互联的，因此 加速卡 5、6、7、8 与网卡NIC 3、NIC4具备亲和性，它们也无需通过CPU的QPI线进行通信；</p>
+<p>6）网卡可根据需要 选择 1张、2张、4张或8张，最多可以采用8张RDMA物理网卡；</p>
+<h3 id="22-服务器间网络互联结构">2.2 服务器间网络互联结构<a hidden class="anchor" aria-hidden="true" href="#22-服务器间网络互联结构">#</a></h3>
+<p>以一个训练加速卡集群为例，如下图是一个常用的CLOS互联架构方案:</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_CLOS.png#center" alt="CLOS"  />
+</p>
+<p>在这个集群内，其网络互联情况如下：</p>
+<p>1）集群内每台服务器自带高速RDMA网卡，通过RDMA 交换机在主机间两两全互联；</p>
+<p>2）交换机组成CLOS架构，分为Spine与Leaf交换机，当然也可以是更为高端的Spine、Leaf合一的高端交换机；</p>
+<p>3）RDMA网卡与Leaf交换机互联，每台服务器的RDMA网卡数量根据成本与性能考虑，可以是1张、2张+每卡虚拟化4卡、4张+每卡虚拟化2卡或8张；</p>
+<h3 id="23-高速网卡及其虚拟化使用">2.3 高速网卡及其虚拟化使用<a hidden class="anchor" aria-hidden="true" href="#23-高速网卡及其虚拟化使用">#</a></h3>
+<p>RDMA网卡是双工的且可虚拟化，在这里每台服务器可根据成本、性能的考虑选用1张、2张、4张或8张，且在服务器内左右对称，如下图：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_RDAM.png#center" alt="RDAM"  />
+</p>
+<p>从成本与效率的角度考虑，每台服务器内的网卡可以是以下配置：</p>
+<ul>
+<li>1张物理RDMA网卡，不进行虚拟化，直接用双工通道，适合选用2D/Hierarchical Ring拓扑算法；</li>
+<li>2张物理RDMA网卡，可以每张虚拟化出4个虚拟网卡，2X4共8卡，适合选用2D-MESH、2D-Torus拓扑算法；</li>
+<li>4张物理RDMA网卡，可每张虚拟化出2个虚拟网卡，4X2共8卡，适合选用2D-MESH、2D-Torus拓扑算法；</li>
+<li>8张物理RDMA网卡，不需要虚拟化，直接采用双工通道，适合选用2D-MESH、2D-Torus拓扑算法；</li>
+</ul>
+<p>在实际的分布式训练生产集群中，集合通信算法也可以结合RDMA网卡端口（包括虚拟化的）的具体个数进行设计，而拓扑算法的选择也是需要根据成本与效率的进行合理取舍的。</p>
+<h3 id="24-网络结构抽象">2.4 网络结构抽象<a hidden class="anchor" aria-hidden="true" href="#24-网络结构抽象">#</a></h3>
+<p>网络根据连接情况可分为<strong>ring结构</strong>、<strong>mesh结构</strong>、 <strong>torus 结构</strong>以及<strong>tree结构</strong>，基于以上的服务器内网络互联结构、服务器间网络互联结构以及网卡的具体情况，可以抽象出一个网络结构，即<strong>二维环面网络</strong>：Torus 网络，而Torus网络横向与纵向都可以看成ring结构，因此相应的拓扑算法基本上就是Ring-Based 集合通信拓扑算法。如下图：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_TORUS.png#center" alt="TORUS"  />
+</p>
+<p>TORUS网络是常见的大规模并行计算机的互连网络，在上图这个Torus网络里：</p>
+<p>1）横向：主机内8卡通过私有连接协议，比如CXL/CCIX/NVLINK等组成一个或多个ring，如上图的黄色连接线，横向8卡组成二维Torus的横向维度；</p>
+<p>2）纵向：主机间通过RDMA（RoCE/IB）网卡、交换机互联组成1到8个ring，如上图的红色连接线，纵向采用RDMA网卡组成二维Torus的纵向维度；</p>
+<p>3）根据物理网卡数量、网卡虚拟化以及PCIe Switch亲和性的实际情况：</p>
+<ul>
+<li>每台服务器1张网卡可组成主机间一个ring，网卡与XPU0 挂载同一个PCIE switch上，依据最佳实践原则（比如性能、成本、客户要求等），适合选用2D/Hierarchical Ring拓扑算法；</li>
+<li>两张网卡可组成主机间两个ring或者经过虚拟化组成8个ring，根据PCIE SWITCH亲和性原则，一张网卡与XPU0挂在同一个pcie switch，另一张网卡与XPU4挂在同一个pcie switch，依据最佳实践原则（比如性能、成本、客户要求等），适合选用2D-MESH、2D-Torus拓扑算法；</li>
+<li>4张网卡、8张网卡以此类推，也是根据PCIE SWITCH亲和性原则进行连接，主机间RDMA物理网卡不够就虚拟化网口来凑，并且要服务器内的RDMA出口端口数左右平衡，依据最佳实践原则（比如性能、成本、客户要求等），也是适合选用2D-MESH、2D-Torus拓扑算法，这样才能发挥多张网卡以及XPU的算力优势。</li>
+</ul>
+<p>4）更复杂的Torus网络组合关系还可以如下图，从横向只有 主机内的8卡纵向只有主机间的RDMA互联，扩展到 横向与纵向 主机内互联与主机间互联混合，但本文仅限于在横向8卡的二维Torus网络下进行拓扑算法选择与设计，因此不展开讲述。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_TORUS_COMBINATION.png#center" alt="TORUS COMBINATION"  />
+</p>
+<h2 id="3-常用的通信拓扑算法">3. 常用的通信拓扑算法<a hidden class="anchor" aria-hidden="true" href="#3-常用的通信拓扑算法">#</a></h2>
+<p>Torus 网络结构可以解读本文中的物理网络互联结构的一切，而Torus网络的横向与纵向都可以看成ring结构，因此，相应的集合通信拓扑算法都可以看成是Ring-Based 集合通信拓扑算法。</p>
+<h3 id="31-ring-allreduce">3.1 Ring AllReduce<a hidden class="anchor" aria-hidden="true" href="#31-ring-allreduce">#</a></h3>
+<p>在分布式训练中，Ring 是最基础的互联结构，在本文中Ring AllReduce的应用场景是在服务器内将8张加速卡组环通信进行分布式训练。每个XPU都是这个主机内互联环上的一个计算节点，每个节点都有一个前向和一个后向，它只会向它的前向接收数据，并向它的右向发送数据，如下图所示，8张XPU 通过主机内的私有互联网络组成一个环，当然因为这些通信网络是双工的，这8张XPU训练加速卡也可以看成是通过多个逻辑环互联起来的，同时缺点是，如果这个ring太大，Ring Allreduce的效率也会变得很低。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_RING_ARCHITECTURE.png#center" alt="RING ARCHITECTURE"  />
+</p>
+<p>Ring Allreduce 有两种组合实现策略：
+1）先Reduce后broadcast；
+2）先ScatterReduce后AllGather，这两个策略执行后都会让每个XPU节点得到一样的平均梯度，如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_RING_ALLREDUCE.png#center" alt="RING ALLREDUCE"  />
+</p>
+<h4 id="311-reduce-broadcast">3.1.1 Reduce +broadcast<a hidden class="anchor" aria-hidden="true" href="#311-reduce-broadcast">#</a></h4>
+<p>在Reduce + broadcast里，reduce先将8张卡的梯度reduce sum到master节点 XPU0 上，再通过broadcast将这个总的平均梯度复制给其他XPU，如下图：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_REDUCE_BROADCAST.png#center" alt="REDUCE BROADCAST"  />
+</p>
+<p>Reduce + broadcast这种策略有几个比较大的缺点：
+1）8张卡的数据都reduce sum到一张卡，假设每张卡的梯度是100MB，8张卡就是800MB，这可能存在XPU 0计算很久，而其他7张卡空闲的情况存在，整体效率不高；
+2）XPU0 的网络带宽可能会成为瓶颈，8张卡的数据都只能通过XPU0的互联网络进行reduce和broadcast，在数据量比较大的场景 XPU0的带宽成为瓶颈；
+3）8张XPU不都是两两全互联的，因此，要把8张卡的数据一次Reduce或broadcast，这一点受限于网络互联条件做不到，那么就需要采用 ring或tree的策略进行reduce或broadcast，这样效率也不高。</p>
+<h4 id="312-scatterreduce--allgather">3.1.2 ScatterReduce + AllGather<a hidden class="anchor" aria-hidden="true" href="#312-scatterreduce--allgather">#</a></h4>
+<p>Ring AllReduce 的Ring ScatterReduce + Ring AllGather策略组合里，每个 XPU只会从前向接受数据，并发送数据给后向，其算法主要分为：</p>
+<ul>
+<li>ScatterReduce：这一步会先scatter拆分数据块再进行reduce，并且在执行完毕后，每张XPU都会包括一个完整的经过融合的同维梯度；</li>
+<li>AllGather：这一步会进行全局Gather同步，最后所有 XPU都会得到完整的大的整个梯度；</li>
+</ul>
+<p>Ring ScatterReduce + Ring AllGather是效率比较高的 Ring AllReduce 组合策略，这个策略考虑到了XPU上的梯度可能很大的情况，比如一个梯度有400MB，在scatterreduce阶段就会先被拆分成 ring上XPU个数份，比如主机内XPU个数等于8，那么 这400MB 就会被 拆分成8份，每份50MB，从而减少了加速卡的计算量以及节约带宽。此外，scatterReduce通过将数据拆分成小块，同时并发进行scatterReduce，从而将通信时间隐藏在计算时间内进而提高Ring AllReduce的效率。</p>
+<h5 id="3121-scatterreduce">3.1.2.1 ScatterReduce<a hidden class="anchor" aria-hidden="true" href="#3121-scatterreduce">#</a></h5>
+<p>首先， ScatterReduce先将梯度拆分为N个更小的块，N等于ring里XPU个数，8张卡就拆分成8份，然后进行N-1次scatterreduce迭代。在第一轮迭代中XPU 0上的A0传递给XPU1上A1并相加，XPU1上的B1传递给XPU2上的B2并相加，XPU 2上的C2传递给XPU3上C3并相加，XPU3上的D3传递给XPU4上的D4并相加，以此类推，过程如下图左侧：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_RING_SCATTERREDUCE.png#center" alt="RING SCATTER REDUCE"  />
+</p>
+<p>接下来，XPU还会进行N-2次 ScatterReduce 迭代，在每次迭代过程中，XPU都会从前向接收一个小梯度块并累加到自己的梯度块中，并且也会向其后向发送一个小梯度块，每个XPU接收和发送的小梯度块在每次迭代中都是不同的，这样经过迭代，到最后，每个XPU将有一个完整的同维梯度，该块梯度中包含所有XPU中该块对应的所有梯度的总和，如上图右侧的累加和部分。</p>
+<h5 id="3122-allgather">3.1.2.2 Allgather<a hidden class="anchor" aria-hidden="true" href="#3122-allgather">#</a></h5>
+<p>在scatterReduce迭代完成之后，每个XPU都会得到一个同维度的完整的梯度累加值，将这些完整的累加值复制到其他的加速卡后，才算完成allReduce。Allgather的迭代次数与scatterReduce是相同的，也都需要进行N-1次（N是ring上的XPU卡数）迭代，但是不同于ScatterReduce的是allGather没有reduce的过程，只有数值的复制。这样迭代到最后，每个XPU都得到大的拆分前的梯度的完整累加值，如下图演示了这一过程，从第一次迭代开始，到最后AllGather拿到整体的结果。这里头的具体过程就不在这里描述了，可以查相关资料。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_RING_ALLGATHER.png#center" alt="ALLGATHER"  />
+</p>
+<p>Ring AllReduce 实现简单，在ring较少时，效率也较高，但是在ring比较大时需要的网络节点跳数变得比较大，通信时延增加，因此效率也会降低。比如，一个1000张XPU的 ring，这里头网络的跳数 是N-1= 1000-1 =999， 同时传输的过程中，传输效率还受效率最低、带宽最低的XPU的限制，这时网络上的时延会变得巨高，这个时候ring allreduce拓扑算法就变得不大适用这个场景，同时如果在异构网络里涉及网络的不同连接方式，Ring AllReduce也不大适合使用，因此就需要采用另外的更适合网络结构的更高效的集合通信拓扑算法来进行优化。</p>
+<h3 id="32-2d-ring-allreduce">3.2 2D-Ring AllReduce<a hidden class="anchor" aria-hidden="true" href="#32-2d-ring-allreduce">#</a></h3>
+<p>如果一台2.1里的服务器只配置了一张RDMA网卡，每台服务器通过RDMA交换机互联，这个集群的网络是异构的（如下图），那么Ring AllReduce拓扑算法就不适用了，这个时候，对于这个网络拓扑结构比较适合的是2D-Ring AllReduce也叫Hierarchical Ring AllReduce。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_TOPO.png#center" alt="2D RING TOPO"  />
+</p>
+<p>经过抽象，可以将这个网络结构表达成如下的Torus结构：</p>
+<p>横向：每台服务器8个XPU节点，每个XPU节点通过私有协议网络互联；</p>
+<p>纵向：每台服务器通过一张RDMA网卡NIC 0 通过交换机互联，这个网卡NIC0 与XPU0 挂在同一个PCIE switch上，满足具备亲和性条件，XPU0上的梯度可以通过NIC 0 与其他服务器上的XPU进行全局规约。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_TOPO_2.png#center" alt="2D RING TOPO"  />
+</p>
+<p>2D-Ring AllReduce的过程如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_ALLREDUCE.png#center" alt="2D RING ALLREDUCE"  />
+</p>
+<p>第1步，先进行主机内Ring AllReduce，也可以是 Ring Reduce或者根据主机内的互联情况选用的分层reduce方式，将8张卡上的梯度累加到Master节点 XPU0 上；</p>
+<p>第2步，进行主机间XPU 0的 Ring AllReduce，将每台服务器的XPU0上的数据进行全局规约；</p>
+<p>第3步，进行主机内Broadcast，将XPU0上的梯度复制到服务器内的其他XPU上</p>
+<p>2D-Ring AllReduce能充分发挥异构网络的优势，将主机内、主机间的网络带宽充分利用起来。但是XPU的利用率也不是很高，比如在做主机间的Ring AllReduce，每台服务器内的其他7张XPU是处于空闲状态的。</p>
+<p>再假设，如果每台服务器配置了 2张/4张/8张RDMA网卡，这个时候 2D-RING AllReduce又难以将网络的优势发挥出来，那么就需要选用 2D-Torus/2D-Mesh AllReduce拓扑算法。</p>
+<h3 id="33-2d-torus-allreduce">3.3 2D-Torus AllReduce<a hidden class="anchor" aria-hidden="true" href="#33-2d-torus-allreduce">#</a></h3>
+<p>考虑到服务器内PCIE SWITCH 的亲和性问题，2D-Torus至少需要配备2张 左右对称的RDMA网卡才能发挥这个拓扑算法的优势。在这个集群里主机内每张卡都通过私有的通信协议组成Ring，而主机间，可以通过RDMA网卡（包括虚拟化出来的）与RDMA交换机将XPU两两互联，这个网络也是异构的，如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_TORUS.png#center" alt="2D RING TORUS"  />
+</p>
+<p>经过抽象，可以将这个网络结构表达成如下的Torus结构：</p>
+<ul>
+<li>横向：每台服务器8个XPU节点，每个XPU节点通过私有协议网络互联；</li>
+<li>纵向：每台服务器通过至少2张RDMA网卡NIC 0 /NIC 1通过交换机互联，这个网卡NIC0 与XPU0、1、2、3 挂在同一个PCIE switch上，具备亲和性条件，XPU0、1、2、3上的梯度数据可以通过NIC 0 与其他服务器上的XPU进行交换。网卡NIC1 与XPU4、5、6、7 挂在同一个PCIE switch上，具备亲和性条件，XPU4、5、6、7上的梯度数据可以通过NIC 1 与其他服务器上的XPU进行交换；</li>
+<li>当然如果网卡是4个或者8个，也可以根据PCIE SWITCH的亲和性情况合理安排XPU与NIC的对应关系。</li>
+</ul>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_TORUS_2.png#center" alt="2D RING TORUS 2"  />
+</p>
+<p>2D-Torus AllReduce的过程如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_TORUS_3.png#center" alt="2D RING TORUS 3"  />
+</p>
+<p>第1步，横向，先进行主机内Ring ScatterReduce，将主机内8张卡上的梯度进行拆分与规约，这样经过迭代，到最后每个XPU将有一个完整的同维梯度，该块梯度包含所有XPU中该块所对应的所有梯度的总和（参考3.1.2.1 scatterReduce)</p>
+<p>第2步，纵向，进行主机间N个（N等于服务器内XPU个数，这里是8个）纵向的 Ring AllReduce，将每台服务器的XPU0-XPU7上的数据进行集群内纵向全局规约；</p>
+<p>第3步，横向，进行主机内AllGather，将XPUi(i=0-7)上的梯度复制到服务器内的其他XPU上；</p>
+<p>2D-Torus AllReduce能充分挖掘XPU的效率以及发挥异构网络里多网卡的优势，将XPU以及主机内、主机间的网络带宽优势充分利用起来。此外，除了 2D-Torus AllReduce外，2D-Mesh AllReduce也能发挥类似效率。</p>
+<h3 id="34-2d-mesh-allreduce">3.4 2D-Mesh AllReduce<a hidden class="anchor" aria-hidden="true" href="#34-2d-mesh-allreduce">#</a></h3>
+<p>2D-Mesh AllReduce的主要思想也是分层，与2D-Torus AllReduce类似，都是水平和垂直两个方向，但是有点差异，如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2DRING_MESH_TOPO.png#center" alt="2D MESH TOPO"  />
+</p>
+<p>不同于2D-Torus AllReduce的拓扑算法，2D-Mesh AllReduce 过程是：</p>
+<p>第1步，横向，先进行主机内Ring AllReduce 将主机内的8张XPU的梯度都进行规约；</p>
+<p>第2步，纵向，进行主机间N个（N等于主机内XPU个数，这里是8个）纵向的 Ring AllReduce；</p>
+<p>经过这两步，完成了整体的梯度累加，2D-Mesh AllReduce 也能充分发挥XPU与多网卡异构网络的优势，将XPU与主机内、主机间的网络带宽优势充分利用起来。这里的2D-Mesh与Google论文上的有点差异，主要是吸取了其分层的思想而不是复制其一样的设计。理论上2D-Mesh AllReduce对比 2D-Torus AllReduce，主机间AllReduce用的是 主机内8卡的全局梯度，数据量会比ScatterReduce部分来的大点，因此效率也会相应降低一点。</p>
+<h2 id="4-问题探讨">4. 问题探讨<a hidden class="anchor" aria-hidden="true" href="#4-问题探讨">#</a></h2>
+<p>如下图所示，基于Torus网络的结构，组合Ring AllReduce，2D-Ring AllReduce, 2D-Mesh AllReduce，2D-Torus AllReduce还能构建 3D-Ring/Mesh/Torus AllReduce拓扑算法，但是这些拓扑算法的效率需要进行实践才能证实，也许在规模较大的集群里才能发挥出3D 拓扑算法的优势。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-01_DistributedTraining_4/2022-11-01_DistributedTraining_4_2D_TORUS_TOPO.png#center" alt="2D MESH TOPO"  />
+</p>
+<p>关于 3D-Ring/Mesh/Torus AllReduce的拓扑算法，这里就不在阐述，可作为研究使用。</p>
+<h2 id="5-小结">5. 小结<a hidden class="anchor" aria-hidden="true" href="#5-小结">#</a></h2>
+<p>本文讲述了分布式训练里最常用的几个网络结构以及通信拓扑算法：</p>
+<ul>
+<li>Ring AllReduce 的最佳组合是 ScatterReduce + AllGather；</li>
+<li>2D-Ring AllReduce = 主机内 ringAllReduce/Ring Reduce +主机间 RingAllReduce + 主机内Broadcast；</li>
+<li>2D-Torus AllReduce = 主机内 Ring ReduceScatter + 主机间N个Ring AllReduce + 主机内Ring AllGather；</li>
+<li>2D-Mesh AllReduce = 主机内Ring AllReduce + 主机间N个Ring AllReduce;</li>
+</ul>
+<p>Ring AllReduce适合主机内互联Ring的情况使用，2D-Ring AllReduce适合一台服务器配置了一张网卡的异构网络场景，2D-Torus AllReduce与2D-Mesh AllReduce适合一台服务器配置了2/4/8张网卡的异构网络场景。</p>
+<p>集合通信拓扑算法多种多样，但基于成本以及效率的取舍考虑，可生产适用的其实也不多，除了理论上的理解之外更重要的是自己编写代码去实践落地。除此之外，还需要解决网络带宽有限、网络容易出故障、落后者效应、部署约束、多租户等产品化的质量要求。</p>
+<p>REF:
+[1] <a href="https://www.changping.me">https://www.changping.me</a></p>
+<p>[2] 《volta-architecture-whitepaper》</p>
+<p>[3] 2D-HRA: Two-Dimensional Hierarchical Ring-based All-reduce Algorithm in Large-Scale Distributed Machine Learning</p>
+<p>[4] Massively Distributed SGD: ImageNet/ResNet-50 Training in a Flash</p>
+<p>[5] <a href="https://zhuanlan.zhihu.com/p/79030485">https://zhuanlan.zhihu.com/p/79030485</a> , 腾讯机智团队分享–AllReduce算法的前世今生</p>
+<p>[6] <a href="https://zhuanlan.zhihu.com/p/370548366">https://zhuanlan.zhihu.com/p/370548366</a>, ring allreduce和tree allreduce的具体区别是什么？</p>
+<p>[7] <a href="https://zhuanlan.zhihu.com/p/184942777">https://zhuanlan.zhihu.com/p/184942777</a> , 分布式深度学习初探</p>
+<p>[8] <a href="https://arxiv.org/abs/1811.06992">https://arxiv.org/abs/1811.06992</a> ， Image Classification at Supercomputer Scale</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://jianye0428.github.io/en/tags/distributedtraining/">DistributedTraining</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/notes/c&#43;&#43;/2022-11-05_c&#43;&#43;_primer/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>C&#43;&#43;_PRIMER Notes</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>分布式训练 – 第3篇 - 集合通信及其通信原语</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 on twitter"
+        href="https://twitter.com/intent/tweet/?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac4%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e5%8f%8a%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f&amp;hashtags=DistributedTraining">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac4%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e5%8f%8a%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95&amp;summary=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac4%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e5%8f%8a%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f&title=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac4%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e5%8f%8a%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 on whatsapp"
+        href="https://api.whatsapp.com/send?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac4%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e5%8f%8a%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法 on telegram"
+        href="https://telegram.me/share/url?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac4%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e5%b8%b8%e7%94%a8%e7%9a%84%e7%bd%91%e7%bb%9c%e7%bb%93%e6%9e%84%e5%8f%8a%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e6%8b%93%e6%89%91%e7%ae%97%e6%b3%95&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-11-01_distributedtraining_4%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

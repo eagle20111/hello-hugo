@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>prediction on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/prediction/</link>
+    <description>Recent content in prediction on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 09 Oct 2022 13:24:38 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/prediction/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Transformer Overview</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-10-09_transformer/</link>
+      <pubDate>Sun, 09 Oct 2022 13:24:38 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-10-09_transformer/</guid>
+      <description>reference: [1]. The Transformer Family [2]. Attention [3]. 细节考究 Transformer Family Notations Symbol Meaning $d$ The model size / hidden state dimension / positional encoding size. $h$ The number of heads in multi-head attention layer. $L$ The segment length of input sequence. $X \in \mathbb R ^ {L \times d}$ The input sequence where each element has been mapped into an embedding vector of shape , same</description>
+    </item>
+    
+    <item>
+      <title>Target driveN Trajectory: DenseTNT and TNT</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/</link>
+      <pubDate>Sat, 09 Jul 2022 19:04:08 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/</guid>
+      <description>TNT: Target-driveN Trajectory Prediction **ref link:** https://zhuanlan.zhihu.com/p/435953928 https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default&amp;amp;spm=1001.2101.3001.4242.2&amp;amp;utm_relevant_index=5 概览 在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。 模态的定义是比较模糊</description>
+    </item>
+    
+    <item>
+      <title>VectorNet: Encoding HD Maps and Agent Dynamics from Vectorized Representation</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-06-20_vectornet/</link>
+      <pubDate>Mon, 20 Jun 2022 15:23:13 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-06-20_vectornet/</guid>
+      <description>ref link: [1] https://blog.csdn.net/qq_41897558/article/details/120087113 [2] https://zhuanlan.zhihu.com/p/355131328 ref code: [1]https://github.com/xk-huang/yet-another-vectornet [2]https://github.com/DQSSSSS/VectorNet Novel Highlights (1) 使用矢量化的高精地图以及障碍物的历史轨迹，从而避免有损渲染以及ConvNet编码(计算开销比较大)。 (2) 设计子图网络</description>
+    </item>
+    
+    <item>
+      <title>LaneGCN: Learning Lane Graph Representations for Motion Forecasting</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-06-13_lanegcn/</link>
+      <pubDate>Mon, 13 Jun 2022 16:01:19 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-06-13_lanegcn/</guid>
+      <description>paper link: https://arxiv.org/abs/2007.13732 PPT: https://www.cs.toronto.edu/~byang/slides/LaneGCN.pdf Architechture Lane Graph + Actor Map: construct lane graph from vectorized map data to preserve the map structure and can avoid information loss 构建矢量化地图信息，避免地图信息丢失 LaneGCN: extends graph convolutions with multiple adjacency matrices and along-lane dilation to capture complex topology and long range dependencies of the lane graph. exploit</description>
+    </item>
+    
+    <item>
+      <title>Social_NCE: Contrastive Learning of Socially-aware Motion Representation</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-06-12_social_nce/</link>
+      <pubDate>Sun, 12 Jun 2022 09:44:14 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-06-12_social_nce/</guid>
+      <description>paper link: https://arxiv.org/abs/2012.11717 论文解读参考: [1] https://zhuanlan.zhihu.com/p/434650863 [2] https://www.gushiciku.cn/pl/amod Issue to solve and its Solution Due to the ill-distributed training Data, it&amp;rsquo;s difficult to capture the notion of the &amp;ldquo;negative&amp;rdquo; examples like collision. Solution: Modeling the negative samples through self-supervision: a social contrastive loss: regularizes the extracted motion representation by discerning the ground-truth positive events from synthetic negative ones; Construct negative samples based on prior</description>
+    </item>
+    
+    <item>
+      <title>Social_STGCNN: A Social Spatio-Temporal Graph Convolutional Neural Network for Human Trajectory Prediction</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-06-08_social_stgcnn/</link>
+      <pubDate>Wed, 08 Jun 2022 16:36:37 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-06-08_social_stgcnn/</guid>
+      <description>paper link: https://arxiv.org/abs/2002.11927?from=leiphonecolumn_paperreview0323 网络结构 特点: Social STGCNN不同于其他方法只是聚合各种学习的行人状态，而是对行人交互做图建模。其中提出一种kernel function</description>
+    </item>
+    
+  </channel>
+</rss>

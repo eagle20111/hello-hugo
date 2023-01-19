@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Target driveN Trajectory: DenseTNT and TNT | Jian&#39;s Blog</title>
+<meta name="keywords" content="prediction">
+<meta name="description" content="TNT: Target-driveN Trajectory Prediction **ref link:** https://zhuanlan.zhihu.com/p/435953928 https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default&amp;spm=1001.2101.3001.4242.2&amp;utm_relevant_index=5 概览 在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。 模态的定义是比较模糊">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="Target driveN Trajectory: DenseTNT and TNT" />
+<meta property="og:description" content="TNT: Target-driveN Trajectory Prediction **ref link:** https://zhuanlan.zhihu.com/p/435953928 https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default&amp;spm=1001.2101.3001.4242.2&amp;utm_relevant_index=5 概览 在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。 模态的定义是比较模糊" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-07-09T19:04:08&#43;08:00" />
+<meta property="article:modified_time" content="2022-07-09T19:04:08&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="Target driveN Trajectory: DenseTNT and TNT"/>
+<meta name="twitter:description" content="TNT: Target-driveN Trajectory Prediction **ref link:** https://zhuanlan.zhihu.com/p/435953928 https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default&amp;spm=1001.2101.3001.4242.2&amp;utm_relevant_index=5 概览 在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。 模态的定义是比较模糊"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Target driveN Trajectory: DenseTNT and TNT",
+      "item": "https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Target driveN Trajectory: DenseTNT and TNT",
+  "name": "Target driveN Trajectory: DenseTNT and TNT",
+  "description": "TNT: Target-driveN Trajectory Prediction **ref link:** https://zhuanlan.zhihu.com/p/435953928 https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default\u0026amp;spm=1001.2101.3001.4242.2\u0026amp;utm_relevant_index=5 概览 在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。 模态的定义是比较模糊",
+  "keywords": [
+    "prediction"
+  ],
+  "articleBody": "TNT: Target-driveN Trajectory Prediction **ref link:** https://zhuanlan.zhihu.com/p/435953928\nhttps://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default\u0026spm=1001.2101.3001.4242.2\u0026utm_relevant_index=5\n概览 在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。\n模态的定义是比较模糊的，例如，有不同的速度前行，左转可以以不同的转弯角度实现。为了能够更加通用且精确地定义每条轨迹的模态，我们直接将每条轨迹的模态定义在每条轨迹的终点上。这里的一个重要假设是，轨迹的模态基本由终点所决定，当终点确定后，轨迹的形状也大体确定了。这样我们就把轨迹预测变成了终点预测问题，极大地简化了问题的复杂度。\nTNT的预测方式: 首先预测轨迹的终点，然后基于这个终点补充完整条轨迹。\nTNT 基于终点的轨迹预测流程图: TNT使用VectorNet对高精地图和车辆信息进行编码，得到要预测的车辆的全局特征，以用于接下来的解码，从而完成轨迹预测：\n(1). 终点预测: 为每个Anchor预测一个偏移，得到终点，这些Anchor从道路的中心线上采样得到; (2). 轨迹补全: 基于上一步预测的终点将整条轨迹补充完整; (3). 轨迹打分和筛选: 根据场景特征，为每条轨迹进行打分，并筛选出最有可能的若干条轨迹。\nTNT 实现 原理 给定一个单个障碍物的观测状态序列 $S_P = [s_{-T^{’}+1}, s_{-T^{’}+2}, …, s_0]$。我们的目标是预测它的未来状态 $S_F = [s_1, s_2, …, s_T]$ 到某个固定时间步 T。自然地，障碍物与由其它障碍物和场景元素组成的环境交互作为背景: $C_P​=[c_{-T′+1}​,c_{-T′+2}​,…,c_0​]$。为简洁起见，我们记 $X = (s_P, c_P)$，因此我们想捕捉的整体概率分布是 $p(S_F|X)$ 。\n实际上， $p(S_F|X)$ 可以是高度多模态的。例如，车辆驶近十字路口时可能左转、直行或改变车道。直观上，未来状态的不确定性可以被分解为两部分：目标或者意图的不确定性，比如左右转的决定；以及控制的不确定性，比如转弯时需要的细粒度运动。因此，我们可以通过对目标设定条件，然后将其边缘化，从而对概率分布进行分解：\n$$p(S_F​∣X)=∫_{τ∈τ(C_P​)}​p(τ∣X)p(S_F​∣τ,X)d_τ​, \\tag{1}$$\n其中 $\\tau(C_P)$ 表示取决于观察到的背景 $C_P$ ​的合理目标空间。\n在这个公式下，我们的主要见解是，对于轨迹预测等应用，通过正确设计目标空间 $\\tau τ ( C_P )$（如目标位置），目标分布 $ p(\\tau|X)$ 可以很好地捕捉意图不确定性。一旦目标确定，我们会进一步证明控制不确定性（如轨迹）可以通过简单的单模态分布可靠地建模。我们用一组离散位置来模拟目标空间 $\\tau{C_P}$，将 $p(\\tau|X)$ 的估计主要转化为一个分类任务。与隐变分模型相比，我们的模型以明确的目标分布的形式提供了更好的可解释性，并且在设计目标空间 $\\tau{C_P}$ 时可以自然地结合专家知识（如道路拓扑）。\n我们的整体框架有三个概念阶段。第一阶段是障碍物意图预测，其目标是用基于观察背景 $X$ 的目标空间 $\\tau$ 的离散集合对意图不确定性进行建模，并且输出目标分布 $p(\\tau|X)$ 。第二个阶段是障碍物条件运动估计，它用单模态分布对从初始状态到目标可能的未来运动进行建模。前两个阶段产生了以下概率预测 $p(S_F|X) = \\sum_{\\tau\\in\\tau(C_P)}p(\\tau|X)p(S_F|\\tau, X)$。\n许多下游应用，例如实时行为预测，需要一小组具有代表性的未来预测，而不是所有可能未来的完整分布。我们的最终阶段，评分和选择，就是为此目的量身定制的。我们从所有代表性预测上学习一个评分函数 $\\phi(S_F)$，并选择一个最终的多样化预测集。\n场景编码VectorNet 建模场景背景是轨迹预测的第一步，以获取车辆-道路和车辆-车辆之间的交互。TNT可以使用任何合适的背景编码器：当高清地图可用时，我们使用最优秀的层次图神经网络 VectorNet 对背景进行编码。具体来说，使用多段线来抽象出高清地图元素 $C_P$(车道，交通标志) 和代理轨迹 $S_P$​；采用子图（subgraph）网络对多段线进行编码，多段线包含可变数量的向量；然后使用全局图（global graph）对多段线之间的交互进行建模。输出是每个建模代理的全局背景特征 $X$。如果场景背景只在自上而下的图像形式中可用，则使用卷积网络作为背景编码器。\n目标预测 在我们的公式中，目标 $\\tau$ 被定义为一个预测目标可能在固定时间范围 $T$ 上的位置 $(x,y)$ 。在第一步目标预测阶段，我们的目的是提供一个预测目标的未来目标的分布 $p( \\tau ∣ X )$ 。我们通过一组$N$个离散的、带有连续偏移的量化位置来建模潜在的未来目标： $\\tau ={\\tau^n}={(x^n,y^n)+(\\Delta x^n,\\Delta y^n)}^N_{n=1}$​。然后这个目标上分布可以通过一个离散-连续分解来建模：\n$$p(τ^n∣X)=π(τ^n∣X)⋅N(Δx^n∣v^x_n​(X))⋅N(Δ_y^n∣v_y^n​(X)),\\tag{2}$$\n中 $\\pi(\\tau^n|X)=\\frac{e^{f(\\tau^n,X)}}{\\sum_{\\tau^{’}}e^{f(\\tau^{’},X)}}$ 是在位置选择 $(x^n,y^n)$上的离散分布。术语 $N(·|v(·))$ 表示一个广义正态分布，其中我们选择Huber作为距离函数。我们将均值表示为 $v(·)$并假设单位方差。\n可训练函数 $f(·)$ 和 $v(·)$ 由一个2层的多层感知机(MLP)实现，目标坐标 $(x^k,y^k)$ 和场景背景特征 $X$ 作为输入。它们预测目标位置上的离散分布及其最可能的偏移量。这一阶段的训练损失函数由以下公式给出：\n$$L_{S1}​=L_{cls​}(π,u)+L_{offset}​(v_x​,v_y​,Δx^u,Δy^u),\\tag{3}$$\n其中 $L_{cls}$ 是交叉熵损失， $L_{offset}$​ 是 Huber 损失；$u$ 是离真实位置最近的目标，并且 $\\Delta x^u,\\Delta y^u$ 是 $u$ 相对于真值的空间偏移量。\n离散目标空间的选择在不同应用中是灵活的，如图3所示。在车辆轨迹预测问题中，我们从高清地图里均匀地采样车道中心线上的点并且将他们作为目标候选点(标记为黄色菱形)，假设车辆从未远离车道线；对于行人，我们在代理周围生成了一个虚拟网格并将网格点作为目标候选点。对每个候选目标，TNT目标预测器生成了一个 $(\\pi,\\Delta x, \\Delta y)$ 的元组；回归后的目标以橙色五角星标记。与直接回归相比，将未来建模成一组离散目标的最显著的优势在于，它不受模态平均的影响，模态平均是阻止多模态预测的主要因素。\n基于目标的运动估计 在第二阶段，我们将给定目标轨迹的可能性建模为 $p(S_F|\\tau,X)=\\prod^T_{t=1}p(s_t|\\tau,X)$，同样采用了广义正态分布。这里有两个假设。首先，未来时间步是条件独立的，这使得我们的模型通过避免顺序预测提高了计算效率。其次，我们正在作出有力但合理的假设，即给定目标的轨迹分布是单模态(正态)的。对于短的时间范围来说，这当然是正确的；对于更长的时间范围，可以在(中间)目标预测和运动估计之间迭代，以便假设仍然成立。\n这一阶段使用2层的MLP实现。它将背景特征 X 和目标位置 $\\tau$ 作为输入，并且每个目标输出一条最可能的轨迹 $[\\hat{s_1},…,\\hat{s_T}] [s1​^​,…,sT​^​]$。由于它以第一阶段的预测目标为条件，为了实现平滑的学习过程，我们在训练时采用teacher forcing Technique[36]，将真实位置 $(x^n,y^n)$ 作为目标。该阶段的损失项是预测状态 $\\hat{s_t}$​ 和真值 $s_t$​ 之间的距离：\n$$L_{S2}​ = \\sum_{t=1}^{T}​L_{reg}​(\\hat{s},s_t​),\\tag{4}$$\n其中， $L_{reg}$​ 作为每一步坐标偏移的 Huber 损失来实现。\n轨迹评分和选择 我们的最终阶段估计未来完整轨迹 S F S_F SF​ 的可能性。这和第二阶段不同，第二阶段分解时间步和目标，也和第一阶段不同，第一阶段只知道目标，但没有完整的轨迹——例如，一个目标可能被估计有很高的可能性，但到达该目标完整轨迹的可能性可能不是。\n我们使用最大熵模型对第二阶段的所有 M 条轨迹进行评分:\n$$\\phi (S_F | X) = \\frac{e^{g(S_F, X)}}{{\\sum}_{m=1}^{M} e^{g(S_F^m, X)}}​$$,\n其中 $g(·)$ 被建模为一个2层的 MLP。这一阶段训练的损失项是预测分数和真值分数之间的交叉熵，\n$$L_{S3} = L_{CE}(\\phi (S_F | X), \\psi(S_F))$$\n其中每个预测轨迹的真值评分由预测轨迹到真值轨迹的距离 $\\psi(S_F)=\\frac{exp(-D(S,S_{GT})/\\alpha)}{\\sum_{s^{’}}exp(-D(S^{’},S_{GT})/\\alpha)}$ 定义，其中 $D(·)$ 单位为米， $\\alpha$ 是温度。距离度量定义为 $D(S^i,S^j)=max(||s^i_1-s^j_1||^2_2,…,||s^i_t-s^j_t||^2_2)$。\n为了从已评分的 $M$ 个轨迹获得最终一小组 $K$ 个预测轨迹，我们实现了一个轨迹选择算法来排除近似重复的轨迹。我们首先根据他们的分数对轨迹进行降序排列，并且贪婪地选择轨迹； 如果一个轨迹距离所有的选择轨迹都足够远，我们也会选择它，否则排除它。这里使用的距离度量和评分过程相同。这个过程的灵感来源于通常应用于计算机视觉问题（如目标检测）的非极大值抑制算法。\n训练和推理细节 上述的 TNT 公式产生全监督的端到端训练，具有损失函数 $$L = \\lambda_1 L_{S1} + \\lambda_2 L_{S2} + \\lambda_3 L_{S3}$$\n其中，选择 $\\lambda_1,\\lambda_2,\\lambda_3$ 来平衡训练过程。\n在推理时，TNT 的工作原理如下： (1) 工作场景编码；\n(2) 采样 N 个候选目标作为目标预测器的输入，取由 $\\pi(\\tau|X)$ 估计的前 M 个目标；\n(3) 从运动估计模型 $p(S_F|\\tau,X)$ 中获取 M 个目标中每个目标的 MAP 轨迹；\n(4) 通过 $\\phi(S_F|\\tau,X)$ 给 M 个轨迹评分，并且选择一组最终的 K 个轨迹。\nDenseTNT: ref link: https://blog.csdn.net/weixin_39397852/article/details/122764880\nComparison between DenseTNT and TNT TNT(左图)是根据lane定义一些anchor，再regress和classify获得最终的位置，之后还要通过NMS的筛选法选出最后的轨迹。 DenseTNT(右图)是通过密集地采点避免了定义anchor，同时也避免了使用NMS等规则来筛选轨迹。\n意图预测中非常重要的一个问题是ground truth只有一个，而对于多意图的预测来说，多个方向的预测都是允许的，这导致了label中有很多都是无效的，因为gt只包含了一个意图下的结果。此处设计了一个offline的model来提供多个意图下的label。这个model使用了一个优化算法从goal的分布里取出了一个set作为online model的label。\nMethod 具体实现方法 sparse context encoding – VectorNet 本文使用VectorNet来提取地图的feature。(没有的高精地图的话也可使用CNN)\nDense goal probability estimation TNT对于一个goal只预测一条轨迹的概率是有问题的：一个goal只有一条预测(可能通向这个goal的别的预测概率很高)，一个goal获取的feature不够丰富(goal附近的点的信息也用上会更好)。\n我们使用了dense goal encoder。它以一定的采样频率获取了地图上在道路上的所有点。然后预测了这些密集点的概率分布。\nLane Scoring 在论文实现中，可以用point scoring代替，效果更好。目的在与选出距离final pos(gt)更近的点。\n为了减少需要sample的点，我们先预测goal落在不同lane上的概率，这样能过滤掉明显不在candidate lane附近的点，提升运算速度。 这是一个二分类问题。因此使用了二分类的交叉熵计算loss。对于label，使用离gt的goal最近的lane作为1，别的lane为0。对于别的lane $l$，假设gt的goal是$y_{gt}$​，定义一个distance\n$$d(l,y_{gt}) = min(||l_1 - y_{gt}||^2, ||l_2 - y_{gt}||^2, …, ||l_t - y_{gt}||^2,)$$\n直觉上就是gt的goal到这条lane的最短距离的平方。\nProbability Estimation 获得概率分布的做法是self-attention。首先agent的feature经过两次MLP。然后把goal的feature $F$作为需要query的变量，从地图上所有元素 (lane，agent)的feature中去查找索引对应的键和值。目的就是建立goal的feature与地图上所有元素的联系。直观上，这一步是把agent的未来状态(goal)表示成由历史的信息作为变量的函数，这个函数采用的是self-attention的做法。\n轨迹目标点(goals)和道路的局部信息可以用以下注意力机制表示:\n$$\\mathbf{Q} = \\mathbf{FW}^{\\mathbf{Q}}, \\mathbf{K} = \\mathbf{LW}^{\\mathbf{K}}, \\mathbf{V}=\\mathbf{LW}^{\\mathbf{V}}$$\n$$\\mathbf{A}(\\mathbf{Q},\\mathbf{K},\\mathbf{V}) = softmax(\\frac{\\mathbf{QK^\\top}}{\\sqrt{d_k}})\\mathbf{V}$$\nwhere $\\mathbf{W}^Q, \\mathbf{W}^{K}, \\mathbf{W}^{V} \\in \\mathbb{R}^{d_h \\times d_k}$ are the matrices for linear projection, $d_k$ is the dimension of query / key / value vectors, and $\\mathbf{F}, \\mathbf{F}$ are feature matrices of the dense goal candidates and all map elements (i.e., lanes or agents), respectively.\n这一步之后的结果是goal新的feature $\\mathbf{F}$。再通过两次MLP，即下图中的 $g(.)$.用softmax中的方法获得每个goal的概率。将所有goal在地图上表示出来的话就是一个概率分布heatmap。\n$$\\phi_i = \\frac{\\exp(g(\\mathbf{F}i))}{\\sum{n=1}^{N}\\exp(g(\\mathbf{F}_n))}$$\n对于Loss的计算，离gt的goal最近的goal的label定为1，其余都为0.采取二分类交叉熵的算法。\n$$\\mathcal{L}\\text{goal} = \\mathcal{L}{\\text{CE}}(\\phi, \\psi)$$\nGoal Set Prediction 对于多意图的预测，在TNT中，预先设定好target，采用NMS(non-maximum suppression)(靠的近或概率低的过滤掉)。而DenseTNT的上一步获得是heatmap，因此不能简单使用NMS，因为用于筛选的阈值比较难定。这是因为TNT中采用的是从高到低排序概率，而DenseTNT中的概率分布是针对于整个鸟瞰图的，一旦意图的可能性变多了，平均分布到每一个意图的概率就低了(对于概率分布，所有的点的概率加起来需要为1)。\nheatmap，输出是goal set，这个有点像目标检测的框生成。但和目标检测不同，对于一个输入，我们的label只有一个，即gt。这样的话可能会有别的意图的结果在训练中被忽略。为此，设计了一个offline model来制造这些label。它和online model的区别就在这一步中。没有使用goal set predictor而是采用了优化算法。\nOffline Optimization 上一步heatmap的输出，实际上是对于地图上众多goal每个点的一个函数。设定 $C={c_1,c_2,…,c_m}$ 为所有dense goal的candidate，heatmap就把 $C$ 映射到一个0到1的集合，写成 $h(c_i)$ ，这也是每个goal的概率。 接下来定义一个目标函数:\n$$E[d(\\hat{y}, Y)] = \\sum^m_{i=1}h(c_i)d(\\hat{y}, c_i)$$\n其中，$d(\\hat{y}, c_i) = \\mathop{\\min}\\limits_{y_i \\in \\hat{y}}||y_j - y_{c_i}||$\n从直观上讲，目标是有M个goal（大池子），要从中选取K个靠谱的goal（小池子）。 $d$ 是针对于大池子的，对于大池子里所有candidate都有一个 $d$。这每个candidate都与小池子中的goal计算距离，取最近的作为 d d d，即寻找小池子中离candidate最近的点。对于所有的 $d$，用概率加权计算期望。总体的话在收敛情况，大池子中的所有goal到距离自己最近的小池子中的goal乘上概率加权应当达到最小。以下是这个优化算法的实现。\n翻译成中文：\n初始化K个goal，从M个goal的大池子里随机选 小池子里的每个goal做随机扰动，变为别的goal 计算原来的和现在的小池子的d的期望e和e’ 如果现在的小池子d的期望更小，则使用现在的小池子。否则以1%的概率采用现在的小池子。（避免局部最优） 不停循环2-4直到步数达到阈值（或时间太长） 优化算法之后得到的就是全局最优的选中的小池子。这个小池子里的结果能作为训练online模型的伪label。\nGoal Set Predictor (online) 模型采用了encode+decode的办法。encoder部分是一层self-attention加上max pooling，decoder部分是2层MLP，输入是heatmap，输出是2K+1个值，分别对应K个2维坐标（goal set）和一个当前goal set的confidence。\n考虑到heatmap的概率分布比较散，可以采用N头同时运算。即N个goal set predictor输出N个2K+1的值，从当中选取confidence最高的那个goal set预测。为了运算效率的提升，这N头使用相同的self-attention层，但是不同的2个MLP。\n在训练过程中，采用了offline模型的伪label作为监督。上述offline中讲到的初始选定的小池子，在这里采用的是online模型的K个goal的set的预测。然后经过L次随机扰动（即不停随机选取邻居点，L=100），选取当中expected error（offline里的期望项）最小的那个set作为伪label。\n标记 $\\dot{y}$ ​为预测结果， $\\hat{y}$ ​为伪label，则loss的计算如下。即一一对应后的L1距离之和。\n$$\\mathcal{L_{set}(\\dot{y}, \\hat{y})} = \\sum_{i=1}^{k}\\mathcal{L}_{\\text{reg}}(\\dot{y}, \\hat{y})$$\n再考虑到采用了N头预测，这部分的loss将采用二分类的交叉熵。其中 $\\mu$ 为所有head的confidence，$\\nu$ 为label，只有expected error最低的label为1，别的为0。\n$$\\mathcal{L}\\text{head} = \\mathcal{L}{\\text{CE}}(\\mu, \\nu)$$\nTrajectory Completion 这一步和TNT做法类似。类似于dense goal encoding（2层MLP后过self-attention）最后过2层MLP来decode得到整条预测轨迹的state。采用teacher forcing技巧（因为只有一条gt）训练时只用gt的goal来算这条预测轨迹。Loss的算法和TNT一样，用的是点点之间的Huber loss。\n$$\\mathcal{L}{\\text{completion}} = \\sum{t=1}^{T}\\mathcal{L_{reg}}(\\hat{s}_t, s_t)$$\nLearning 训练分为两个stage。第一个stage使用gt轨迹训练除了goal set predictor的部分。即把dense的goal输入。获得大量的轨迹。\n$$\\mathcal{L}{s1} = \\mathcal{L}{lane} + \\mathcal{L}{goal}+ \\mathcal{L}{completion}$$\n第二个stage主要负责goal set predictor的部分。\n$$\\mathcal{L}{s2} = \\mathcal{L}{head} + \\mathcal{L}_{set}$$\n",
+  "wordCount" : "6664",
+  "inLanguage": "en",
+  "datePublished": "2022-07-09T19:04:08+08:00",
+  "dateModified": "2022-07-09T19:04:08+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/tech/2022-07-09_densetnt_and_tnt/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      Target driveN Trajectory: DenseTNT and TNT
+    </h1>
+    <div class="post-meta"><span title='2022-07-09 19:04:08 +0800 CST'>2022-07-09</span>&nbsp;·&nbsp;14 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/tech/2022-07-09_DenseTNT_and_TNT.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#tnt-target-driven-trajectory-prediction" aria-label="TNT: Target-driveN Trajectory Prediction">TNT: Target-driveN Trajectory Prediction</a><ul>
+                            
+                    <li>
+                        <a href="#%e6%a6%82%e8%a7%88" aria-label="概览">概览</a></li>
+                    <li>
+                        <a href="#tnt-%e5%ae%9e%e7%8e%b0" aria-label="TNT 实现">TNT 实现</a><ul>
+                            
+                    <li>
+                        <a href="#%e5%8e%9f%e7%90%86" aria-label="原理">原理</a></li>
+                    <li>
+                        <a href="#%e5%9c%ba%e6%99%af%e7%bc%96%e7%a0%81vectornet" aria-label="场景编码VectorNet">场景编码VectorNet</a></li>
+                    <li>
+                        <a href="#%e7%9b%ae%e6%a0%87%e9%a2%84%e6%b5%8b" aria-label="目标预测">目标预测</a></li>
+                    <li>
+                        <a href="#%e5%9f%ba%e4%ba%8e%e7%9b%ae%e6%a0%87%e7%9a%84%e8%bf%90%e5%8a%a8%e4%bc%b0%e8%ae%a1" aria-label="基于目标的运动估计">基于目标的运动估计</a></li>
+                    <li>
+                        <a href="#%e8%bd%a8%e8%bf%b9%e8%af%84%e5%88%86%e5%92%8c%e9%80%89%e6%8b%a9" aria-label="轨迹评分和选择">轨迹评分和选择</a></li>
+                    <li>
+                        <a href="#%e8%ae%ad%e7%bb%83%e5%92%8c%e6%8e%a8%e7%90%86%e7%bb%86%e8%8a%82" aria-label="训练和推理细节">训练和推理细节</a></li></ul>
+                    </li></ul>
+                    </li>
+                    <li>
+                        <a href="#densetnt" aria-label="DenseTNT:">DenseTNT:</a><ul>
+                            
+                    <li>
+                        <a href="#comparison-between-densetnt-and-tnt" aria-label="Comparison between DenseTNT and TNT">Comparison between DenseTNT and TNT</a></li>
+                    <li>
+                        <a href="#method-%e5%85%b7%e4%bd%93%e5%ae%9e%e7%8e%b0%e6%96%b9%e6%b3%95" aria-label="Method 具体实现方法">Method 具体实现方法</a><ul>
+                            
+                    <li>
+                        <a href="#sparse-context-encoding----vectornet" aria-label="sparse context encoding &amp;ndash; VectorNet">sparse context encoding &ndash; VectorNet</a></li>
+                    <li>
+                        <a href="#dense-goal-probability-estimation" aria-label="Dense goal probability estimation">Dense goal probability estimation</a><ul>
+                            
+                    <li>
+                        <a href="#lane-scoring" aria-label="Lane Scoring">Lane Scoring</a></li>
+                    <li>
+                        <a href="#probability-estimation" aria-label="Probability Estimation">Probability Estimation</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#goal-set-prediction" aria-label="Goal Set Prediction">Goal Set Prediction</a><ul>
+                            
+                    <li>
+                        <a href="#offline-optimization" aria-label="Offline Optimization">Offline Optimization</a></li>
+                    <li>
+                        <a href="#goal-set-predictor-online" aria-label="Goal Set Predictor (online)">Goal Set Predictor (online)</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#trajectory-completion" aria-label="Trajectory Completion">Trajectory Completion</a></li>
+                    <li>
+                        <a href="#learning" aria-label="Learning">Learning</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="tnt-target-driven-trajectory-prediction">TNT: Target-driveN Trajectory Prediction<a hidden class="anchor" aria-hidden="true" href="#tnt-target-driven-trajectory-prediction">#</a></h2>
+<p><code>**ref link:**</code>
+<a href="https://zhuanlan.zhihu.com/p/435953928">https://zhuanlan.zhihu.com/p/435953928</a><br>
+<a href="https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default&amp;spm=1001.2101.3001.4242.2&amp;utm_relevant_index=5">https://blog.csdn.net/weixin_40633696/article/details/124542807?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_title~default-2-124542807-blog-122758833.pc_relevant_vip_default&amp;spm=1001.2101.3001.4242.2&amp;utm_relevant_index=5</a></p>
+<h3 id="概览">概览<a hidden class="anchor" aria-hidden="true" href="#概览">#</a></h3>
+<p>在预测车辆的轨迹时, 需要尽可能考虑到车辆不同的情况，即不同的模态，如前行或左转，并预测出对应的概率。</p>
+<p>模态的定义是比较模糊的，例如，有不同的速度前行，左转可以以不同的转弯角度实现。为了能够更加通用且精确地定义每条轨迹的模态，我们直接将每条轨迹的模态定义在每条轨迹的终点上。这里的一个重要假设是，轨迹的模态基本由终点所决定，当终点确定后，轨迹的形状也大体确定了。这样我们就把轨迹预测变成了终点预测问题，极大地简化了问题的复杂度。</p>
+<p>TNT的预测方式: <strong>首先预测轨迹的终点，然后基于这个终点补充完整条轨迹</strong>。</p>
+<p>TNT 基于终点的轨迹预测流程图:
+<img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/TNT_Architecture.png" alt="TNT Architecture"  />
+</p>
+<p>TNT使用VectorNet对高精地图和车辆信息进行编码，得到要预测的车辆的全局特征，以用于接下来的解码，从而完成轨迹预测：</p>
+<p>(1). <strong>终点预测:</strong> 为每个Anchor预测一个偏移，得到终点，这些Anchor从道路的中心线上采样得到;
+(2). <strong>轨迹补全:</strong> 基于上一步预测的终点将整条轨迹补充完整;
+(3). <strong>轨迹打分和筛选:</strong> 根据场景特征，为每条轨迹进行打分，并筛选出最有可能的若干条轨迹。</p>
+<h3 id="tnt-实现">TNT 实现<a hidden class="anchor" aria-hidden="true" href="#tnt-实现">#</a></h3>
+<h4 id="原理">原理<a hidden class="anchor" aria-hidden="true" href="#原理">#</a></h4>
+<p>给定一个单个障碍物的观测状态序列 $S_P = [s_{-T^{&rsquo;}+1}, s_{-T^{&rsquo;}+2}, &hellip;, s_0]$。我们的目标是预测它的未来状态 $S_F = [s_1, s_2, &hellip;, s_T]$ 到某个固定时间步 T。自然地，障碍物与由其它障碍物和场景元素组成的环境交互作为背景: $C_P​=[c_{-T′+1}​,c_{-T′+2}​,&hellip;,c_0​]$。为简洁起见，我们记 $X = (s_P, c_P)$，因此我们想捕捉的整体概率分布是 $p(S_F|X)$ 。</p>
+<p>实际上， $p(S_F|X)$ 可以是高度多模态的。例如，车辆驶近十字路口时可能左转、直行或改变车道。直观上，未来状态的不确定性可以被分解为两部分：<u>目标或者意图的不确定性</u>，比如左右转的决定；以及<u>控制的不确定性</u>，比如转弯时需要的细粒度运动。因此，我们可以通过对目标设定条件，然后将其边缘化，从而对概率分布进行分解：</p>
+<p>$$p(S_F​∣X)=∫_{τ∈τ(C_P​)}​p(τ∣X)p(S_F​∣τ,X)d_τ​, \tag{1}$$</p>
+<p>其中 $\tau(C_P)$ 表示取决于观察到的背景 $C_P$ ​的合理目标空间。</p>
+<p>在这个公式下，我们的主要见解是，对于轨迹预测等应用，通过正确设计目标空间 $\tau τ ( C_P )$（如目标位置），目标分布 $ p(\tau|X)$ 可以很好地捕捉意图不确定性。一旦目标确定，我们会进一步证明控制不确定性（如轨迹）可以通过<strong>简单的单模态分布</strong>可靠地建模。我们用一组离散位置来模拟目标空间  $\tau{C_P}$，将 $p(\tau|X)$ 的估计主要转化为一个分类任务。与隐变分模型相比，我们的模型以明确的目标分布的形式提供了更好的可解释性，并且在设计目标空间 $\tau{C_P}$ 时可以自然地结合专家知识（如道路拓扑）。</p>
+<p>我们的整体框架有三个概念阶段。第一阶段是<strong>障碍物意图预测</strong>，其目标是用基于观察背景 $X$ 的目标空间 $\tau$ 的离散集合<u>对意图不确定性进行建模</u>，并且输出目标分布 $p(\tau|X)$ 。第二个阶段是<strong>障碍物条件运动估计</strong>，它用单模态分布对从初始状态到目标可能的未来运动进行建模。前两个阶段产生了以下概率预测 $p(S_F|X) = \sum_{\tau\in\tau(C_P)}p(\tau|X)p(S_F|\tau, X)$。</p>
+<p>许多下游应用，例如实时行为预测，需要一小组具有代表性的未来预测，而不是所有可能未来的完整分布。我们的最终阶段，<strong>评分和选择</strong>，就是为此目的量身定制的。我们从所有代表性预测上学习一个评分函数 $\phi(S_F)$，并选择一个最终的多样化预测集。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/TNT_Model_Overview.png" alt="执行echo $PATH的结果"  />
+</p>
+<h4 id="场景编码vectornet">场景编码VectorNet<a hidden class="anchor" aria-hidden="true" href="#场景编码vectornet">#</a></h4>
+<p>建模场景背景是轨迹预测的第一步，以获取<u>车辆-道路</u>和<u>车辆-车辆</u>之间的交互。TNT可以使用任何合适的背景编码器：当高清地图可用时，我们使用最优秀的层次图神经网络 VectorNet 对背景进行编码。具体来说，使用多段线来抽象出高清地图元素 $C_P$(车道，交通标志) 和代理轨迹 $S_P$​；采用子图（subgraph）网络对多段线进行编码，多段线包含可变数量的向量；然后使用全局图（global graph）对多段线之间的交互进行建模。输出是每个建模代理的全局背景特征 $X$。如果场景背景只在自上而下的图像形式中可用，则使用卷积网络作为背景编码器。</p>
+<h4 id="目标预测">目标预测<a hidden class="anchor" aria-hidden="true" href="#目标预测">#</a></h4>
+<p>在我们的公式中，目标 $\tau$ 被定义为一个预测目标可能在固定时间范围 $T$ 上的位置 $(x,y)$ 。在第一步目标预测阶段，我们的目的是提供一个预测目标的未来目标的分布 $p( \tau ∣ X )$ 。我们通过一组$N$个离散的、带有连续偏移的量化位置来建模潜在的未来目标： $\tau ={\tau^n}={(x^n,y^n)+(\Delta x^n,\Delta y^n)}^N_{n=1}$​。然后这个目标上分布可以通过一个离散-连续分解来建模：</p>
+<p>$$p(τ^n∣X)=π(τ^n∣X)⋅N(Δx^n∣v^x_n​(X))⋅N(Δ_y^n∣v_y^n​(X)),\tag{2}$$</p>
+<p>中 $\pi(\tau^n|X)=\frac{e^{f(\tau^n,X)}}{\sum_{\tau^{&rsquo;}}e^{f(\tau^{&rsquo;},X)}}$ 是在位置选择 $(x^n,y^n)$上的离散分布。术语 $N(·|v(·))$ 表示一个广义正态分布，其中我们选择Huber作为距离函数。我们将均值表示为 $v(·)$并假设单位方差。</p>
+<p>可训练函数 $f(·)$ 和  $v(·)$ 由一个2层的多层感知机(MLP)实现，目标坐标 $(x^k,y^k)$ 和场景背景特征 $X$ 作为输入。它们预测目标位置上的离散分布及其最可能的偏移量。这一阶段的训练损失函数由以下公式给出：</p>
+<p>$$L_{S1}​=L_{cls​}(π,u)+L_{offset}​(v_x​,v_y​,Δx^u,Δy^u),\tag{3}$$</p>
+<p>其中 $L_{cls}$ 是交叉熵损失， $L_{offset}$​ 是 Huber 损失；$u$ 是离真实位置最近的目标，并且 $\Delta x^u,\Delta y^u$ 是 $u$ 相对于真值的空间偏移量。</p>
+<p>离散目标空间的选择在不同应用中是灵活的，如图3所示。在车辆轨迹预测问题中，我们从高清地图里均匀地采样车道中心线上的点并且将他们作为目标候选点(标记为黄色菱形)，假设车辆从未远离车道线；对于行人，我们在代理周围生成了一个虚拟网格并将网格点作为目标候选点。对每个候选目标，TNT目标预测器生成了一个 $(\pi,\Delta x, \Delta y)$ 的元组；回归后的目标以橙色五角星标记。与直接回归相比，将未来建模成一组离散目标的最显著的优势在于，它不受模态平均的影响，模态平均是阻止多模态预测的主要因素。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/TNT_TargetChoice.png" alt="Target Choice"  />
+</p>
+<h4 id="基于目标的运动估计">基于目标的运动估计<a hidden class="anchor" aria-hidden="true" href="#基于目标的运动估计">#</a></h4>
+<p>在第二阶段，我们将给定目标轨迹的可能性建模为 $p(S_F|\tau,X)=\prod^T_{t=1}p(s_t|\tau,X)$，同样采用了广义正态分布。这里有两个假设。首先，未来时间步是条件独立的，这使得我们的模型通过避免顺序预测提高了计算效率。其次，我们正在作出有力但合理的假设，即给定目标的轨迹分布是单模态(正态)的。对于短的时间范围来说，这当然是正确的；对于更长的时间范围，可以在(中间)目标预测和运动估计之间迭代，以便假设仍然成立。</p>
+<p>这一阶段使用2层的MLP实现。它将背景特征 X 和目标位置 $\tau$ 作为输入，并且每个目标输出一条最可能的轨迹 $[\hat{s_1},&hellip;,\hat{s_T}] [s1​^​,&hellip;,sT​^​]$。由于它以第一阶段的预测目标为条件，为了实现平滑的学习过程，我们在训练时采用teacher forcing Technique[36]，将真实位置 $(x^n,y^n)$ 作为目标。该阶段的损失项是预测状态 $\hat{s_t}$​ 和真值 $s_t$​ 之间的距离：</p>
+<p>$$L_{S2}​ = \sum_{t=1}^{T}​L_{reg}​(\hat{s},s_t​),\tag{4}$$</p>
+<p>其中， $L_{reg}$​ 作为每一步坐标偏移的 Huber 损失来实现。</p>
+<h4 id="轨迹评分和选择">轨迹评分和选择<a hidden class="anchor" aria-hidden="true" href="#轨迹评分和选择">#</a></h4>
+<p>我们的最终阶段估计未来完整轨迹 S F S_F SF​ 的可能性。这和第二阶段不同，第二阶段分解时间步和目标，也和第一阶段不同，第一阶段只知道目标，但没有完整的轨迹——例如，一个目标可能被估计有很高的可能性，但到达该目标完整轨迹的可能性可能不是。</p>
+<p>我们使用最大熵模型对第二阶段的所有 M 条轨迹进行评分:</p>
+<p>$$\phi (S_F | X) = \frac{e^{g(S_F, X)}}{{\sum}_{m=1}^{M} e^{g(S_F^m, X)}}​$$,</p>
+<p>其中 $g(·)$ 被建模为一个2层的 MLP。这一阶段训练的损失项是预测分数和真值分数之间的交叉熵，</p>
+<p>$$L_{S3} = L_{CE}(\phi (S_F | X), \psi(S_F))$$</p>
+<p>其中每个预测轨迹的真值评分由预测轨迹到真值轨迹的距离 $\psi(S_F)=\frac{exp(-D(S,S_{GT})/\alpha)}{\sum_{s^{&rsquo;}}exp(-D(S^{&rsquo;},S_{GT})/\alpha)}$ 定义，其中 $D(·)$ 单位为米， $\alpha$ 是温度。距离度量定义为 $D(S^i,S^j)=max(||s^i_1-s^j_1||^2_2,&hellip;,||s^i_t-s^j_t||^2_2)$。</p>
+<p>为了从已评分的 $M$ 个轨迹获得最终一小组 $K$ 个预测轨迹，我们实现了一个轨迹选择算法来排除近似重复的轨迹。我们首先根据他们的分数对轨迹进行降序排列，并且贪婪地选择轨迹； 如果一个轨迹距离所有的选择轨迹都足够远，我们也会选择它，否则排除它。这里使用的距离度量和评分过程相同。这个过程的灵感来源于通常应用于计算机视觉问题（如目标检测）的非极大值抑制算法。</p>
+<h4 id="训练和推理细节">训练和推理细节<a hidden class="anchor" aria-hidden="true" href="#训练和推理细节">#</a></h4>
+<p>上述的 TNT 公式产生全监督的端到端训练，具有损失函数
+$$L = \lambda_1 L_{S1} + \lambda_2 L_{S2} + \lambda_3 L_{S3}$$</p>
+<p>其中，选择 $\lambda_1,\lambda_2,\lambda_3$ 来平衡训练过程。</p>
+<p>在推理时，TNT 的工作原理如下：
+(1) 工作场景编码；<br>
+(2) 采样 N 个候选目标作为目标预测器的输入，取由 $\pi(\tau|X)$ 估计的前 M 个目标；<br>
+(3) 从运动估计模型 $p(S_F|\tau,X)$ 中获取 M 个目标中每个目标的 MAP 轨迹；<br>
+(4) 通过  $\phi(S_F|\tau,X)$  给 M 个轨迹评分，并且选择一组最终的 K 个轨迹。</p>
+<h2 id="densetnt">DenseTNT:<a hidden class="anchor" aria-hidden="true" href="#densetnt">#</a></h2>
+<p><code>ref link:</code> <a href="https://blog.csdn.net/weixin_39397852/article/details/122764880">https://blog.csdn.net/weixin_39397852/article/details/122764880</a></p>
+<h3 id="comparison-between-densetnt-and-tnt">Comparison between DenseTNT and TNT<a hidden class="anchor" aria-hidden="true" href="#comparison-between-densetnt-and-tnt">#</a></h3>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/DenseTNT_Comparison.png" alt="Target Comparison"  />
+</p>
+<p>TNT(左图)是根据lane定义一些anchor，再regress和classify获得最终的位置，之后还要通过NMS的筛选法选出最后的轨迹。
+DenseTNT(右图)是通过密集地采点避免了定义anchor，同时也避免了使用NMS等规则来筛选轨迹。</p>
+<p>意图预测中非常重要的一个问题是ground truth只有一个，而对于多意图的预测来说，多个方向的预测都是允许的，这导致了label中有很多都是无效的，因为gt只包含了一个意图下的结果。此处设计了一个offline的model来提供多个意图下的label。这个model使用了一个优化算法从goal的分布里取出了一个set作为online model的label。</p>
+<h3 id="method-具体实现方法">Method 具体实现方法<a hidden class="anchor" aria-hidden="true" href="#method-具体实现方法">#</a></h3>
+<h4 id="sparse-context-encoding----vectornet">sparse context encoding &ndash; VectorNet<a hidden class="anchor" aria-hidden="true" href="#sparse-context-encoding----vectornet">#</a></h4>
+<p>本文使用VectorNet来提取地图的feature。(没有的高精地图的话也可使用CNN)</p>
+<h4 id="dense-goal-probability-estimation">Dense goal probability estimation<a hidden class="anchor" aria-hidden="true" href="#dense-goal-probability-estimation">#</a></h4>
+<p>TNT对于一个goal只预测一条轨迹的概率是有问题的：一个goal只有一条预测(可能通向这个goal的别的预测概率很高)，一个goal获取的feature不够丰富(goal附近的点的信息也用上会更好)。</p>
+<p>我们使用了<code>dense goal encoder</code>。它以一定的采样频率获取了地图上在道路上的所有点。然后预测了这些密集点的概率分布。</p>
+<h5 id="lane-scoring">Lane Scoring<a hidden class="anchor" aria-hidden="true" href="#lane-scoring">#</a></h5>
+<blockquote>
+<p>在论文实现中，可以用point scoring代替，效果更好。目的在与选出距离final pos(gt)更近的点。</p>
+</blockquote>
+<p>为了减少需要sample的点，我们先预测goal落在不同lane上的概率，这样能过滤掉明显不在candidate lane附近的点，提升运算速度。
+这是一个二分类问题。因此使用了二分类的交叉熵计算loss。对于label，使用离gt的goal最近的lane作为1，别的lane为0。对于别的lane $l$，假设gt的goal是$y_{gt}$​，定义一个distance</p>
+<p>$$d(l,y_{gt}) = min(||l_1 - y_{gt}||^2, ||l_2 - y_{gt}||^2, &hellip;, ||l_t - y_{gt}||^2,)$$</p>
+<p>直觉上就是gt的goal到这条lane的最短距离的平方。</p>
+<h5 id="probability-estimation">Probability Estimation<a hidden class="anchor" aria-hidden="true" href="#probability-estimation">#</a></h5>
+<p>获得概率分布的做法是self-attention。首先agent的feature经过两次MLP。然后把goal的feature $F$作为需要query的变量，从地图上所有元素 (lane，agent)的feature中去查找索引对应的键和值。<font color=red>目的就是建立goal的feature与地图上所有元素的联系。</font>直观上，这一步是把agent的未来状态(goal)表示成由历史的信息作为变量的函数，这个函数采用的是self-attention的做法。</p>
+<p>轨迹目标点(goals)和道路的局部信息可以用以下注意力机制表示:</p>
+<p>$$\mathbf{Q} = \mathbf{FW}^{\mathbf{Q}}, \mathbf{K} = \mathbf{LW}^{\mathbf{K}}, \mathbf{V}=\mathbf{LW}^{\mathbf{V}}$$</p>
+<p>$$\mathbf{A}(\mathbf{Q},\mathbf{K},\mathbf{V}) = softmax(\frac{\mathbf{QK^\top}}{\sqrt{d_k}})\mathbf{V}$$</p>
+<p>where $\mathbf{W}^Q, \mathbf{W}^{K}, \mathbf{W}^{V} \in \mathbb{R}^{d_h \times d_k}$ are the matrices for linear projection, $d_k$ is the dimension of query / key / value vectors, and $\mathbf{F}, \mathbf{F}$ are feature matrices of the dense goal candidates and all map elements (i.e., lanes or agents), respectively.</p>
+<p>这一步之后的结果是goal新的feature $\mathbf{F}$。再通过两次MLP，即下图中的 $g(.)$.用softmax中的方法获得每个goal的概率。将所有goal在地图上表示出来的话就是一个概率分布heatmap。</p>
+<p>$$\phi_i = \frac{\exp(g(\mathbf{F}<em>i))}{\sum</em>{n=1}^{N}\exp(g(\mathbf{F}_n))}$$</p>
+<p>对于Loss的计算，离gt的goal最近的goal的label定为1，其余都为0.采取二分类交叉熵的算法。</p>
+<p>$$\mathcal{L}<em>\text{goal} = \mathcal{L}</em>{\text{CE}}(\phi, \psi)$$</p>
+<h4 id="goal-set-prediction">Goal Set Prediction<a hidden class="anchor" aria-hidden="true" href="#goal-set-prediction">#</a></h4>
+<p>对于多意图的预测，在TNT中，预先设定好target，采用NMS(non-maximum suppression)(靠的近或概率低的过滤掉)。而DenseTNT的上一步获得是heatmap，因此不能简单使用NMS，因为用于筛选的阈值比较难定。这是因为TNT中采用的是从高到低排序概率，而DenseTNT中的概率分布是针对于整个鸟瞰图的，一旦意图的可能性变多了，平均分布到每一个意图的概率就低了(对于概率分布，所有的点的概率加起来需要为1)。</p>
+<p>heatmap，输出是goal set，这个有点像目标检测的框生成。但和目标检测不同，对于一个输入，我们的label只有一个，即gt。这样的话可能会有别的意图的结果在训练中被忽略。为此，设计了一个offline model来制造这些label。它和online model的区别就在这一步中。没有使用goal set predictor而是采用了优化算法。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/DenseTNT_Goal-Set-Predictor.png" alt="Goal-Set-Predictor"  />
+</p>
+<h5 id="offline-optimization">Offline Optimization<a hidden class="anchor" aria-hidden="true" href="#offline-optimization">#</a></h5>
+<p>上一步heatmap的输出，实际上是对于地图上众多goal每个点的一个函数。设定 $C={c_1,c_2,&hellip;,c_m}$ 为所有dense goal的candidate，heatmap就把 $C$ 映射到一个0到1的集合，写成 $h(c_i)$ ，这也是每个goal的概率。
+接下来定义一个目标函数:</p>
+<p>$$E[d(\hat{y}, Y)] = \sum^m_{i=1}h(c_i)d(\hat{y}, c_i)$$</p>
+<p>其中，$d(\hat{y}, c_i) = \mathop{\min}\limits_{y_i \in \hat{y}}||y_j - y_{c_i}||$</p>
+<p>从直观上讲，目标是有M个goal（大池子），要从中选取K个靠谱的goal（小池子）。 $d$ 是针对于大池子的，对于大池子里所有candidate都有一个 $d$。这每个candidate都与小池子中的goal计算距离，取最近的作为 d d d，即寻找小池子中离candidate最近的点。对于所有的 $d$，用概率加权计算期望。总体的话在收敛情况，大池子中的所有goal到距离自己最近的小池子中的goal乘上概率加权应当达到最小。以下是这个优化算法的实现。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/2022-07-09_DenseTNT_and_TNT/DenseTNT_Optimization-Algo.png" alt="Optimization-Algo"  />
+</p>
+<p>翻译成中文：</p>
+<ul>
+<li>初始化K个goal，从M个goal的大池子里随机选</li>
+<li>小池子里的每个goal做随机扰动，变为别的goal</li>
+<li>计算原来的和现在的小池子的d的期望e和e’</li>
+<li>如果现在的小池子d的期望更小，则使用现在的小池子。否则以1%的概率采用现在的小池子。（避免局部最优）</li>
+<li>不停循环2-4直到步数达到阈值（或时间太长）</li>
+</ul>
+<p>优化算法之后得到的就是全局最优的选中的小池子。这个小池子里的结果能作为训练online模型的伪label。</p>
+<h5 id="goal-set-predictor-online">Goal Set Predictor (online)<a hidden class="anchor" aria-hidden="true" href="#goal-set-predictor-online">#</a></h5>
+<p>模型采用了encode+decode的办法。encoder部分是一层self-attention加上max pooling，decoder部分是2层MLP，输入是heatmap，输出是2K+1个值，分别对应K个2维坐标（goal set）和一个当前goal set的confidence。</p>
+<p>考虑到heatmap的概率分布比较散，可以采用N头同时运算。即N个goal set predictor输出N个2K+1的值，从当中选取confidence最高的那个goal set预测。为了运算效率的提升，这N头使用相同的self-attention层，但是不同的2个MLP。</p>
+<p>在训练过程中，采用了offline模型的伪label作为监督。上述offline中讲到的初始选定的小池子，在这里采用的是online模型的K个goal的set的预测。然后经过L次随机扰动（即不停随机选取邻居点，L=100），选取当中expected error（offline里的期望项）最小的那个set作为伪label。</p>
+<p>标记 $\dot{y}$ ​为预测结果， $\hat{y}$ ​为伪label，则loss的计算如下。即一一对应后的L1距离之和。</p>
+<p>$$\mathcal{L_{set}(\dot{y}, \hat{y})} = \sum_{i=1}^{k}\mathcal{L}_{\text{reg}}(\dot{y}, \hat{y})$$</p>
+<p>再考虑到采用了N头预测，这部分的loss将采用二分类的交叉熵。其中 $\mu$ 为所有head的confidence，$\nu$ 为label，只有expected error最低的label为1，别的为0。</p>
+<p>$$\mathcal{L}<em>\text{head} = \mathcal{L}</em>{\text{CE}}(\mu, \nu)$$</p>
+<h4 id="trajectory-completion">Trajectory Completion<a hidden class="anchor" aria-hidden="true" href="#trajectory-completion">#</a></h4>
+<p>这一步和TNT做法类似。类似于dense goal encoding（2层MLP后过self-attention）最后过2层MLP来decode得到整条预测轨迹的state。采用teacher forcing技巧（因为只有一条gt）训练时只用gt的goal来算这条预测轨迹。Loss的算法和TNT一样，用的是点点之间的Huber loss。</p>
+<p>$$\mathcal{L}<em>{\text{completion}} = \sum</em>{t=1}^{T}\mathcal{L_{reg}}(\hat{s}_t, s_t)$$</p>
+<h4 id="learning">Learning<a hidden class="anchor" aria-hidden="true" href="#learning">#</a></h4>
+<p>训练分为两个stage。第一个stage使用gt轨迹训练除了goal set predictor的部分。即把dense的goal输入。获得大量的轨迹。</p>
+<p>$$\mathcal{L}<em>{s1} = \mathcal{L}</em>{lane} + \mathcal{L}<em>{goal}+ \mathcal{L}</em>{completion}$$</p>
+<p>第二个stage主要负责goal set predictor的部分。</p>
+<p>$$\mathcal{L}<em>{s2} = \mathcal{L}</em>{head} + \mathcal{L}_{set}$$</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://jianye0428.github.io/en/tags/prediction/">prediction</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>Docker安装及学习</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/tech/2022-06-27_knapsack/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>KnapSack Problem</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Target driveN Trajectory: DenseTNT and TNT on twitter"
+        href="https://twitter.com/intent/tweet/?text=Target%20driveN%20Trajectory%3a%20DenseTNT%20and%20TNT&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f&amp;hashtags=prediction">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Target driveN Trajectory: DenseTNT and TNT on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f&amp;title=Target%20driveN%20Trajectory%3a%20DenseTNT%20and%20TNT&amp;summary=Target%20driveN%20Trajectory%3a%20DenseTNT%20and%20TNT&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Target driveN Trajectory: DenseTNT and TNT on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f&title=Target%20driveN%20Trajectory%3a%20DenseTNT%20and%20TNT">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Target driveN Trajectory: DenseTNT and TNT on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Target driveN Trajectory: DenseTNT and TNT on whatsapp"
+        href="https://api.whatsapp.com/send?text=Target%20driveN%20Trajectory%3a%20DenseTNT%20and%20TNT%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share Target driveN Trajectory: DenseTNT and TNT on telegram"
+        href="https://telegram.me/share/url?text=Target%20driveN%20Trajectory%3a%20DenseTNT%20and%20TNT&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-07-09_densetnt_and_tnt%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

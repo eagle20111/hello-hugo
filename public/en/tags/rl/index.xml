@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>RL on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/rl/</link>
+    <description>Recent content in RL on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Fri, 06 May 2022 13:16:25 +0200</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/rl/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>PPO -- Proximal Policy Optimization</title>
+      <link>https://jianye0428.github.io/en/posts/tech/rl/2022-05-06_ppo/</link>
+      <pubDate>Fri, 06 May 2022 13:16:25 +0200</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/rl/2022-05-06_ppo/</guid>
+      <description>PPO Architechture </description>
+    </item>
+    
+    <item>
+      <title>DQN -- Deep Q Network</title>
+      <link>https://jianye0428.github.io/en/posts/tech/rl/2022-05-05_dqn/</link>
+      <pubDate>Thu, 05 May 2022 21:52:44 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/rl/2022-05-05_dqn/</guid>
+      <description>[DQN]paper link: https://arxiv.org/pdf/1312.5602v1.pdf DQN: Playing Atari with Deep Reinforcement Learning General Architecture Here is Network listed: play Atari games using RL and perform better than human CNN + Q Learning: CNN for frame-skiped images features extraction; and Q Learning for policy generation Network Channel Kernel Size Stride Activation Output Size Input NA NA NA NA $84\times84\times4$ First Conv 16 8x8 4 Relu $20 \times 20 \times 6$ Second Conv 32</description>
+    </item>
+    
+  </channel>
+</rss>

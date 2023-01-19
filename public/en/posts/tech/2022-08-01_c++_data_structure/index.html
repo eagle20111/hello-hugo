@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>C&#43;&#43; STL (Standard Template Library) Containers | Jian&#39;s Blog</title>
+<meta name="keywords" content="c&#43;&#43;, STL">
+<meta name="description" content="C&#43;&#43; STL (Standard Template Library) 总结 C&#43;&#43; STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/tech/2022-08-01_c&#43;&#43;_data_structure/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/tech/2022-08-01_c&#43;&#43;_data_structure/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="C&#43;&#43; STL (Standard Template Library) Containers" />
+<meta property="og:description" content="C&#43;&#43; STL (Standard Template Library) 总结 C&#43;&#43; STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/tech/2022-08-01_c&#43;&#43;_data_structure/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-08-01T09:01:45&#43;08:00" />
+<meta property="article:modified_time" content="2022-08-01T09:01:45&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="C&#43;&#43; STL (Standard Template Library) Containers"/>
+<meta name="twitter:description" content="C&#43;&#43; STL (Standard Template Library) 总结 C&#43;&#43; STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "C++ STL (Standard Template Library) Containers",
+      "item": "https://jianye0428.github.io/en/posts/tech/2022-08-01_c++_data_structure/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "C++ STL (Standard Template Library) Containers",
+  "name": "C\u002b\u002b STL (Standard Template Library) Containers",
+  "description": "C++ STL (Standard Template Library) 总结 C++ STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。",
+  "keywords": [
+    "c++", "STL"
+  ],
+  "articleBody": "C++ STL (Standard Template Library) 总结 C++ STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。\n本文旨在对 C++ 标准模板库的 array, vector, deque, list, forward_list, queue, priority_queue, stack, map, multimap, set, multi_set, unordered_map, unordered_multimap, unordered_set, unordered_multiset 共十六类容器进行系统的对比分析，重点关注各个容器的底层原理与性能特点。本文唯一参考资料为C++官方文档，若有其它参考则会指明出处。\n1. array Container properties: Sequence | Contiguous storage | Fixed-size aggregate\n容器属性：顺序容器（支持随机访问），连续内存空间，固定大小；//连续内存\n类模板头：template \u003c class T, size_t N \u003e class array;\narray 即数组，其大小固定，所有的元素严格按照内存地址线性排列，array 并不维护元素之外的任何多余数据，甚至也不会维护一个size这样的变量，这保证了它在存储性能上和C++语法中的数组符号[]无异。尽管其它大部分标准容器都可以通过 std::allocator 来动态的分配和回收内存空间，但 Array 并不支持这样做。\nArray 和其它标准容器一个很重要的不同是：对两个 array 执行 swap 操作意味着真的会对相应 range 内的元素一一置换，因此其时间花销正比于置换规模；但同时，对两个 array 执行 swap 操作不会改变两个容器各自的迭代器的依附属性，这是由 array 的 swap 操作不交换内存地址决定的。\nArray 的另一个特性是：不同于其它容器，array 可以被当作 std::tuple 使用，因为 array 的头文件重载了get()以及tuple_size()和tuple_element()函数（注意这些函数非 array 的成员函数，而是外部函数）。\n最后需要注意，虽然 array 和 C++语法中的[]符号无限接近，但两者是两个存在，array 毕竟是标准模板库的一员，是一个class，因此支持 begin(), end(), front(), back(), at(), empty(), data(), fill(), swap(), ... 等等标准接口，而[]是真正的最朴素的数组。\n2. vector Container properties: Sequence | Dynamic array | Allocator-aware\n容器属性：顺序容器（支持随机访问），动态调整大小，使用内存分配器动态管理内存；//连续内存\n类模板头：template \u003c class T, class Alloc = allocator \u003e class vector;\n一句话来说，vector 就是能够动态调整大小的 array。和 array 一样，vector 使用连续内存空间来保存元素，这意味着其元素可以用普通指针的++和--操作来访问；不同于 array 的是，其存储空间可以自动调整。\n在底层上，vector 使用动态分配的 array，当现有空间无法满足增长需求时，会重新分配（reallocate）一个更大的 array 并把所有元素移动过去，因此，vector 的 reallocate 是一个很耗时的处理。所以，每次 reallocate 时都会预留多余的空间，以满足潜在的增长需求，也就是说，vector的capacity()通常会大于size()。vector 什么时候做 reallocate，reallocate 多少多余空间，是有具体策略的，按下不表。总体来说，vector 比 array 多了一些内存消耗，以换取更灵活的内存管理。\n和其它的动态顺序容器（deque, list, forward_list）相比，vector 在元素访问上效率最高，在尾部增删元素的效率也相对最高。如果调用者有在尾部以外的地方增删元素的需求，vector 则不如其它容器，并且迭代器的一致性也较差（have less consistent iterators and references than lists and forward_lists）。\n3. queue 容器属性：容器适配器(adapter)，先进先出型容器（FIFO）；//C++设计模式之适配器模式\ntemplate \u003e class queue;\nqueue（普通队列）是一个专为 FIFO 设计的容器适配器，也即只能从一端插入、从另一端删除；所谓容器适配器，是指它本身只是一个封装层，必须依赖指定的底层容器（通过模板参数中的class Container指定）才能实现具体功能。\n**容器适配器(Adapter)**实际上是C++设计模式的一种 – 称为 Adapter 模式（适配器模式），Adapter 模式的目的是将第三方库提供的接口做一个封装和转化，使其适配自己工程中预留的接口，或者适应自己工程的调用风格。换句话说，Adapter 模式的目的是将被调用类（如第三方库）的接口转化为希望的接口。\n回到正题，queue 可以接纳任何一个至少支持下列接口的容器作为底层容器：\nempty(); size(); front(); back(); push_back(); pop_front().\n在标准模板库容器中，deque 和 list 满足上述要求，当然用户也可以自定义一个满足上述要求的容器。通过模板参数可以看出，默认情况下，queue 使用 deque 作为底层容器。\n4. deque Container properties: Sequence | Dynamic array | Allocator-aware\n容器属性：顺序容器（支持随机访问），动态调整大小，使用内存分配器动态管理内存；//分段连续内存\n类模板头：template \u003c class T, class Alloc = allocator \u003e class deque;\ndeque（读作\"deck\"）是 double-ended queue 的缩写，是一个可以在首尾两端进行动态增删的顺序容器。\n不同的库对 deque 的实现可能不同，但大体上都是某种形式的动态 array，且都支持随机访问。deque 的功能和 vector 比较接近，但 deque 额外支持在头部动态增删元素。和 vector 不一样的是，deque 不保证存储区域一定是连续的! 因此用指向元素的普通指针做++和--操作是非常危险的行为。\n从底层机理上能更透彻地理解 deque 的特点：vector 使用的是单一的 array，deque 则会使用很多个离散的 array 来组织数据「the elements of a deque can be scattered in different chunks of storage」！如果说 vector 是连续的，deque 则是分段连续。deque 会维护不同 array 之间的关联信息，使用户无需关心分段这个事实。这样做的好处是很明显的：deque 在 reallocate 时，只需新增/释放两端的 storage chunk 即可，无需移动已有数据（vector 的弊端），极大提升了效率，尤其在数据规模很大时，优势明显。\n相比于 vector 和 list，deque 并不适合遍历！因为每次访问元素时，deque 底层都要检查是否触达了内存片段的边界，造成了额外的开销！deque 的核心优势是在双端都支持高效的增删操作，程序员选择使用 deque 时需要有双端操作的明确理由。\n5. priority_queue 容器属性：容器适配器，严格弱序（Strict Weak Ordering），优先级队列；\ntemplate ,\nclass Compare = less \u003e class priority_queue;\n和 queue 类似，priority_queue（术语叫作优先级队列）也只是一个容器适配器，需要指定底层容器才能实例化，参见模板参数中的class Container形参。priority_queue 的核心特点在于其严格弱序特性（strict weak ordering）：也即 priority_queue 保证容器中的第一个元素始终是所有元素中最大的！为此，用户在实例化一个 priority_queue 时，必须为元素类型（class T）重载\u003c运算符，以用于元素排序！\npriority_queue 的原理可以用一个大顶堆来解释：priority_queue 在内部维护一个基于二叉树的大顶堆数据结构，在这个数据结构中，最大的元素始终位于堆顶部，且只有堆顶部的元素（max heap element）才能被访问和获取，大顶堆的具体原理可参见任何一本数据结构书籍。\n为了支持这种工作原理，priority_queue 对底层容器也是有要求的，priority_queue 的底层容器必须支持随机访问和至少以下接口：\nempty(); size(); front(); push_back(); pop_back().\n标准模板库中的 vector 和 deque 能够满足上述需求，默认情况下，priority_queue 使用 vector 作为底层容器。\n某种程度上来说，priority_queue 默认在 vector 上使用堆算法将 vector 中元素构造成大顶堆的结构，因此 priority_queue 就是堆 ，所有需要用到堆的位置，都可以考虑使用 priority_queue。priority_queue 默认是大顶堆，用户也可以通过自定义模板参数中的 class Compare 来实现一个小顶堆。\n相比于 queue（普通队列）的先进先出FIFO，priority_queue 实现了最高优先级先出。\n6. list Container properties: Sequence | Doubly-linked list | Allocator-aware\n容器属性：顺序容器（可顺序访问，但不支持随机访问），双链表，使用内存分配器动态管理内存；//离散内存\n类模板头：template \u003c class T, class Alloc = allocator \u003e class list;\nlist 是一种支持在任意位置都可以快速地插入和删除元素的容器，且支持双向遍历。list 容器能够做到这些的原因在于其底层结构是双链表，双链表允许把各个元素都保存在彼此不相干的内存地址上，但每个元素都会与前后相邻元素关联。\n和其它的顺序容器（array, vector, deque）相比，list 的最大优势在于支持在任意位置插入、删除和移动元素，对 list 来说，在哪个位置进行操作并没有区别。list 在部分算法（如 sorting）中的效率可能优于其它顺序容器。\nlist 的主要缺点是不支持元素的随机访问！如果我们想要访问某个元素，则必须从一个已知元素（如 begin 或 end）开始朝一个方向遍历，直至到达要访问的元素。此外，list 还要消耗更多的内存空间，用于保存各个元素的关联信息。\n[另说] list 对内存空间的使用效率并不高，一方面元素内存地址是离散的而非连续，另一方面，list 需要保存额外的关联信息。\n7. forward_list Container properties: Sequence | Linked list | Allocator-aware\n容器属性：顺序容器（可顺序访问，但不支持随机访问），单链表，使用内存分配器动态管理内存；\n类模板头：template \u003c class T, class Alloc = allocator \u003e class list;\nforward_list 也是一种支持在任意位置快速插入和删除元素的容器，forward_list 相比于 list 的核心区别是它是一个单链表，因此, 每个元素只会与相邻的下一个元素关联！由于关联信息少了一半，因此 forward_list 占用的内存空间更小，且插入和删除的效率稍稍高于 list。作为代价，forward_list 只能单向遍历。\n相比于其它顺序容器（array, vector, deque），forward_list 的优缺点和 list 基本相同。\n既然已经有了 list，为什么 C++ STL 又设计了 forward_list 这一容器呢？设计 forward_list 的目的是为了达到不输于任何一个C风格手写链表的极值效率！为此，forward_list 是一个最小链表设计，它甚至没有size()接口，因为内部维护一个size变量会降低增删元素的效率。如果想要获取 forward_list 的 size，一个通常的做法是，用 std::distance 计算 begin 到 end 的距离得出 size。一句话总结：list 兼顾了接口丰富性牺牲了效率，而 forward_list 舍弃了不必要的接口只为追求极致效率。\n8. stack 容器属性：容器适配器，后进先出型容器（LIFO）；\ntemplate \u003e class stack;\nstack（栈）是一个专为 LIFO 设计的容器适配器，也即只能从一端插入和删除；作为适配器，需要指定底层容器才能实例化，参见模板参数中的class Container形参。\nstack 的特点是后进先出（一端进出），不允许遍历；任何时候外界只能访问 stack 顶部的元素；只有在移除 stack 顶部的元素后，才能访问下方的元素。stack 需要底层容器能够在一端增删元素，这一端也即 stack 的“栈顶”；stack 可以接纳任何一个至少支持下列接口的容器作为底层容器：\nempty(); size(); back(); push_back(); pop_back()\n在标准模板库容器中，vector、deque 和 list 满足上述要求，当然用户也可以自定义一个满足上述要求的容器。通过模板参数可以看出，默认情况下，stack 使用 deque 作为底层容器。\nstack 容器应用广泛，例如，编辑器中的 undo （撤销操作）机制就是用栈来记录连续的操作。stack 的设计场景和自助餐馆中堆叠的盘子、摞起来的一堆书类似。\n9. map Container properties: Associative | Ordered | Map | Unique keys | Allocator-aware\n容器属性：关联容器，有序，元素类型，key是唯一的，使用内存分配器动态管理内存 ；\ntemplate \u003c class Key, // map::key_type\nclass T, // map::mapped_type\nclass Compare = less, // map::key_compare\nclass Alloc = allocator",
+  "wordCount" : "7811",
+  "inLanguage": "en",
+  "datePublished": "2022-08-01T09:01:45+08:00",
+  "dateModified": "2022-08-01T09:01:45+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/tech/2022-08-01_c++_data_structure/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      C&#43;&#43; STL (Standard Template Library) Containers
+    </h1>
+    <div class="post-meta"><span title='2022-08-01 09:01:45 +0800 CST'>2022-08-01</span>&nbsp;·&nbsp;16 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/tech/2022-08-01_C&#43;&#43;_Data_Structure.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#c-stl-standard-template-library-%e6%80%bb%e7%bb%93" aria-label="C&#43;&#43; STL (Standard Template Library) 总结">C++ STL (Standard Template Library) 总结</a><ul>
+                            
+                    <li>
+                        <a href="#1-array" aria-label="1. array">1. array</a></li>
+                    <li>
+                        <a href="#2-vector" aria-label="2. vector">2. vector</a></li>
+                    <li>
+                        <a href="#3-queue" aria-label="3. queue">3. queue</a></li>
+                    <li>
+                        <a href="#4-deque" aria-label="4. deque">4. deque</a></li>
+                    <li>
+                        <a href="#5-priority_queue" aria-label="5. priority_queue">5. priority_queue</a></li>
+                    <li>
+                        <a href="#6-list" aria-label="6. list">6. list</a></li>
+                    <li>
+                        <a href="#7-forward_list" aria-label="7. forward_list">7. forward_list</a></li>
+                    <li>
+                        <a href="#8-stack" aria-label="8. stack">8. stack</a></li>
+                    <li>
+                        <a href="#9-map" aria-label="9. map">9. map</a></li>
+                    <li>
+                        <a href="#10-multimap" aria-label="10. multimap">10. multimap</a></li>
+                    <li>
+                        <a href="#11-set" aria-label="11. set">11. set</a></li>
+                    <li>
+                        <a href="#12-multi_set" aria-label="12. multi_set">12. multi_set</a></li>
+                    <li>
+                        <a href="#13-unordered_map" aria-label="13. unordered_map">13. unordered_map</a></li>
+                    <li>
+                        <a href="#14-unordered_multimap" aria-label="14. unordered_multimap">14. unordered_multimap</a></li>
+                    <li>
+                        <a href="#15-unordered_set" aria-label="15. unordered_set">15. unordered_set</a></li>
+                    <li>
+                        <a href="#16-unordered_multiset" aria-label="16. unordered_multiset">16. unordered_multiset</a></li>
+                    <li>
+                        <a href="#17-pair--tuple" aria-label="17. pair &amp;amp;&amp;amp; tuple">17. pair &amp;&amp; tuple</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="c-stl-standard-template-library-总结">C++ STL (Standard Template Library) 总结<a hidden class="anchor" aria-hidden="true" href="#c-stl-standard-template-library-总结">#</a></h2>
+<p>C++ STL 容器是使用频率超高的基础设施，只有了解各个容器的底层原理，才能得心应手地用好不同的容器，做到用最合适的容器干最合适的事情。</p>
+<p>本文旨在对 C++ 标准模板库的 <em>array</em>, <em>vector</em>, <em>deque</em>, <em>list</em>, <em>forward_list</em>, <em>queue</em>, <em>priority_queue</em>, <em>stack</em>, <em>map</em>, <em>multimap</em>, <em>set</em>, <em>multi_set</em>, <em>unordered_map</em>, <em>unordered_multimap</em>, <em>unordered_set</em>, <em>unordered_multiset</em> 共十六类容器进行系统的对比分析，重点关注各个容器的底层原理与性能特点。本文唯一参考资料为C++官方文档，若有其它参考则会指明出处。</p>
+<h3 id="1-array">1. array<a hidden class="anchor" aria-hidden="true" href="#1-array">#</a></h3>
+<blockquote>
+<p>Container properties: Sequence | Contiguous storage | Fixed-size aggregate<br>
+容器属性：顺序容器（支持随机访问），连续内存空间，固定大小；//连续内存<br>
+类模板头：template &lt; class T, size_t N &gt; class array;</p>
+</blockquote>
+<p>array 即数组，其大小固定，所有的元素严格按照内存地址线性排列，array 并不维护元素之外的任何多余数据，甚至也不会维护一个size这样的变量，这保证了它在存储性能上和C++语法中的数组符号[]无异。尽管其它大部分标准容器都可以通过 std::allocator 来动态的分配和回收内存空间，但 <strong>Array 并不支持这样做</strong>。</p>
+<p>Array 和其它标准容器一个很重要的不同是：<u>对两个 array 执行 swap 操作意味着真的会对相应 range 内的元素一一置换</u>，因此其时间花销正比于置换规模；但同时，对两个 array 执行 swap 操作不会改变两个容器各自的迭代器的依附属性，这是由 array 的 swap 操作不交换内存地址决定的。</p>
+<p>Array 的另一个特性是：不同于其它容器，<font color = red>array 可以被当作 std::tuple 使用</font>，因为 array 的头文件重载了get()以及tuple_size()和tuple_element()函数（注意这些函数非 array 的成员函数，而是外部函数）。</p>
+<p>最后需要注意，虽然 array 和 C++语法中的[]符号无限接近，但两者是两个存在，array 毕竟是标准模板库的一员，是一个class，因此支持
+<code>begin(), end(), front(), back(), at(), empty(), data(), fill(), swap(), ... </code> 等等标准接口，而[]是真正的最朴素的数组。</p>
+<h3 id="2-vector">2. vector<a hidden class="anchor" aria-hidden="true" href="#2-vector">#</a></h3>
+<blockquote>
+<p>Container properties: Sequence | Dynamic array | Allocator-aware<br>
+容器属性：<font color = red>顺序容器</font>（支持随机访问），动态调整大小，使用内存分配器动态管理内存；//连续内存<br>
+类模板头：template &lt; class T, class Alloc = allocator<T> &gt; class vector;</p>
+</blockquote>
+<p>一句话来说，<u>vector 就是能够动态调整大小的 array</u>。和 array 一样，vector 使用<font color=red>连续内存空间</font>来保存元素，这意味着其元素可以用普通指针的<code>++</code>和<code>--</code>操作来访问；不同于 array 的是，其<strong>存储空间可以自动调整</strong>。</p>
+<p>在底层上，vector 使用动态分配的 array，当现有空间无法满足增长需求时，会重新分配（reallocate）一个更大的 array 并把所有元素移动过去，因此，<font color=red>vector 的 reallocate 是一个很耗时的处理</font>。所以，每次 reallocate 时都会预留多余的空间，以满足潜在的增长需求，也就是说，vector的capacity()通常会大于size()。vector 什么时候做 reallocate，reallocate 多少多余空间，是有具体策略的，按下不表。总体来说，<u>vector 比 array 多了一些内存消耗，以换取更灵活的内存管理</u>。</p>
+<p>和其它的动态顺序容器（deque, list, forward_list）相比，<u>vector 在元素访问上效率最高，在尾部增删元素的效率也相对最高</u>。如果调用者有在尾部以外的地方增删元素的需求，vector 则不如其它容器，并且迭代器的一致性也较差（have less consistent iterators and references than lists and forward_lists）。</p>
+<h3 id="3-queue">3. queue<a hidden class="anchor" aria-hidden="true" href="#3-queue">#</a></h3>
+<blockquote>
+<p>容器属性：<font color=red>容器适配器(adapter)</font>，先进先出型容器（FIFO）；//C++设计模式之适配器模式<br>
+template &lt;class T, class Container = deque<T> &gt; class queue;</p>
+</blockquote>
+<p>queue（普通队列）是一个专为 FIFO 设计的容器适配器，也即只能从一端插入、从另一端删除；所谓容器适配器，是指它本身只是一个封装层，必须依赖指定的底层容器（通过模板参数中的class Container指定）才能实现具体功能。</p>
+<p>**容器适配器(Adapter)**实际上是C++设计模式的一种 &ndash; 称为 Adapter 模式（适配器模式），Adapter 模式的目的是将第三方库提供的接口做一个封装和转化，使其适配自己工程中预留的接口，或者适应自己工程的调用风格。换句话说，Adapter 模式的目的是将被调用类（如第三方库）的接口转化为希望的接口。</p>
+<p>回到正题，queue 可以接纳任何一个至少支持下列接口的容器作为底层容器：</p>
+<blockquote>
+<p>empty(); size(); front(); back(); push_back(); pop_front().</p>
+</blockquote>
+<p>在标准模板库容器中，deque 和 list 满足上述要求，当然用户也可以自定义一个满足上述要求的容器。通过模板参数可以看出，<font color=red>默认情况下，queue 使用 deque 作为底层容器</font>。</p>
+<h3 id="4-deque">4. deque<a hidden class="anchor" aria-hidden="true" href="#4-deque">#</a></h3>
+<blockquote>
+<p>Container properties: Sequence | Dynamic array | Allocator-aware<br>
+容器属性：<font color=red>顺序容器</font>（支持随机访问），动态调整大小，使用内存分配器动态管理内存；//分段连续内存<br>
+类模板头：template &lt; class T, class Alloc = allocator<T> &gt; class deque;</p>
+</blockquote>
+<p>deque（读作&quot;deck&quot;）是 double-ended queue 的缩写，是一个可以在首尾两端进行动态增删的顺序容器。</p>
+<p>不同的库对 deque 的实现可能不同，但大体上都是<font color=green>某种形式的动态 array</font>，且都支持随机访问。deque 的功能和 vector 比较接近，但 deque 额外支持在头部动态增删元素。和 vector 不一样的是，<font color = red><u>deque 不保证存储区域一定是连续的!</u></font> 因此用指向元素的普通指针做<code>++</code>和<code>--</code>操作是非常危险的行为。</p>
+<p>从底层机理上能更透彻地理解 deque 的特点：<font color = red>vector 使用的是单一的 array，deque 则会使用很多个离散的 array 来组织数据</font>「the elements of a deque can be scattered in different chunks of storage」！如果说 vector 是连续的，deque 则是分段连续。deque 会维护不同 array 之间的关联信息，使用户无需关心分段这个事实。这样做的好处是很明显的：deque 在 reallocate 时，只需新增/释放两端的 storage chunk 即可，无需移动已有数据（vector 的弊端），极大提升了效率，尤其在数据规模很大时，优势明显。</p>
+<p>相比于 vector 和 list，deque 并不适合遍历！因为每次访问元素时，deque 底层都要检查是否触达了内存片段的边界，造成了额外的开销！deque 的核心优势是在双端都支持高效的增删操作，程序员选择使用 deque 时需要有双端操作的明确理由。</p>
+<h3 id="5-priority_queue">5. priority_queue<a hidden class="anchor" aria-hidden="true" href="#5-priority_queue">#</a></h3>
+<blockquote>
+<p>容器属性：<font color=red>容器适配器</font>，严格弱序（Strict Weak Ordering），优先级队列；<br>
+template &lt;class T, class Container = vector<T>,<br>
+class Compare = less<typename Container::value_type> &gt; class priority_queue;</p>
+</blockquote>
+<p>和 queue 类似，priority_queue（术语叫作优先级队列）也只是一个容器适配器，需要指定底层容器才能实例化，参见模板参数中的class Container形参。priority_queue 的核心特点在于其严格弱序特性（strict weak ordering）：也即 priority_queue 保证容器中的第一个元素始终是所有元素中最大的！为此，用户在实例化一个 priority_queue 时，必须为元素类型（class T）重载&lt;运算符，以用于元素排序！</p>
+<p>priority_queue 的原理可以用一个大顶堆来解释：priority_queue 在内部维护一个基于二叉树的大顶堆数据结构，在这个数据结构中，最大的元素始终位于堆顶部，且只有堆顶部的元素（max heap element）才能被访问和获取，大顶堆的具体原理可参见任何一本数据结构书籍。</p>
+<p>为了支持这种工作原理，priority_queue 对底层容器也是有要求的，priority_queue 的底层容器必须支持随机访问和至少以下接口：</p>
+<blockquote>
+<p>empty(); size(); front(); push_back(); pop_back().</p>
+</blockquote>
+<p>标准模板库中的 vector 和 deque 能够满足上述需求，默认情况下，priority_queue 使用 vector 作为底层容器。</p>
+<p>某种程度上来说，priority_queue 默认在 vector 上使用堆算法将 vector 中元素构造成大顶堆的结构，因此 priority_queue 就是堆 ，所有需要用到堆的位置，都可以考虑使用 priority_queue。priority_queue 默认是大顶堆，用户也可以通过自定义模板参数中的 class Compare 来实现一个小顶堆。</p>
+<p>相比于 queue（普通队列）的先进先出FIFO，priority_queue 实现了最高优先级先出。</p>
+<h3 id="6-list">6. list<a hidden class="anchor" aria-hidden="true" href="#6-list">#</a></h3>
+<blockquote>
+<p>Container properties: Sequence | Doubly-linked list | Allocator-aware<br>
+容器属性：<font color = red>顺序容器</font>（可顺序访问，但不支持随机访问），双链表，使用内存分配器动态管理内存；//离散内存<br>
+类模板头：template &lt; class T, class Alloc = allocator<T> &gt; class list;</p>
+</blockquote>
+<p>list 是一种支持在<strong>任意位置都可以快速地插入和删除</strong>元素的容器，且支持<strong>双向遍历</strong>。list 容器能够做到这些的原因在于<strong>其底层结构是双链表</strong>，双链表允许把各个元素都保存在彼此不相干的内存地址上，但每个元素都会与前后相邻元素关联。</p>
+<p>和其它的顺序容器（array, vector, deque）相比，<u>list 的最大优势在于支持在任意位置插入、删除和移动元素</u>，对 list 来说，在哪个位置进行操作并没有区别。list 在部分算法（如 sorting）中的效率可能优于其它顺序容器。</p>
+<p>list 的<strong>主要缺点</strong>是<u>不支持元素的随机访问</u>！如果我们想要访问某个元素，则必须从一个已知元素（如 begin 或 end）开始朝一个方向遍历，直至到达要访问的元素。此外，list 还要消耗更多的内存空间，用于保存各个元素的关联信息。</p>
+<p>[另说] <strong>list 对内存空间的使用效率并不高，一方面元素内存地址是离散的而非连续，另一方面，list 需要保存额外的关联信息。</strong></p>
+<h3 id="7-forward_list">7. forward_list<a hidden class="anchor" aria-hidden="true" href="#7-forward_list">#</a></h3>
+<blockquote>
+<p>Container properties: Sequence | Linked list | Allocator-aware<br>
+容器属性：<font color = red>顺序容器</font>（可顺序访问，但不支持随机访问），单链表，使用内存分配器动态管理内存；<br>
+类模板头：template &lt; class T, class Alloc = allocator<T> &gt; class list;</p>
+</blockquote>
+<p>forward_list 也是一种支持在任意位置快速插入和删除元素的容器，forward_list 相比于 list 的核心区别是它是一个单链表，因此, 每个元素只会与相邻的下一个元素关联！由于关联信息少了一半，因此 forward_list 占用的内存空间更小，且插入和删除的效率稍稍高于 list。作为代价，forward_list 只能单向遍历。</p>
+<p>相比于其它顺序容器（array, vector, deque），forward_list 的优缺点和 list 基本相同。</p>
+<p>既然已经有了 list，为什么 C++ STL 又设计了 forward_list 这一容器呢？设计 forward_list 的目的是为了达到不输于任何一个C风格<strong>手写链表的极值效率</strong>！为此，forward_list 是一个最小链表设计，它甚至没有size()接口，因为内部维护一个size变量会降低增删元素的效率。如果想要获取 forward_list 的 size，一个通常的做法是，用 std::distance 计算 begin 到 end 的距离得出 size。一句话总结：list 兼顾了接口丰富性牺牲了效率，而 forward_list 舍弃了不必要的接口只为追求极致效率。</p>
+<h3 id="8-stack">8. stack<a hidden class="anchor" aria-hidden="true" href="#8-stack">#</a></h3>
+<blockquote>
+<p>容器属性：<font color = red>容器适配器</font>，后进先出型容器（LIFO）；<br>
+template &lt;class T, class Container = deque<T> &gt; class stack;</p>
+</blockquote>
+<p>stack（栈）是一个专为 LIFO 设计的容器适配器，也即只能从一端插入和删除；作为适配器，需要指定底层容器才能实例化，参见模板参数中的<code>class Container</code>形参。</p>
+<p>stack 的特点是后进先出（一端进出），不允许遍历；任何时候外界只能访问 stack 顶部的元素；只有在移除 stack 顶部的元素后，才能访问下方的元素。stack 需要底层容器能够在一端增删元素，这一端也即 stack 的“栈顶”；stack 可以接纳任何一个至少支持下列接口的容器作为底层容器：</p>
+<blockquote>
+<p>empty(); size(); back(); push_back(); pop_back()</p>
+</blockquote>
+<p>在标准模板库容器中，vector、deque 和 list 满足上述要求，当然用户也可以自定义一个满足上述要求的容器。通过模板参数可以看出，默认情况下，<strong>stack 使用 deque 作为底层容器</strong>。</p>
+<p>stack 容器应用广泛，例如，编辑器中的 undo （撤销操作）机制就是用栈来记录连续的操作。stack 的设计场景和自助餐馆中堆叠的盘子、摞起来的一堆书类似。</p>
+<h3 id="9-map">9. map<a hidden class="anchor" aria-hidden="true" href="#9-map">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Ordered | Map | Unique keys | Allocator-aware<br>
+容器属性：<font color = red>关联容器</font>，有序，元素类型&lt;key, value&gt;，key是唯一的，使用内存分配器动态管理内存 ；<br>
+template &lt; class Key, // map::key_type<br>
+class T, // map::mapped_type<br>
+class Compare = less<Key>, // map::key_compare<br>
+class Alloc = allocator&lt;pair&lt;const Key,T&gt; &gt; // map::allocator_type<br>
+class map;</p>
+</blockquote>
+<p>map 是一个关联型容器，其元素类型是由 key 和 value 组成的 std::pair，实际上 map 中元素的数据类型正是 <code>typedef pair&lt;const Key, T&gt; value_type</code>;，这就看的很清楚了。</p>
+<p>所谓关联容器，是指<strong>对所有元素的检索都是通过元素的 key 进行的（而非元素的内存地址）</strong>，map 通过底层的「红黑树」数据结构来将所有的元素按照 key 的相对大小进行排序，所实现的排序效果也是严格弱序特性（strict weak ordering），为此，开发者需要重载 key 的&lt;运算符或者模板参数中的 class Compare。所提到的红黑树是一种自平衡二叉搜索树，它衍生自B树，这里推荐两篇文章（<a href="https://zhuanlan.zhihu.com/p/72505589">记一次腾讯面试：有了二叉查找树、平衡树（AVL）为啥还需要红黑树？</a>，<a href="https://zhuanlan.zhihu.com/p/273829162">图解：什么是红黑树？</a>）作为更深入的参考。</p>
+<p>大体来说，map 访问元素的速度要稍慢于下文的 unordered_map，这是因为虽然都叫“map”，但两者的底层机制完全不一样。但是，相比于后者，map 支持在一个子集合上进行直接迭代器访问，原因在于 map 中的元素是被有序组织的。</p>
+<p>最后，map 也支持通过operator[]的方式来直接访问 value。</p>
+<h3 id="10-multimap">10. multimap<a hidden class="anchor" aria-hidden="true" href="#10-multimap">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Ordered | Map | Multiple equivalent keys | Allocator-aware<br>
+容器属性: 关联容器，有序，元素类型&lt;key, value&gt;，允许不同元素key相同，使用内存分配器管理内存；<br>
+template &lt; class Key, // map::key_type<br>
+class T, // map::mapped_type<br>
+class Compare = less<Key>, // map::key_compare<br>
+class Alloc = allocator&lt;pair&lt;const Key,T&gt; &gt; // map::allocator_type<br>
+class map;</p>
+</blockquote>
+<p><strong>map 中不允许出现 key 相同的两个元素，但 multimap 则可以这样做！</strong></p>
+<p>multimap 与 map 底层原理完全一样，都是使用「红黑树」对元素数据按 key 的比较关系，进行快速的插入、删除和检索操作；所不同的是 multimap 允许将具有相同 key 的不同元素插入容器（这个不同体现了 multimap 对红黑树的使用方式的差异）。在 multimap 容器中，元素的 key 与元素 value 的映射关系，是一对多的，因此，multimap 是多重映射容器。</p>
+<p>注意，在向 multimap 中新增元素时，multimap 只会判断 key 是否相同，而完全不会判断 value 是否相同！<font color=red>这意味着如果相同的 &lt;key, value&gt; 插入了多次，multimap 会对它们悉数保存！</font></p>
+<p>在使用中，我们可以通过迭代器配合 lower_bound() 和 upper_bound() 来访问一个 key 对应的所有 value，也可以使用equal_range()来访问一个 key 对应的所有 value，也可以通过find()配合count()来访问一个 key 对应的所有 value，个人认为前两种方法使用起来更方便一点。</p>
+<p>下文中将要提到的 multiset 之于 set 类似于这里的 multimap 之于 map。</p>
+<h3 id="11-set">11. set<a hidden class="anchor" aria-hidden="true" href="#11-set">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Ordered | Set | Unique keys | Allocator-aware<br>
+容器属性：<font color=red>关联容器</font>，有序，元素自身即key，元素有唯一性，使用内存分配器动态管理内存；<br>
+template &lt; class T, // set::key_type/value_type<br>
+class Compare = less<T>, // set::key_compare/value_compare<br>
+class Alloc = allocator<T> // set::allocator_type<br>
+class set;</p>
+</blockquote>
+<p>set 是一个关联型容器，和 map 一样，它的底层结构是「红黑树」，但和 map 不一样的是，<strong>set 是直接保存 value 的</strong>，或者说，set 中的 value 就是 key。</p>
+<p><strong>set 中的元素必须是唯一的，不允许出现重复的元素</strong>，且元素不可更改，但可以自由插入或者删除。</p>
+<p>由于底层是红黑树，所以 set 中的元素也是严格弱序（strict weak ordering）排序的，因此<u>支持用迭代器做范围访问</u>（迭代器自加自减）。</p>
+<p>实际使用中，set 和 map 是近亲，性能相似，他们的差别是元素的 value 本身是否也作为 key 来标识自己。</p>
+<h3 id="12-multi_set">12. multi_set<a hidden class="anchor" aria-hidden="true" href="#12-multi_set">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Ordered | Set | Multiple equivalent keys | Allocator-aware<br>
+容器属性：<font color=red>关联容器</font>，有序，元素自身即key，允许不同元素值相同，使用内存分配器动态管理内存 ；<br>
+template &lt; class T, // multiset::key_type/value_type<br>
+class Compare = less<T>, // multiset::key_compare/value_compare<br>
+class Alloc = allocator<T> &gt; // multiset::allocator_type<br>
+class multiset;</p>
+</blockquote>
+<p>multiset 之于 set 就如同 multimap 之于 map：</p>
+<p>multiset 和 set 底层都是红黑树，multiset 相比于 set 支持保存多个相同的元素；</p>
+<p>multimap 和 map 底层都是红黑树，multimap 相比于 map 支持保存多个key相同的元素。</p>
+<p>鉴于以上近亲关系，multiset 的性能特点与其它三者相似，不再赘述。</p>
+<h3 id="13-unordered_map">13. unordered_map<a hidden class="anchor" aria-hidden="true" href="#13-unordered_map">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Unordered | Map | Unique keys | Allocator-aware<br>
+容器属性：<font color = red>关联容器</font>，无序，元素类型&lt;key, value&gt;，key是唯一的，使用内存分配器动态管理内存 ； template &lt; class Key, // unordered_map::key_type<br>
+class T, // unordered_map::mapped_type <br>
+class Hash = hash<Key>, // unordered_map::hasher<br>
+class Pred = equal_to<Key>, // unordered_map::key_equal<br>
+class Alloc = allocator&lt; pair&lt;const Key,T&gt; &gt; // unordered_map::allocator_type<br>
+class unordered_map;</p>
+</blockquote>
+<p>unordered_map 和 map 一样，都是关联容器，以键值对儿 &lt;key, value&gt; 作为元素进行存储；但是，除此之外，两者可以说是完全不一样！</p>
+<p>这是由底层的数据结构决定的，map 以红黑树作为底层结构组织数据，而 <strong>unordered_map 以哈希表(hash table)作为底层数据结构</strong>来组织数据，这造成了两点重要影响：<br>
+1. unordered_map 不支持排序，<font color=red>在使用迭代器做范围访问时（迭代器自加自减）效率更低</font>；<br>
+2. 但 unordered_map 直接访问元素的速度更快（尤其在规模很大时），因为它通过直接计算 key 的哈希值来访问元素，是O(1)复杂度！</p>
+<p>网络上有对 map VS unordered_map 效率对比的测试，通常 <strong>map 增删元素的效率更高，unordered_map 访问元素的效率更高</strong>，可以参见<a href="https://link.zhihu.com/?target=https%3A//blog.csdn.net/uniqsa/article/details/62442383">这篇文章</a>。另外，unordered_map 内存占用更高，因为底层的哈希表需要预分配足量的空间。</p>
+<p>综上，unordered_map 更适用于增删操作不多，但需要频繁访问，且内存资源充足的场合。</p>
+<blockquote>
+<p>比如在机器人领域的SLAM技术中，可以选择 unordered_map 来维护体素形式的 local map？ 当然 deque 应该也是不错的选择。</p>
+</blockquote>
+<h3 id="14-unordered_multimap">14. unordered_multimap<a hidden class="anchor" aria-hidden="true" href="#14-unordered_multimap">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Unordered | Map | Multiple equivalent keys | Allocator-aware<br>
+容器属性：关联容器，无序，元素类型&lt;key, value&gt;，允许不同元素key相同，使用内存分配器管理内存 ；<br>
+template &lt; class Key, // unordered_multimap::key_type<br>
+class T, // unordered_multimap::mapped_type<br>
+class Hash = hash<Key>, // unordered_multimap::hasher<br>
+class Pred = equal_to<Key>, // unordered_multimap::key_equal<br>
+class Alloc = allocator&lt; pair&lt;const Key,T&gt; &gt; // unordered_multimap::allocator_type<br>
+class unordered_multimap;</p>
+</blockquote>
+<p>unordered_multimap 是对 unordered_map 的拓展，唯一区别在于 unordered_multimap 允许不同元素的 key 相同，但两者无论是在底层结构还是在容器特性上都是相通的，仅仅是对底层哈希表的使用方式稍有不同。</p>
+<p>在 unordered_multimap 中想要访问同一个 key 下对应的所有元素的话，可以使用equal_range()轻松做到；当然，也可以使用find()和count()配合的方式来访问。</p>
+<p>unordered_multimap 的容器特性参见 unordered_map，不再赘述。</p>
+<h3 id="15-unordered_set">15. unordered_set<a hidden class="anchor" aria-hidden="true" href="#15-unordered_set">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Unordered | Set | Unique keys | Allocator-aware<br>
+容器属性：<font color=red>关联容器</font>，无序，元素自身即key，元素有唯一性，使用内存分配器动态管理内存 ；<br>
+template &lt; class Key, // unordered_set::key_type/value_type<br>
+class Hash = hash<Key>, // unordered_set::hasher<br>
+class Pred = equal_to<Key>, // unordered_set::key_equal<br>
+class Alloc = allocator<Key> // unordered_set::allocator_type<br>
+class unordered_set;</p>
+</blockquote>
+<p>所有unordered_XXX类容器的特点都是以哈希表作为底层结构；所有 XXX_set 类容器的特点都是「元素自身也作为key」来标识自己。我们在把两类特性叠加到一起，就得到了 unordered_set。</p>
+<p>在 unordered_set 中，元素自身同时也作为 key 使用；既然是作为 key 使用，那么元素就不能被更改，也即 unordered_set 中的元素都是 constant 的，但我们可以自由的插入和删除元素，这也是所有XXX_set类容器的性质。既然底层结构是哈希表，意味着 unordered_set 中的元素是无序的，不能按照大小排序，这也是所有unordered_XXX类容器的性质。</p>
+<p>和所有的unordered_XXX类容器一样：
+1. unordered_set 直接用迭代器做范围访问时（迭代器自加自减）效率更低，低于 set；
+2. 但 unordered_set 直接访问元素的速度更快（尤其在规模很大时），因为它通过直接计算 key 的哈希值来访问元素，是O(1)复杂度！</p>
+<h3 id="16-unordered_multiset">16. unordered_multiset<a hidden class="anchor" aria-hidden="true" href="#16-unordered_multiset">#</a></h3>
+<blockquote>
+<p>Container properties: Associative | Unordered | Set | Multiple equivalent keys | Allocator-aware
+容器属性：<font color=red>关联容器</font>，无序，元素自身即key，允许不同元素值相同，使用内存分配器动态管理内存 ；
+template &lt; class Key, // unordered_multiset::key_type/value_type
+class Hash = hash<Key>, // unordered_multiset::hasher
+class Pred = equal_to<Key>, // unordered_multiset::key_equal
+class Alloc = allocator<Key> // unordered_multiset::allocator_type
+class unordered_multiset;</p>
+</blockquote>
+<p>unordered_multiset，顾名思义，就是集齐了“哈希表为底层结构”，“元素自身即key”，“允许不同元素值相同”这三个特性的容器，是对 unordered_set 的简单拓展。</p>
+<p>unordered_multiset 的效率特性与所有基于哈希表的容器相似，参见 unordered_set，不再赘述。</p>
+<h3 id="17-pair--tuple">17. pair &amp;&amp; tuple<a hidden class="anchor" aria-hidden="true" href="#17-pair--tuple">#</a></h3>
+<blockquote>
+<p>template &lt;class&hellip; Types&gt; class tuple;<br>
+template &lt;class T1, class T2&gt; struct pair;</p>
+</blockquote>
+<p><code>std::pair</code> 和 <code>std::tuple</code> 并不是stl容器库中的容器，不过鉴于经常用到，就顺便整理一下。先从 tuple 说起，pair 相当于 tuple 的特例。</p>
+<p>tuple 叫作元组，它可以把一组类型相同或不同的元素组合到一起，且元素的数量不限。tuple 的底层原理与 stl 中的容器完全不同，但在功能上，tuple 是对容器的有效补充，因为所有的容器都只能组合相同类型的元素，但tuple 可以组合任意不同类型的元素。在使用上，可以用std::make_tuple()来构造 tuple 对象，可以用std::get<index>()来获取 tuple 对象的某个元素，注意std::get<index>()返回的是 tuple 对象中某个元素的索引，因此是可以用作左值的！此外，也可以用std::tie()打包一组变量来作为左值接受 tuple 对象的赋值。</p>
+<p>tuple 的底层原理大概是一个层层继承的类，详情可以参考<a href="https://zhuanlan.zhihu.com/p/356954012">这篇文章</a>，写的非常透彻。</p>
+<p>pair 可以看作是把 tuple 的 size 限制为 2 的一个特例，pair 只能把一对儿元素组合到一起。在使用上，可以用std::make_pair()来直接构建 pair 对象，可以用std::get&lt;0&gt;()和std::get&lt;1&gt;()来分别获取 pair 对象的两个元素，但更方便的做法是直接访问 pair 类型的两个数据成员pair对象.first和pair对象.second来访问元素</p>
+<p>reference:<br>
+[1]. <a href="https://zhuanlan.zhihu.com/p/542115773">https://zhuanlan.zhihu.com/p/542115773</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://jianye0428.github.io/en/tags/c&#43;&#43;/">c&#43;&#43;</a></li>
+      <li><a href="https://jianye0428.github.io/en/tags/stl/">STL</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/notes/2022-08-16_classification_and_regression_metrics/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>分类问题与回归问题指标综述</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/notes/2022-07-27_horovod_and_openmpi/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>[Distributed Training] Horovod_and_Openmpi</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share C&#43;&#43; STL (Standard Template Library) Containers on twitter"
+        href="https://twitter.com/intent/tweet/?text=C%2b%2b%20STL%20%28Standard%20Template%20Library%29%20Containers&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f&amp;hashtags=c%2b%2b%2cSTL">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share C&#43;&#43; STL (Standard Template Library) Containers on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f&amp;title=C%2b%2b%20STL%20%28Standard%20Template%20Library%29%20Containers&amp;summary=C%2b%2b%20STL%20%28Standard%20Template%20Library%29%20Containers&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share C&#43;&#43; STL (Standard Template Library) Containers on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f&title=C%2b%2b%20STL%20%28Standard%20Template%20Library%29%20Containers">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share C&#43;&#43; STL (Standard Template Library) Containers on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share C&#43;&#43; STL (Standard Template Library) Containers on whatsapp"
+        href="https://api.whatsapp.com/send?text=C%2b%2b%20STL%20%28Standard%20Template%20Library%29%20Containers%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share C&#43;&#43; STL (Standard Template Library) Containers on telegram"
+        href="https://telegram.me/share/url?text=C%2b%2b%20STL%20%28Standard%20Template%20Library%29%20Containers&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2f2022-08-01_c%2b%2b_data_structure%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

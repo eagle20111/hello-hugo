@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 | Jian&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="1. 概述 分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以H">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022_11_21_distributedtraining_5/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022_11_21_distributedtraining_5/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析" />
+<meta property="og:description" content="1. 概述 分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以H" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022_11_21_distributedtraining_5/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-11-21T14:27:29&#43;08:00" />
+<meta property="article:modified_time" content="2022-11-21T14:27:29&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析"/>
+<meta name="twitter:description" content="1. 概述 分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以H"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析",
+      "item": "https://jianye0428.github.io/en/posts/tech/distributedtraining/2022_11_21_distributedtraining_5/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析",
+  "name": "分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析",
+  "description": "1. 概述 分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以H",
+  "keywords": [
+    
+  ],
+  "articleBody": "1. 概述 分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以Horovod为例介绍数据并行下分布式训练服务框架的基本原理以及进行架构解析。当前，在分布式训练里分布式训练服务框架需要解决以下几个核心问题 ：\n计算与通信同步耦合问题：如果反向传播一产生一份梯度，就马上对其调用全局AllReduce，计算与通信同步耦合，容易造成死锁同时性能也会很不如意； 计算时间与通信时间串行问题：神经网络是分层的，梯度计算的过程是数据加载，然后前向传播算出损失值，再反向传播算出梯度，而反向计算时梯度是从输出层往输入层方向一层一层产生的，在有些模型里，如果需要等所有的梯度都计算完毕才能触发全局AllReduce，那么对性能的影响也会很大； 梯度生成的落后者问题：集群内每个计算节点的同一份梯度的产生不一定都是同一时刻的，如果梯度没有全部生成就发起对这个梯度的全局规约，否则容易造成训练出来的模型精度不达标或者不收敛的问题； 梯度融合问题：如果每一份梯度都触发一次全局AllReduce，在梯度Tensor较多的神经网络训练里，整体的训练系统性能会变得极低； 易用性问题：从TensorFlow，PyTorch迁移过来需要改的代码需要极少，从单卡训练迁移到多卡训练需要改动的代码也需要极少； 可移植问题：支持多种多样的深度学习训练框架，比如 TensorFlow、PyTorch、MxNet等，也能支持多种多样的通信库，比如openMPI、NCCL、Gloo、CCL、RCCL等； 可靠性问题：在集群训练的过程中网络时不可靠的、计算卡是会出故障的、服务器是会出故障的、系统软件也是会出Bug的，这些因素造成了分布式训练过程中还存在可靠性问题，如何解决这个问题也是一个难题。 软件是由人实现的，解析一个软件系统最难的地方在于从庞杂的代码里倒推出背后实现它的人的设计意图，为了更好的理解Horovod，本文会基于以上这几个分布式训练的核心问题，以Horovod为例介绍分布式训练服务框架的基本原理以及进行架构解析。\n2. 基础知识 2.1 单卡训练 神经网络的训练，本质上就是Y=F(x)的迭代，通过反复输入X、输出Y，使得神经网络的参数变化与输入输出间的复杂关系拟合。在神经网络训练的过程中，通过输入数据利用梯度下降的方法进行迭代从而优化神经网络参数，并最终输出神经网络模型。而神经网络可以看作一种运算模型，其由大量的神经元（节点）相互联接构成，其由输入层、隐藏层以及输出层组合而成（如下图左侧所示）。神经元(neuron)是神经网络的基本计算单元，也被称作节点(node)，它可以接受来自其他神经元或外部数据的输入，然后计算出一个输出（如下图右上角所示）。\n如上图右下角所示，在单卡训练迭代中，基于并行梯度下降法，会有以下操作：\n第一步，读取部分数据，并且将数据加载进训练卡的存储空间；\n第二步，对模型进行前向传播计算，从输入层往输出层一层一层的进行计算，得到损失差LOSS；\n第三步，对模型进行反向传播计算，从输出层往输入层一层一层的进行计算，得到梯度值，注意这一步会把每一层都计算出一个梯度张量（Gradient Tensor）出来；\n第四步，将新的到的梯度与部分数据 作为新的输入，重新开始以上步骤的迭代。\n在这一步里有一个很重要的与性能优化相关的信息是反向传播是每一层输出一个梯度张量，以及反向传播是从输出层往输入层一层一层的进行计算的，这一点信息可以用通信隐藏性能优化与梯度融合优化。\n2.2 多卡训练 以数据并行随机梯度下降法( SGD )为例，多卡神经网络的训练过程如下图，与单卡训练相比，多卡训练多了梯度全局规约的过程：\n第一步，通过Broadcast操作将第一个节点参数同步到集群内的所有的训练卡上，保证每个计算节点的初始参数是一致的，同时训练脚本在多个计算节点上运行，每个计算节点包含了整体的模型参数；\n第二步，将数据样本切片分发到整个集群内的个计算节点（训练卡）上并且通过数据流水技术将数据样本加载进训练卡的高速内存空间内，作为输入X;\n第三步，每个训练卡在其数据样本上运行前向传播，计算出损失差LOSSi；\n第四步，对计算出的LOSSi进行反向传播，得到梯度GRADi，这一步也需要注意得是每一层都会计算出一个梯度，同时梯度是以输出的Tensor来表示的；\n第五步，所有的训练卡计算出来的部分梯度，在主机内及主机之间通过集合通信进行全局归约(AllReduce)得到全局梯度；\n第六步，最后再将这个全局梯度作为参数进行更新，再进行以上2-5步骤的迭代从而获得新的梯度。\n以上2-6步骤就是多卡并行梯度下降的基本思想，即多个计算节点通过分片的数据样本进行梯度计算，得到分区梯度后，再通过全局梯度规约以及将这个聚合好的梯度作为新的参数进行更新，从而实现并行梯度下降。\n3. 几个核心问题 在本章节里会解读本文概述里提到的分布式服务框架需要解决的几个与性能、易用性等相关的几个核心问题，并且以Horovod为例讲述Horovod是如何解决这个几个难题的。\n3.1 计算与通信解耦 在神经网络的训练过程中，每一神经网络层都会计算出一个梯度，同时梯度是以输出Tensor来表示的，如果反向传播一计算出一个梯度就马上调用通信去做梯度规约，将计算与通信同步耦合，那么整体的性能的表现就会很差。比如一个ResNet-50 v3的梯度张量个数是153个，如果一计算出一个梯度就马上进行通信，假设计算梯度花了1ms，通信这个梯度花了 500ms，那么这个过程就是 501ms，总体上就需要501x153 = 76653ms，即近76.6s才能完成一次梯度迭代。而将计算与通信解耦，计算的归计算，通信的归通信，通过性能优化策略减少通信的次数，既能提升整体训练性能也能避免某些死锁问题，比如计算梯度grad i的时候花了很长时间，而通信线程一直在等待这个梯度，表现出来就是死锁现象。\nHorovod采用计算与通信分离的设计思想，解耦了计算过程与通信过程，从而提升了整体训练的性能与可靠性。如下图的Horovod逻辑架构图所示，从图中可以看出Horovod解耦了计算与通信，其将框架层计算出来的梯度request信息push 到一个消息队列message_queue里，同时将梯度信息push到一个Tensor_table里，再通过控制层在后台起一个loop线程，周期性的从消息队列里读取梯度消息，在控制层集群的节点之间协商达成一致后，再进行消息分发触发训练行为。\n如上图可看出，Horovod从下到上分为7层：物理层、链路层、数据传输层、控制层、消息层、框架层以及用户层。框架层，控制层以及数据传输层体现了Horovod的核心设计理念，即：框架层，用户可以自定义Op，以插件的形式hack进框架；在控制层，worker节点与master节点之间协商达成触发训练行为的约定；在数据传输层，服务器内以及服务器之间采用集合通信库传输数据。\n本质上Horovod的整体设计理念之一遵循的是生产者消费者模式，如下图所示：\n在Horovod里每个计算节点都会有有两个核心线程：Execution thread 和 Background thread ：\n生产者Execution Thread 是用来做梯度计算的，在TensorFlow、PyTorch之类的之类的训练框架计算出梯度Tensor后，将Tensor 信息push进tenor_table队列，同时将Tensor的request信息push进message_queue队列; 消费者Background thread 是做集合通讯以及全局Allreduce的，后台线程会每隔一段时间轮询消息队列，拿到一批Tensor信息之后，会进行相应的操作。 3.2 通信隐藏 神经网络是分层的，在训练的过程中，先是数据加载，然后前向传播算出LOSS，再反向传播算出梯度，而反向计算时梯度是从输出层往输入层方向一层一层产生的，如果需要等所有的梯度都计算完毕才能触发全局AllReduce，对性能不是很友好。如下图所示，计算时间与通信时间是串行的，如果能将全局梯度规约的通信时间与计算时间想办法并行起来，将通信时间隐藏在计算时间之内，那么就能节约梯度的训练时间从而提升分布式训练系统整体的训练性能。\n如下图所示，将计算出来的梯度进行分桶触发异步Allreduce，一边反向传播计算梯度，一边做部分梯度的全局规约通信，从而达到将通信时间隐藏在计算时间内的效果。而Horovod为达成这一效果，Background thread 会每隔一段时间轮询梯度消息队列里的梯度信息，获取了可以过全局规约的梯度后，就进行全局规约操作，而这个时间其他的梯度还在计算过程中，通过调整轮询的时间间隔从而达到调整梯度分桶的效果。\n3.3 梯度协商 神经网络的每一层对应一个梯度Tensor，在分布式训练集群里每张训练卡对同一份梯度计算产生的时间是有差异的，当集群内每个计算节点的同一神经网络层的同一梯度都产生时，才能发起对这个梯度的全局AllReduce规约，否则容易造成丢梯度，训练出来模型精度不达标或者模型不收敛。比如在一个128卡的训练集群里，同一份梯度是对应同一个神经网络模型里的同一层神经网络的，只有每张训练卡上都计算出了同一层神经网络的梯度 才能对这一层神经网络的梯度进行全局规约，如下图所示：\nHorovod设计了一种梯度状态协商机制，它将 计算节点Rank0 作为coordinator（master），其余的rank1-N节点进程为worker，由coordinator来协商确定同一份梯度是否在每个计算节点上都已经计算出来，只有在每个计算节点上都计算出来的同一梯度才可以进行全局规约操作。在Horovod里每个计算节点上都有一个message_queue以及tensor_table，而在coordinator节点上除此之外，还有一个message_table用于保存可以进行全局Allreduce的梯度请求次数信息。Horovod 控制面的ComputeResponseList 函数里实现了这一梯度的协商过程，在从message_queue获取了本节点生成的梯度信息后，coordinator会与其他节点协商这个梯度是否都计算出来，这一过程是阻塞进行的，这个协商过程如下图：\n一个梯度是否能满足全局规约AllReduce的协商过程如下：\n首先，集群内的每个计算节点进程都会往coordinator Rank0发送一个 tensor的请求request，表示说本节点这一层神经网络的梯度已经生成，比如tensor1，每个rank都会往rank0 发送一个本梯度tensor1已经计算出来的请求信息；\n第二步，coordinator接收到节点的梯度协商请求后（包括本节点），会把收到的tensor请求次数进行累加，并将这个信息记录在message_table里，当这个梯度的请求信息达到集群内节点的个数时，比如在N个节点的集群，一个神经网络层的梯度tensor的通信请求出现了N次，那就表示在本集群里所有的计算节点都已经发出了对该梯度tensor的通信request，这就表明这个梯度tensor是符合全局规约要求的，就能进行集合通信全局规约，不符合要求的梯度tensor将继续留在message_table中，直到条件符合为止；\n第三步，再接着coordinator会将满足全局allreduce规约条件的梯度Tensor通过response返回给其他节点，告诉其他节点这个梯度可以启动全局规约AllReduce。\n经过这几步的协商达成梯度全局状态一致的目的，从而避免梯度丢失造成的模型精度不达标、不收敛或者进程死锁问题。\n3.4 梯度融合 神经网络的每一层都能对应一个梯度，假设每生成一个梯度就进行一次全局规约时，100个梯度就需要进行100次全局通信100次全局规约，而通信对训练的性能有巨大的影响，这种情况表现出来的效果就是分布式训练集群的整体性能极差。通过梯度融合计算将多个梯度合成一个，从而减少全局规约的次数能大幅提高分布式训练的训练性能，如下图所示，将N个小梯度Tensor合成两个，能将全局通信的次数减少到2次，从而大幅提升训练性能，在Horovod里这个功能对TensorFusion特性。但这个特性也会与3.2通信隐藏特性相冲突，需要根据具体情况进行合理的调试优化。\n3.5 易用性 从TensorFlow，PyTorch等框架迁移到Horovod需要改的的代码极少，horovod接入方式比较简单，与原生训练框架对比，主要的区别在于：\n1，初始化 Horovod，包括机器资源的分配： horovod.init()\n2，向每个进程分配XPU资源， 典型的设置是 1 个 XPU 一个进程，即设置 local rank： config.gpu_options.visible_device_list = str(hvd.local_rank())\n3，对原优化器进行包装，分布式优化器将梯度计算委托给原始优化器，使用allreduce或allgather对梯度求平均，然后应用这些平均梯度： opt=hvd.DistributedOptimizer(opt)\n4， 将初始化参数从rank 0广播给其他进程(rank表示进程序号)，实现参数的初始化，确保所有节点的初始化参数保持一致： hvd.BroadcastGlobalVariablesHook(0)：\n3.6 可移植 可移植问题，Horovod通过 OP和OpKernels的插件化机制支持多种多样的深度学习训练框架，比如 TensorFlow、PyTorch、MxNet等。基于的opKernels的可定制化机制，Horovod自定义了Op然后hack了数据链路层的通信协议，从而达到在多个深度学习框架之间可移植。\n3.7 可靠性问题 在集群训练的过程中网络时不可靠的、计算卡是会出故障的、服务器是会出故障的的，这些因素造成了分布式训练过程中需要考虑训练集群的可靠性，Horovod结合集合通信库Gloo对外提供了弹性训练的特性，但可靠性不只是弹性训练就能完全解决的，它还有更多的系统级的问题需要解决，因此可靠性问题留着一个后续研究问题，不在本文阐述。\n4. 优点缺点、改进点 简单易用、可移植，并且支持弹性训练提升了可靠性； 不依赖于某个框架，其通过MPI机制独立建立了一套分布式训练服务系统； 将计算与通信分离，完成了allreduce、allgather等集合通信工作，实现了规模可扩展； 巧妙的通过间隔轮询的机制支持通信时间隐藏，并且完成了梯度协商从而保证训练出来的模型是可收敛、精度达标的； 支持梯度融合，支持将小的tensor合并成一个大的tensor再进行通信传递，从而减小通信操作的额外开销； 自带压缩算法，可以减少集合通信的数据量； 5. 思考题 问题1，将通信时间隐藏在计算时间内能有助于提升训练系统的整体性能，但这一特性是针对SIMT芯片的架构的进行性能优化的，如果DSA芯片不能支持这一特性，那应该如何优化Horovod从而大幅提升整体的训练性能？（可以确定这一定是能做到的） 问题2，梯度协商的过程中，每个梯度都需要协商一次，在梯度较多，网络规模较大的集群里，这一特性也会影响性能，如何进行优化才能有效提升Horovod性能？\\ 问题3，不同的模型对梯度融合有不同的要求，那么梯度融合需要融合到什么程度才能有效提升性能？ 可以说明的是，这三个问题解决后还能继续提升Horovod在DSA架构芯片上的整体的分布式训练系统级性能。\n6. 小结 本文介绍了分布式训练的基础知识以及剖析了分布式训练服务框架所面临的几个核心问题，以Horovod为例从计算与通信解耦、通信隐藏、梯度协商、梯度融合、易用性以及可移植这几个角度倒推了分布式训练服务框架背后的设计意图，从而帮助大家能更好的理解分布式训练服务框架。\nref: [1] https://www.changping.me [2] https://horovod.ai [3] https://www.cnblogs.com/rossiXYZ/p/14910959.html [4] https://zhuanlan.zhihu.com/p/374575049\n",
+  "wordCount" : "6303",
+  "inLanguage": "en",
+  "datePublished": "2022-11-21T14:27:29+08:00",
+  "dateModified": "2022-11-21T14:27:29+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/tech/distributedtraining/2022_11_21_distributedtraining_5/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析
+    </h1>
+    <div class="post-meta"><span title='2022-11-21 14:27:29 +0800 CST'>2022-11-21</span>&nbsp;·&nbsp;13 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/tech/DistributedTraining/2022_11_21_DistributedTraining_5.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#1-%e6%a6%82%e8%bf%b0" aria-label="1. 概述">1. 概述</a></li>
+                    <li>
+                        <a href="#2-%e5%9f%ba%e7%a1%80%e7%9f%a5%e8%af%86" aria-label="2. 基础知识">2. 基础知识</a><ul>
+                            
+                    <li>
+                        <a href="#21-%e5%8d%95%e5%8d%a1%e8%ae%ad%e7%bb%83" aria-label="2.1 单卡训练">2.1 单卡训练</a></li>
+                    <li>
+                        <a href="#22-%e5%a4%9a%e5%8d%a1%e8%ae%ad%e7%bb%83" aria-label="2.2 多卡训练">2.2 多卡训练</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#3-%e5%87%a0%e4%b8%aa%e6%a0%b8%e5%bf%83%e9%97%ae%e9%a2%98" aria-label="3. 几个核心问题">3. 几个核心问题</a><ul>
+                            
+                    <li>
+                        <a href="#31-%e8%ae%a1%e7%ae%97%e4%b8%8e%e9%80%9a%e4%bf%a1%e8%a7%a3%e8%80%a6" aria-label="3.1 计算与通信解耦">3.1 计算与通信解耦</a></li>
+                    <li>
+                        <a href="#32-%e9%80%9a%e4%bf%a1%e9%9a%90%e8%97%8f" aria-label="3.2 通信隐藏">3.2 通信隐藏</a></li>
+                    <li>
+                        <a href="#33-%e6%a2%af%e5%ba%a6%e5%8d%8f%e5%95%86" aria-label="3.3 梯度协商">3.3 梯度协商</a></li>
+                    <li>
+                        <a href="#34-%e6%a2%af%e5%ba%a6%e8%9e%8d%e5%90%88" aria-label="3.4 梯度融合">3.4 梯度融合</a></li>
+                    <li>
+                        <a href="#35-%e6%98%93%e7%94%a8%e6%80%a7" aria-label="3.5 易用性">3.5 易用性</a></li>
+                    <li>
+                        <a href="#36-%e5%8f%af%e7%a7%bb%e6%a4%8d" aria-label="3.6 可移植">3.6 可移植</a></li>
+                    <li>
+                        <a href="#37-%e5%8f%af%e9%9d%a0%e6%80%a7%e9%97%ae%e9%a2%98" aria-label="3.7 可靠性问题">3.7 可靠性问题</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#4-%e4%bc%98%e7%82%b9%e7%bc%ba%e7%82%b9%e6%94%b9%e8%bf%9b%e7%82%b9" aria-label="4. 优点缺点、改进点">4. 优点缺点、改进点</a></li>
+                    <li>
+                        <a href="#5-%e6%80%9d%e8%80%83%e9%a2%98" aria-label="5. 思考题">5. 思考题</a></li>
+                    <li>
+                        <a href="#6-%e5%b0%8f%e7%bb%93" aria-label="6. 小结">6. 小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="1-概述">1. 概述<a hidden class="anchor" aria-hidden="true" href="#1-概述">#</a></h2>
+<p>分布式训练服务框架与集合通信库的组合构成了分布式训练的整体服务软件栈，在第3篇、第4篇文章里已经剖析完集合通信的相关内容，而本文会以Horovod为例介绍数据并行下分布式训练服务框架的基本原理以及进行架构解析。当前，在分布式训练里分布式训练服务框架需要解决以下几个核心问题 ：</p>
+<ul>
+<li>计算与通信同步耦合问题：如果反向传播一产生一份梯度，就马上对其调用全局AllReduce，计算与通信同步耦合，容易造成死锁同时性能也会很不如意；</li>
+<li>计算时间与通信时间串行问题：神经网络是分层的，梯度计算的过程是数据加载，然后前向传播算出损失值，再反向传播算出梯度，而反向计算时梯度是从输出层往输入层方向一层一层产生的，在有些模型里，如果需要等所有的梯度都计算完毕才能触发全局AllReduce，那么对性能的影响也会很大；</li>
+<li>梯度生成的落后者问题：集群内每个计算节点的同一份梯度的产生不一定都是同一时刻的，如果梯度没有全部生成就发起对这个梯度的全局规约，否则容易造成训练出来的模型精度不达标或者不收敛的问题；</li>
+<li>梯度融合问题：如果每一份梯度都触发一次全局AllReduce，在梯度Tensor较多的神经网络训练里，整体的训练系统性能会变得极低；</li>
+<li>易用性问题：从TensorFlow，PyTorch迁移过来需要改的代码需要极少，从单卡训练迁移到多卡训练需要改动的代码也需要极少；</li>
+<li>可移植问题：支持多种多样的深度学习训练框架，比如 TensorFlow、PyTorch、MxNet等，也能支持多种多样的通信库，比如openMPI、NCCL、Gloo、CCL、RCCL等；</li>
+<li>可靠性问题：在集群训练的过程中网络时不可靠的、计算卡是会出故障的、服务器是会出故障的、系统软件也是会出Bug的，这些因素造成了分布式训练过程中还存在可靠性问题，如何解决这个问题也是一个难题。</li>
+</ul>
+<p>软件是由人实现的，解析一个软件系统最难的地方在于从庞杂的代码里倒推出背后实现它的人的设计意图，为了更好的理解Horovod，本文会基于以上这几个分布式训练的核心问题，以Horovod为例介绍分布式训练服务框架的基本原理以及进行架构解析。</p>
+<h2 id="2-基础知识">2. 基础知识<a hidden class="anchor" aria-hidden="true" href="#2-基础知识">#</a></h2>
+<h3 id="21-单卡训练">2.1 单卡训练<a hidden class="anchor" aria-hidden="true" href="#21-单卡训练">#</a></h3>
+<p>神经网络的训练，本质上就是Y=F(x)的迭代，通过反复输入X、输出Y，使得神经网络的参数变化与输入输出间的复杂关系拟合。在神经网络训练的过程中，通过输入数据利用梯度下降的方法进行迭代从而优化神经网络参数，并最终输出神经网络模型。而神经网络可以看作一种运算模型，其由大量的神经元（节点）相互联接构成，其由输入层、隐藏层以及输出层组合而成（如下图左侧所示）。神经元(neuron)是神经网络的基本计算单元，也被称作节点(node)，它可以接受来自其他神经元或外部数据的输入，然后计算出一个输出（如下图右上角所示）。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_single_xpu.png#center" alt="single xpu training"  />
+</p>
+<p>如上图右下角所示，在单卡训练迭代中，基于并行梯度下降法，会有以下操作：</p>
+<p>第一步，读取部分数据，并且将数据加载进训练卡的存储空间；</p>
+<p>第二步，对模型进行前向传播计算，从输入层往输出层一层一层的进行计算，得到损失差LOSS；</p>
+<p>第三步，对模型进行反向传播计算，从输出层往输入层一层一层的进行计算，得到梯度值，注意这一步会把每一层都计算出一个梯度张量（Gradient Tensor）出来；</p>
+<p>第四步，将新的到的梯度与部分数据 作为新的输入，重新开始以上步骤的迭代。</p>
+<p>在这一步里有一个很重要的与性能优化相关的信息是反向传播是每一层输出一个梯度张量，以及反向传播是从输出层往输入层一层一层的进行计算的，这一点信息可以用通信隐藏性能优化与梯度融合优化。</p>
+<h3 id="22-多卡训练">2.2 多卡训练<a hidden class="anchor" aria-hidden="true" href="#22-多卡训练">#</a></h3>
+<p>以数据并行随机梯度下降法( SGD )为例，多卡神经网络的训练过程如下图，与单卡训练相比，多卡训练多了梯度全局规约的过程：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_multi_xpu.png#center" alt="multi xpu training"  />
+</p>
+<p>第一步，通过Broadcast操作将第一个节点参数同步到集群内的所有的训练卡上，保证每个计算节点的初始参数是一致的，同时训练脚本在多个计算节点上运行，每个计算节点包含了整体的模型参数；</p>
+<p>第二步，将数据样本切片分发到整个集群内的个计算节点（训练卡）上并且通过数据流水技术将数据样本加载进训练卡的高速内存空间内，作为输入X;</p>
+<p>第三步，每个训练卡在其数据样本上运行前向传播，计算出损失差LOSSi；</p>
+<p>第四步，对计算出的LOSSi进行反向传播，得到梯度GRADi，这一步也需要注意得是每一层都会计算出一个梯度，同时梯度是以输出的Tensor来表示的；</p>
+<p>第五步，所有的训练卡计算出来的部分梯度，在主机内及主机之间通过集合通信进行全局归约(AllReduce)得到全局梯度；</p>
+<p>第六步，最后再将这个全局梯度作为参数进行更新，再进行以上2-5步骤的迭代从而获得新的梯度。</p>
+<p>以上2-6步骤就是多卡并行梯度下降的基本思想，即多个计算节点通过分片的数据样本进行梯度计算，得到分区梯度后，再通过全局梯度规约以及将这个聚合好的梯度作为新的参数进行更新，从而实现并行梯度下降。</p>
+<h2 id="3-几个核心问题">3. 几个核心问题<a hidden class="anchor" aria-hidden="true" href="#3-几个核心问题">#</a></h2>
+<p>在本章节里会解读本文概述里提到的分布式服务框架需要解决的几个与性能、易用性等相关的几个核心问题，并且以Horovod为例讲述Horovod是如何解决这个几个难题的。</p>
+<h3 id="31-计算与通信解耦">3.1 计算与通信解耦<a hidden class="anchor" aria-hidden="true" href="#31-计算与通信解耦">#</a></h3>
+<p>在神经网络的训练过程中，每一神经网络层都会计算出一个梯度，同时梯度是以输出Tensor来表示的，如果反向传播一计算出一个梯度就马上调用通信去做梯度规约，将计算与通信同步耦合，那么整体的性能的表现就会很差。比如一个ResNet-50 v3的梯度张量个数是153个，如果一计算出一个梯度就马上进行通信，假设计算梯度花了1ms，通信这个梯度花了 500ms，那么这个过程就是 501ms，总体上就需要501x153 = 76653ms，即近76.6s才能完成一次梯度迭代。而将计算与通信解耦，计算的归计算，通信的归通信，通过性能优化策略减少通信的次数，既能提升整体训练性能也能避免某些死锁问题，比如计算梯度grad i的时候花了很长时间，而通信线程一直在等待这个梯度，表现出来就是死锁现象。</p>
+<p>Horovod采用计算与通信分离的设计思想，解耦了计算过程与通信过程，从而提升了整体训练的性能与可靠性。如下图的Horovod逻辑架构图所示，从图中可以看出Horovod解耦了计算与通信，其将框架层计算出来的梯度request信息push 到一个消息队列message_queue里，同时将梯度信息push到一个Tensor_table里，再通过控制层在后台起一个loop线程，周期性的从消息队列里读取梯度消息，在控制层集群的节点之间协商达成一致后，再进行消息分发触发训练行为。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_horovod_architecture.png#center" alt="horovod architecture"  />
+</p>
+<p>如上图可看出，Horovod从下到上分为7层：物理层、链路层、数据传输层、控制层、消息层、框架层以及用户层。框架层，控制层以及数据传输层体现了Horovod的核心设计理念，即：框架层，用户可以自定义Op，以插件的形式hack进框架；在控制层，worker节点与master节点之间协商达成触发训练行为的约定；在数据传输层，服务器内以及服务器之间采用集合通信库传输数据。</p>
+<p>本质上Horovod的整体设计理念之一遵循的是生产者消费者模式，如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_producer_customer.png#center" alt="producer customer"  />
+</p>
+<p>在Horovod里每个计算节点都会有有两个核心线程：Execution thread 和 Background thread ：</p>
+<ul>
+<li>生产者Execution Thread 是用来做梯度计算的，在TensorFlow、PyTorch之类的之类的训练框架计算出梯度Tensor后，将Tensor 信息push进tenor_table队列，同时将Tensor的request信息push进message_queue队列;</li>
+<li>消费者Background thread 是做集合通讯以及全局Allreduce的，后台线程会每隔一段时间轮询消息队列，拿到一批Tensor信息之后，会进行相应的操作。</li>
+</ul>
+<h3 id="32-通信隐藏">3.2 通信隐藏<a hidden class="anchor" aria-hidden="true" href="#32-通信隐藏">#</a></h3>
+<p>神经网络是分层的，在训练的过程中，先是数据加载，然后前向传播算出LOSS，再反向传播算出梯度，而反向计算时梯度是从输出层往输入层方向一层一层产生的，如果需要等所有的梯度都计算完毕才能触发全局AllReduce，对性能不是很友好。如下图所示，计算时间与通信时间是串行的，如果能将全局梯度规约的通信时间与计算时间想办法并行起来，将通信时间隐藏在计算时间之内，那么就能节约梯度的训练时间从而提升分布式训练系统整体的训练性能。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_messaging_hidden.png#center" alt="messaging hidden"  />
+</p>
+<p>如下图所示，将计算出来的梯度进行分桶触发异步Allreduce，一边反向传播计算梯度，一边做部分梯度的全局规约通信，从而达到将通信时间隐藏在计算时间内的效果。而Horovod为达成这一效果，Background thread 会每隔一段时间轮询梯度消息队列里的梯度信息，获取了可以过全局规约的梯度后，就进行全局规约操作，而这个时间其他的梯度还在计算过程中，通过调整轮询的时间间隔从而达到调整梯度分桶的效果。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_bucket_allreduce.png#center" alt="bucket allreduce"  />
+</p>
+<h3 id="33-梯度协商">3.3 梯度协商<a hidden class="anchor" aria-hidden="true" href="#33-梯度协商">#</a></h3>
+<p>神经网络的每一层对应一个梯度Tensor，在分布式训练集群里每张训练卡对同一份梯度计算产生的时间是有差异的，当集群内每个计算节点的同一神经网络层的同一梯度都产生时，才能发起对这个梯度的全局AllReduce规约，否则容易造成丢梯度，训练出来模型精度不达标或者模型不收敛。比如在一个128卡的训练集群里，同一份梯度是对应同一个神经网络模型里的同一层神经网络的，只有每张训练卡上都计算出了同一层神经网络的梯度 才能对这一层神经网络的梯度进行全局规约，如下图所示：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_hierarchical_allreduce.png#center" alt="hierarchical allreduce"  />
+</p>
+<p>Horovod设计了一种梯度状态协商机制，它将 计算节点Rank0 作为coordinator（master），其余的rank1-N节点进程为worker，由coordinator来协商确定同一份梯度是否在每个计算节点上都已经计算出来，只有在每个计算节点上都计算出来的同一梯度才可以进行全局规约操作。在Horovod里每个计算节点上都有一个message_queue以及tensor_table，而在coordinator节点上除此之外，还有一个message_table用于保存可以进行全局Allreduce的梯度请求次数信息。Horovod 控制面的ComputeResponseList 函数里实现了这一梯度的协商过程，在从message_queue获取了本节点生成的梯度信息后，coordinator会与其他节点协商这个梯度是否都计算出来，这一过程是阻塞进行的，这个协商过程如下图：</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_hierarchical_gradient.png#center" alt="hierarchical gradient"  />
+</p>
+<p>一个梯度是否能满足全局规约AllReduce的协商过程如下：</p>
+<p>首先，集群内的每个计算节点进程都会往coordinator Rank0发送一个 tensor的请求request，表示说本节点这一层神经网络的梯度已经生成，比如tensor1，每个rank都会往rank0 发送一个本梯度tensor1已经计算出来的请求信息；</p>
+<p>第二步，coordinator接收到节点的梯度协商请求后（包括本节点），会把收到的tensor请求次数进行累加，并将这个信息记录在message_table里，当这个梯度的请求信息达到集群内节点的个数时，比如在N个节点的集群，一个神经网络层的梯度tensor的通信请求出现了N次，那就表示在本集群里所有的计算节点都已经发出了对该梯度tensor的通信request，这就表明这个梯度tensor是符合全局规约要求的，就能进行集合通信全局规约，不符合要求的梯度tensor将继续留在message_table中，直到条件符合为止；</p>
+<p>第三步，再接着coordinator会将满足全局allreduce规约条件的梯度Tensor通过response返回给其他节点，告诉其他节点这个梯度可以启动全局规约AllReduce。</p>
+<p>经过这几步的协商达成梯度全局状态一致的目的，从而避免梯度丢失造成的模型精度不达标、不收敛或者进程死锁问题。</p>
+<h3 id="34-梯度融合">3.4 梯度融合<a hidden class="anchor" aria-hidden="true" href="#34-梯度融合">#</a></h3>
+<p>神经网络的每一层都能对应一个梯度，假设每生成一个梯度就进行一次全局规约时，100个梯度就需要进行100次全局通信100次全局规约，而通信对训练的性能有巨大的影响，这种情况表现出来的效果就是分布式训练集群的整体性能极差。通过梯度融合计算将多个梯度合成一个，从而减少全局规约的次数能大幅提高分布式训练的训练性能，如下图所示，将N个小梯度Tensor合成两个，能将全局通信的次数减少到2次，从而大幅提升训练性能，在Horovod里这个功能对TensorFusion特性。但这个特性也会与3.2通信隐藏特性相冲突，需要根据具体情况进行合理的调试优化。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-11-21_DistributedTraining_5/2022-11-21_DistributedTraining_5_tensorfusion.png#center" alt="tensor fusion"  />
+</p>
+<h3 id="35-易用性">3.5 易用性<a hidden class="anchor" aria-hidden="true" href="#35-易用性">#</a></h3>
+<p>从TensorFlow，PyTorch等框架迁移到Horovod需要改的的代码极少，horovod接入方式比较简单，与原生训练框架对比，主要的区别在于：</p>
+<ul>
+<li>
+<p>1，初始化 Horovod，包括机器资源的分配：
+<code>horovod.init()</code></p>
+</li>
+<li>
+<p>2，向每个进程分配XPU资源， 典型的设置是 1 个 XPU 一个进程，即设置 local rank：
+<code>config.gpu_options.visible_device_list = str(hvd.local_rank())</code></p>
+</li>
+<li>
+<p>3，对原优化器进行包装，分布式优化器将梯度计算委托给原始优化器，使用allreduce或allgather对梯度求平均，然后应用这些平均梯度：
+<code>opt=hvd.DistributedOptimizer(opt)</code></p>
+</li>
+<li>
+<p>4， 将初始化参数从rank 0广播给其他进程(rank表示进程序号)，实现参数的初始化，确保所有节点的初始化参数保持一致：
+<code>hvd.BroadcastGlobalVariablesHook(0)：</code></p>
+</li>
+</ul>
+<h3 id="36-可移植">3.6 可移植<a hidden class="anchor" aria-hidden="true" href="#36-可移植">#</a></h3>
+<p>可移植问题，Horovod通过 OP和OpKernels的插件化机制支持多种多样的深度学习训练框架，比如 TensorFlow、PyTorch、MxNet等。基于的opKernels的可定制化机制，Horovod自定义了Op然后hack了数据链路层的通信协议，从而达到在多个深度学习框架之间可移植。</p>
+<h3 id="37-可靠性问题">3.7 可靠性问题<a hidden class="anchor" aria-hidden="true" href="#37-可靠性问题">#</a></h3>
+<p>在集群训练的过程中网络时不可靠的、计算卡是会出故障的、服务器是会出故障的的，这些因素造成了分布式训练过程中需要考虑训练集群的可靠性，Horovod结合集合通信库Gloo对外提供了弹性训练的特性，但可靠性不只是弹性训练就能完全解决的，它还有更多的系统级的问题需要解决，因此可靠性问题留着一个后续研究问题，不在本文阐述。</p>
+<h2 id="4-优点缺点改进点">4. 优点缺点、改进点<a hidden class="anchor" aria-hidden="true" href="#4-优点缺点改进点">#</a></h2>
+<ul>
+<li>简单易用、可移植，并且支持弹性训练提升了可靠性；</li>
+<li>不依赖于某个框架，其通过MPI机制独立建立了一套分布式训练服务系统；</li>
+<li>将计算与通信分离，完成了allreduce、allgather等集合通信工作，实现了规模可扩展；</li>
+<li>巧妙的通过间隔轮询的机制支持通信时间隐藏，并且完成了梯度协商从而保证训练出来的模型是可收敛、精度达标的；</li>
+<li>支持梯度融合，支持将小的tensor合并成一个大的tensor再进行通信传递，从而减小通信操作的额外开销；</li>
+<li>自带压缩算法，可以减少集合通信的数据量；</li>
+</ul>
+<h2 id="5-思考题">5. 思考题<a hidden class="anchor" aria-hidden="true" href="#5-思考题">#</a></h2>
+<ul>
+<li>问题1，将通信时间隐藏在计算时间内能有助于提升训练系统的整体性能，但这一特性是针对SIMT芯片的架构的进行性能优化的，如果DSA芯片不能支持这一特性，那应该如何优化Horovod从而大幅提升整体的训练性能？（可以确定这一定是能做到的）</li>
+<li>问题2，梯度协商的过程中，每个梯度都需要协商一次，在梯度较多，网络规模较大的集群里，这一特性也会影响性能，如何进行优化才能有效提升Horovod性能？\</li>
+<li>问题3，不同的模型对梯度融合有不同的要求，那么梯度融合需要融合到什么程度才能有效提升性能？</li>
+</ul>
+<p>可以说明的是，这三个问题解决后还能继续提升Horovod在DSA架构芯片上的整体的分布式训练系统级性能。</p>
+<h2 id="6-小结">6. 小结<a hidden class="anchor" aria-hidden="true" href="#6-小结">#</a></h2>
+<p>本文介绍了分布式训练的基础知识以及剖析了分布式训练服务框架所面临的几个核心问题，以Horovod为例从计算与通信解耦、通信隐藏、梯度协商、梯度融合、易用性以及可移植这几个角度倒推了分布式训练服务框架背后的设计意图，从而帮助大家能更好的理解分布式训练服务框架。</p>
+<p>ref:
+[1] <a href="https://www.changping.me">https://www.changping.me</a>
+[2] <a href="https://horovod.ai">https://horovod.ai</a>
+[3] <a href="https://www.cnblogs.com/rossiXYZ/p/14910959.html">https://www.cnblogs.com/rossiXYZ/p/14910959.html</a>
+[4] <a href="https://zhuanlan.zhihu.com/p/374575049">https://zhuanlan.zhihu.com/p/374575049</a></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/notes/work/zhito/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>Zhito</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_1/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>CUDA_1</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 on twitter"
+        href="https://twitter.com/intent/tweet/?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20-%20%e7%ac%ac5%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e6%9c%8d%e5%8a%a1%e6%a1%86%e6%9e%b6%e5%9f%ba%e6%9c%ac%e5%8e%9f%e7%90%86%e4%b8%8e%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f&amp;hashtags=">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20-%20%e7%ac%ac5%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e6%9c%8d%e5%8a%a1%e6%a1%86%e6%9e%b6%e5%9f%ba%e6%9c%ac%e5%8e%9f%e7%90%86%e4%b8%8e%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90&amp;summary=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20-%20%e7%ac%ac5%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e6%9c%8d%e5%8a%a1%e6%a1%86%e6%9e%b6%e5%9f%ba%e6%9c%ac%e5%8e%9f%e7%90%86%e4%b8%8e%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f&title=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20-%20%e7%ac%ac5%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e6%9c%8d%e5%8a%a1%e6%a1%86%e6%9e%b6%e5%9f%ba%e6%9c%ac%e5%8e%9f%e7%90%86%e4%b8%8e%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 on whatsapp"
+        href="https://api.whatsapp.com/send?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20-%20%e7%ac%ac5%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e6%9c%8d%e5%8a%a1%e6%a1%86%e6%9e%b6%e5%9f%ba%e6%9c%ac%e5%8e%9f%e7%90%86%e4%b8%8e%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 - 第5篇 - 分布式训练服务框架基本原理与架构解析 on telegram"
+        href="https://telegram.me/share/url?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20-%20%e7%ac%ac5%e7%af%87%20-%20%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%e6%9c%8d%e5%8a%a1%e6%a1%86%e6%9e%b6%e5%9f%ba%e6%9c%ac%e5%8e%9f%e7%90%86%e4%b8%8e%e6%9e%b6%e6%9e%84%e8%a7%a3%e6%9e%90&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022_11_21_distributedtraining_5%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

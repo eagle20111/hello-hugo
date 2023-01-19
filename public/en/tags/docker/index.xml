@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>docker on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/docker/</link>
+    <description>Recent content in docker on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Thu, 14 Jul 2022 17:42:53 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/docker/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker安装及学习</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/</link>
+      <pubDate>Thu, 14 Jul 2022 17:42:53 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-07-15_docker/</guid>
+      <description>docker 入门教程 Ref Link: [1] https://ruanyifeng.com/blog/2018/02/docker-tutorial.html [2] https://cloud.tencent.com/developer/article/1885678 [3] 「Docker」 - 保存镜像 [4] 如何制作Docker镜像(image)? 一、Docker 是什么？ &amp;amp;&amp;amp; Docker 的用途 Docker 属于 Linux 容器的</description>
+    </item>
+    
+  </channel>
+</rss>

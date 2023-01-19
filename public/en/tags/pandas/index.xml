@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>pandas on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/pandas/</link>
+    <description>Recent content in pandas on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 23 May 2022 08:51:34 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/pandas/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Pandas Notes</title>
+      <link>https://jianye0428.github.io/en/posts/notes/2022-05-23_pandas/</link>
+      <pubDate>Mon, 23 May 2022 08:51:34 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/notes/2022-05-23_pandas/</guid>
+      <description>Pandas Notes Input/Output pd.read_csv(filepath): 读取csv文件 ref: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html?highlight=read_csv pd.read_pickle():读取pickle数据 1 2 import pandas pandas.read_pickle(filepath_or_buffer, compression=&amp;#39;infer&amp;#39;, storage_options=None) ref: https://pandas.pydata.org/docs/reference/api/pandas.read_pickle.html Parameters: filepath_or_buffer: 文件名或者文件路径 字符串、路径对象(实</description>
+    </item>
+    
+  </channel>
+</rss>

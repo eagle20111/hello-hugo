@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>CUDA_C_CH02 | Jian&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="CH02 CUDA编程模型 2.1 CUDA编程模型概述 CUDA编程模型提供了一个计算机架构抽象作为应用程序和其可用硬件之间的桥梁。 CUDA编程模型还利用G">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch02/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch02/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="CUDA_C_CH02" />
+<meta property="og:description" content="CH02 CUDA编程模型 2.1 CUDA编程模型概述 CUDA编程模型提供了一个计算机架构抽象作为应用程序和其可用硬件之间的桥梁。 CUDA编程模型还利用G" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch02/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-11-27T20:14:17&#43;08:00" />
+<meta property="article:modified_time" content="2022-11-27T20:14:17&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="CUDA_C_CH02"/>
+<meta name="twitter:description" content="CH02 CUDA编程模型 2.1 CUDA编程模型概述 CUDA编程模型提供了一个计算机架构抽象作为应用程序和其可用硬件之间的桥梁。 CUDA编程模型还利用G"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "CUDA_C_CH02",
+      "item": "https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch02/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "CUDA_C_CH02",
+  "name": "CUDA_C_CH02",
+  "description": "CH02 CUDA编程模型 2.1 CUDA编程模型概述 CUDA编程模型提供了一个计算机架构抽象作为应用程序和其可用硬件之间的桥梁。 CUDA编程模型还利用G",
+  "keywords": [
+    
+  ],
+  "articleBody": "CH02 CUDA编程模型 2.1 CUDA编程模型概述 CUDA编程模型提供了一个计算机架构抽象作为应用程序和其可用硬件之间的桥梁。\nCUDA编程模型还利用GPU架构的计算能力提供了以下几个特有功能:\n一种通过层次结构在GPU中组织线程的方法(2.3) 一种通过层次结构在GPU中访问内存的方法(4.5) 程序员可以通过以下几个不同层面来看待并行计算:\n领域层：如何解析数据和函数，以便在并行环境中正确高效的解决问题（在并行编程中高效的使用pthreads或者OpemMP技术显式地管理线程） 逻辑层：如何组织并发线程 硬件层：理解线程如何映射到核心以帮助提高其性能 2.1.1 CUDA编程 在一个异构环境中包含多个CPU和GPU， 每个GPU和CPU的内存都由一条PCI-Express总线分隔开。\n主机： CPU及其内存（主机内存） 设备： GPU及其内存（设备内存） “统一寻址”（Unified Memory） 的编程模型的改进， 它连接了主机内存和设备内存空间， 可使用单个指针访问CPU和GPU内存， 无须彼此之间手动拷贝数据。\n什么是“统一寻址”（Unified Memory)? CUDA 6.0提出了统一寻址， 使用一个指针来访问CPU和GPU的内存。(详见第4章)\n内核（kernel） 是CUDA编程模型的一个重要组成部分， 其代码在GPU上运行。\nCUDA编程模型主要是异步的， 因此在GPU上进行的运算可以与主机-设备通信重叠。 一个典型的CUDA程序包 括由并行代码互补的串行代码。\n串行代码在cpu上执行，并行代码在GPU上执行。\n一个典型的CUDA程序实现流程遵循以下模式：\n把数据从CPU内存拷贝到GPU内存； 调用核函数对存储在GPU内存中的数据进行操作； 将数据从GPU内存传送回到CPU内存。 2.1.2 内存管理 CUDA运行时负责分配与释放设备内存， 并且在主机内存和设备内存之间传输数据。\n表2-1 主机和设备内存函数\n标准c函数 CUDA C函数 标准c函数 CUDA C函数 malloc cudaMalloc memset cudaMemset memcpy cudaMemcpy free cudaFree cudaMalloc函数负责在GPU的内存里分配内存； cudaMemcpy函数负责主机和设备之间的数据传输；\n1 cudaError_t cudaMemcpy(void* dst, const void* src, size_t count, cudaMemcpyKind kind) 从src指向的源存储区复制一定数量的字节到dst指向的目标存储区 kind有以下几种: cudaMemcpyHostToHost cudaMemcpyHostToDevice cudaMemcpyDeviceToHost cudaMemcpyDeviceToDevice CUDA编程模型从GPU架构中抽象出一个内存层次结构：全局内存和共享内存。\n内存层次结构\n全局内存 共享内存 为什么CPU和GPU是异步的？ 当数据被转移到GPU的全局内存后， 主机端调用核函数在GPU上进行数组求和。 一旦内核被调用， 控制权立刻被传回主机， 这样的话， 当核函数在GPU上运行时， 主机可以执行其他函数。 因此， 内核与主机是异步的。\n不同的存储空间\n2.1.3 线程管理 当核函数在主机端启动时， 它的执行会移动到设备上， 此时设备中会产生大量的线程并且每个线程都执行由核函数指定的语句。\n由一个内核启动所产生的所有线程统称为一个网格。 同一网格中的所有线程共享相同的全局内存空间。 一个网格由多个线程块构成， 一个线程块包含一组线程， 同一线程块内的线程协作可以通过以下方式来实现：\n同步 共享内存 不同线程块内的线程不能协作。\n线程依靠以下两个坐标变量来区分彼此\nblockIdx(线程块在线程格内的索引) threadIdx(块内的线程索引) 些变量是核函数中需要预初始化的内置变量。 当执行一个核函数时， CUDA运行时为每个线程分配坐标变量blockIdx和threadIdx。 基于这些坐标， 你可以将部分数据分配给不同的线程。\n该坐标变量是基于uint3定义的CUDA内置的向量类型， 是一个包含3个无符号整数的结构， 可以通过x、 y、 z三个字段来指定：\nblockIdx.x blockIdx.y blockIdx.z threadIdx.x threadIdx.y threadIdx.z CUDA可以组织三维的网格和块.\n网格和块的维度由下列两个内置变量指定:\nblockDim(线程块的维度， 用每个线程块中的线程数来表示) gridDim(线程格的维度， 用每个线程格中的线程数来表示) 它们是dim3类型的变量， 是基于uint3定义的整数型向量， 用来表示维度。 当定义一个dim3类型的变量时， 所有未指定的元素都被初始化为1。 dim3类型变量中的每个组件可以通过它的x、 y、 z字段获得。 如下所示:\nblockDim.x blockDim.y blockDim.z 网格和线程块的维度\n一个线程格会被组织成线程块的二维数组形式， 一个线程块会被组织成线程的三维数组形式\n在CUDA程序中有两组不同的网格和块变量： 手动定义的dim3数据类型和预定义的uint3数据类型。\n手动定义的dim3类型的网格和块变量仅在主机端可见， 而unit3类型的内置预初始化的网格和块变量仅在设备端可见。\n从主机端和设备端访问网格/块变量\n区分主机端和设备端的网格和块变量的访问是很重要的。\n例如， 声明一个主机端的块变量， 你按如下定义它的坐标并对其进行访问：\nblock.x, block.y, block.z\n在设备端， 你已经预定义了内置块变量的大小：\nblockDim.x, blockDim.y, and blockDim.z\n在启动内核之前就定义了主机端的网格和块变量， 并从主机端通过由x、 y、 z三个字段决定的矢量结构来访问它们。 当内核启动时， 可以使用内核中预初始化的内置变量。\n总之， 在启动内核之前就定义了主机端的网格和块变量， 并从主机端通过由x、 y、 z三个字段决定的矢量结构来访问它们。 当内核启动时， 可以使用内核中预初始化的内置变量.\n对于一个给定的数据大小， 确定网格和块尺寸的一般步骤为：\n确定块的大小 在已知数据大小和块大小的基础上计算网格维度 要确定块尺寸， 通常需要考虑：\n内核的性能特性 GPU资源的限制 线程层次结构\nCUDA的特点之一就是通过编程模型揭示了一个两层的线程层次结构（grid-\u003eblock-\u003ethread）。 由于一个内核 启动的网格和块的维数会影响性能， 这一结构为程序员优化程序提供了一个额外的途径。\n2.1.4 启动一个CUDA核函数 CUDA内核调用是对C语言函数调用语句的延伸， «\u003c»\u003e运算符内是核函数的执行配置。\nkernel_name \u003c\u003c\u003e\u003e(argument list)\n利用执行配置可以指定线程在GPU上调度运行的方式。 执行配置的第一个值是网格维度， 也就是启动块的数目。 第二个值是块维度， 也就是每个块中线程的数目。 通过指定网格和块的维度， 你可以进行以下 配置：\n内核中线程的数目 内核中使用的线程布局 同一个块(block)中的线程之间可以相互协作， 不同块内的线程不能协作。\n假设你有32个数据元素用于计算， 每8个元素一个块， 需要启动4个块：\nkernel_name\u003c\u003c\u003c4, 8\u003e\u003e\u003e(argument list)\n由于数据在全局内存中是线性存储的， 因此可以用变量blockIdx.x和threadId.x来进行以下操作。\n在网格中标识一个唯一的线程 建立线程和数据元素之间的映射关系 如果把所有32个元素放到一个块里， 那么只会得到一个块:\nkernel_name\u003c\u003c\u003c1, 32\u003e\u003e\u003e(argument list)\n如果每个块只含有一个元素， 那么会有32个块：\nkernel_name\u003c\u003c\u003c32, 1\u003e\u003e\u003e(argument list)\n核函数的调用与主机线程是异步的。 核函数调用结束后， 控制权立刻返回给主机端.\n你可以调用以下函数来强制主机端程序等待所有的核函数执行结束：\ncudaError_t cudaDeivceSynchronize(void);\n一些CUDA运行时API在主机和设备之间是隐式同步的。 当使用cudaMemcpy函数在主 机和设备之间拷贝数据时， 主机端隐式同步， 即主机端程序必须等待数据拷贝完成后才能 继续执行程序。\n异步行为\n不同于C语言的函数调用， 所有的CUDA核函数的启动都是异步的。 CUDA内核调用完成后， 控制权立刻返回给CPU。\n2.1.5 编写核函数 核函数是在设备端执行的代码。\n用__global__声明定义核函数:\n__global__ void kernel_name(argument list);\n核函数必须有一个void返回类型。\n表2-2总结了CUDA C程序中的函数类型限定符\n限定符 执行 调用 备注 global device host CUDA核函数的限制 以下限制适用于所有核函数:\n只能访问设备内存 必须具有void返回类型 不支持可变数量的参数 不支持静态变量 显示异步行为 2.3 组织并行线程 (以阅读为主) 从前面的例子可以看出， 如果使用了合适的网格和块大小来正确地组织线程， 那么可以对内核性能产生很大的影响。\n2.3.1 使用块和线程建立矩阵索引 在一个矩阵加法核函数中，一个线程通常被分配一个数据元素来处理。首先要完成的任务是使用块和线程索引从全局内存中访问指定的数据。\n",
+  "wordCount" : "3181",
+  "inLanguage": "en",
+  "datePublished": "2022-11-27T20:14:17+08:00",
+  "dateModified": "2022-11-27T20:14:17+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch02/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      CUDA_C_CH02
+    </h1>
+    <div class="post-meta"><span title='2022-11-27 20:14:17 +0800 CST'>2022-11-27</span>&nbsp;·&nbsp;7 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/notes/GPU_Compute/CUDA_C_Notes/CUDA_C_CH02.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#ch02-cuda%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%9e%8b" aria-label="CH02 CUDA编程模型">CH02 CUDA编程模型</a><ul>
+                            
+                    <li>
+                        <a href="#21-cuda%e7%bc%96%e7%a8%8b%e6%a8%a1%e5%9e%8b%e6%a6%82%e8%bf%b0" aria-label="2.1 CUDA编程模型概述">2.1 CUDA编程模型概述</a></li>
+                    <li>
+                        <a href="#211-cuda%e7%bc%96%e7%a8%8b" aria-label="2.1.1 CUDA编程">2.1.1 CUDA编程</a><ul>
+                            
+                    <li>
+                        <a href="#212-%e5%86%85%e5%ad%98%e7%ae%a1%e7%90%86" aria-label="2.1.2 内存管理">2.1.2 内存管理</a></li>
+                    <li>
+                        <a href="#213-%e7%ba%bf%e7%a8%8b%e7%ae%a1%e7%90%86" aria-label="2.1.3 线程管理">2.1.3 线程管理</a></li>
+                    <li>
+                        <a href="#214-%e5%90%af%e5%8a%a8%e4%b8%80%e4%b8%aacuda%e6%a0%b8%e5%87%bd%e6%95%b0" aria-label="2.1.4 启动一个CUDA核函数">2.1.4 启动一个CUDA核函数</a></li>
+                    <li>
+                        <a href="#215-%e7%bc%96%e5%86%99%e6%a0%b8%e5%87%bd%e6%95%b0" aria-label="2.1.5 编写核函数">2.1.5 编写核函数</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#23-%e7%bb%84%e7%bb%87%e5%b9%b6%e8%a1%8c%e7%ba%bf%e7%a8%8b-%e4%bb%a5%e9%98%85%e8%af%bb%e4%b8%ba%e4%b8%bb" aria-label="2.3 组织并行线程 (以阅读为主)">2.3 组织并行线程 (以阅读为主)</a><ul>
+                            
+                    <li>
+                        <a href="#231-%e4%bd%bf%e7%94%a8%e5%9d%97%e5%92%8c%e7%ba%bf%e7%a8%8b%e5%bb%ba%e7%ab%8b%e7%9f%a9%e9%98%b5%e7%b4%a2%e5%bc%95" aria-label="2.3.1 使用块和线程建立矩阵索引">2.3.1 使用块和线程建立矩阵索引</a>
+                    </li>
+                </ul>
+                </li>
+                </ul>
+                </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><h2 id="ch02-cuda编程模型">CH02 CUDA编程模型<a hidden class="anchor" aria-hidden="true" href="#ch02-cuda编程模型">#</a></h2>
+<h3 id="21-cuda编程模型概述">2.1 CUDA编程模型概述<a hidden class="anchor" aria-hidden="true" href="#21-cuda编程模型概述">#</a></h3>
+<p>CUDA编程模型提供了一个计算机架构抽象作为应用程序和其可用硬件之间的桥梁。</p>
+<p>CUDA编程模型还利用GPU架构的计算能力提供了以下几个特有功能:</p>
+<ul>
+<li>一种通过层次结构在GPU中<strong>组织线程的方法</strong>(2.3)</li>
+<li>一种通过层次结构在GPU中<strong>访问内存的方法</strong>(4.5)</li>
+</ul>
+<p>程序员可以通过以下几个不同层面来看待并行计算:</p>
+<ul>
+<li>领域层：如何解析数据和函数，以便在并行环境中正确高效的解决问题（在并行编程中高效的使用pthreads或者OpemMP技术显式地管理线程）</li>
+<li>逻辑层：如何组织并发线程</li>
+<li>硬件层：理解线程如何映射到核心以帮助提高其性能</li>
+</ul>
+<h3 id="211-cuda编程">2.1.1 CUDA编程<a hidden class="anchor" aria-hidden="true" href="#211-cuda编程">#</a></h3>
+<p>在一个异构环境中包含多个CPU和GPU， 每个GPU和CPU的内存都由一条PCI-Express总线分隔开。</p>
+<ul>
+<li>主机： CPU及其内存（主机内存）</li>
+<li>设备： GPU及其内存（设备内存）</li>
+</ul>
+<p>“统一寻址”（Unified Memory） 的编程模型的改进， 它连接了主机内存和设备内存空间， 可使用单个指针访问CPU和GPU内存， 无须彼此之间手动拷贝数据。</p>
+<blockquote>
+<p>什么是“统一寻址”（Unified Memory)?
+CUDA 6.0提出了统一寻址， 使用一个指针来访问CPU和GPU的内存。(详见第4章)</p>
+</blockquote>
+<p>内核（kernel） 是CUDA编程模型的一个重要组成部分， 其代码在GPU上运行。</p>
+<p>CUDA编程模型主要是<strong>异步</strong>的， 因此在<strong>GPU上进行的运算</strong>可以与<strong>主机-设备通信</strong>重叠。 一个典型的CUDA程序包
+括由并行代码互补的串行代码。</p>
+<p>串行代码在cpu上执行，并行代码在GPU上执行。</p>
+<p>一个典型的CUDA程序实现流程遵循以下模式：</p>
+<ol>
+<li>把数据从CPU内存拷贝到GPU内存；</li>
+<li>调用核函数对存储在GPU内存中的数据进行操作；</li>
+<li>将数据从GPU内存传送回到CPU内存。</li>
+</ol>
+<h4 id="212-内存管理">2.1.2 内存管理<a hidden class="anchor" aria-hidden="true" href="#212-内存管理">#</a></h4>
+<p>CUDA运行时负责分配与释放设备内存， 并且在主机内存和设备内存之间传输数据。</p>
+<p>表2-1 主机和设备内存函数</p>
+<table>
+<thead>
+<tr>
+<th>标准c函数</th>
+<th>CUDA C函数</th>
+<th>标准c函数</th>
+<th>CUDA C函数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>malloc</td>
+<td>cudaMalloc</td>
+<td>memset</td>
+<td>cudaMemset</td>
+</tr>
+<tr>
+<td>memcpy</td>
+<td>cudaMemcpy</td>
+<td>free</td>
+<td>cudaFree</td>
+</tr>
+</tbody>
+</table>
+<p><strong>cudaMalloc</strong>函数负责在GPU的内存里分配内存；
+<strong>cudaMemcpy</strong>函数负责主机和设备之间的数据传输；</p>
+<ul>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="kt">cudaError_t</span> <span class="nf">cudaMemcpy</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">dst</span><span class="p">,</span> <span class="k">const</span> <span class="kt">void</span><span class="o">*</span> <span class="n">src</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">count</span><span class="p">,</span> <span class="n">cudaMemcpyKind</span> <span class="n">kind</span><span class="p">)</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>从src指向的源存储区复制一定数量的字节到dst指向的目标存储区</li>
+<li>kind有以下几种:
+<ul>
+<li><code>cudaMemcpyHostToHost</code></li>
+<li><code>cudaMemcpyHostToDevice</code></li>
+<li><code>cudaMemcpyDeviceToHost</code></li>
+<li><code>cudaMemcpyDeviceToDevice</code></li>
+</ul>
+</li>
+</ul>
+<p>CUDA编程模型从GPU架构中抽象出一个<u>内存层次结构</u>：<strong>全局内存</strong>和<strong>共享内存</strong>。</p>
+<p><strong>内存层次结构</strong></p>
+<ul>
+<li>全局内存</li>
+<li>共享内存</li>
+</ul>
+<blockquote>
+<p>为什么CPU和GPU是异步的？
+当数据被转移到GPU的全局内存后， 主机端调用核函数在GPU上进行数组求和。 一旦内核被调用， 控制权立刻被传回主机， 这样的话， 当核函数在GPU上运行时， 主机可以执行其他函数。 因此， 内核与主机是异步的。</p>
+</blockquote>
+<p><strong>不同的存储空间</strong></p>
+<h4 id="213-线程管理">2.1.3 线程管理<a hidden class="anchor" aria-hidden="true" href="#213-线程管理">#</a></h4>
+<p>当核函数在主机端启动时， 它的执行会移动到设备上， 此时设备中会产生大量的线程并且每个线程都执行由核函数指定的语句。</p>
+<p>由一个内核启动所产生的所有线程统称为一个<strong>网格</strong>。 同一网格中的所有线程共享相同的全局内存空间。 <u>一个网格由多个线程块构成， 一个线程块包含一组线程， 同一线程块内的线程协作可以通过以下方式来实现：</u></p>
+<ul>
+<li>同步</li>
+<li>共享内存</li>
+</ul>
+<blockquote>
+<p>不同线程块内的线程不能协作。</p>
+</blockquote>
+<p>线程依靠以下两个坐标变量来区分彼此</p>
+<ul>
+<li>blockIdx(线程块在线程格内的索引)</li>
+<li>threadIdx(块内的线程索引)</li>
+</ul>
+<p>些变量是核函数中需要预初始化的内置变量。 当执行一个核函数时， CUDA运行时为每个线程分配坐标变量blockIdx和threadIdx。 基于这些坐标， 你可以将部分数据分配给不同的线程。</p>
+<p>该坐标变量是基于uint3定义的CUDA内置的向量类型， 是一个包含3个无符号整数的结构， 可以通过x、 y、 z三个字段来指定：</p>
+<ul>
+<li>blockIdx.x</li>
+<li>blockIdx.y</li>
+<li>blockIdx.z</li>
+<li>threadIdx.x</li>
+<li>threadIdx.y</li>
+<li>threadIdx.z</li>
+</ul>
+<p>CUDA可以组织三维的网格和块.</p>
+<p>网格和块的维度由下列两个内置变量指定:</p>
+<ul>
+<li>blockDim(线程块的维度， 用每个线程块中的线程数来表示)</li>
+<li>gridDim(线程格的维度， 用每个线程格中的线程数来表示)</li>
+</ul>
+<p>它们是dim3类型的变量， 是基于uint3定义的整数型向量， 用来表示维度。 当定义一个dim3类型的变量时， 所有未指定的元素都被初始化为1。 dim3类型变量中的每个组件可以通过它的x、 y、 z字段获得。 如下所示:</p>
+<ul>
+<li>blockDim.x</li>
+<li>blockDim.y</li>
+<li>blockDim.z</li>
+</ul>
+<p><strong>网格和线程块的维度</strong></p>
+<blockquote>
+<blockquote>
+<p>一个线程格会被组织成线程块的二维数组形式， 一个线程块会被组织成线程的三维数组形式</p>
+</blockquote>
+</blockquote>
+<p>在CUDA程序中有两组不同的网格和块变量： 手动定义的dim3数据类型和预定义的uint3数据类型。</p>
+<p>手动定义的dim3类型的网格和块变量仅在主机端可见， 而unit3类型的内置预初始化的网格和块变量仅在设备端可见。</p>
+<p><strong>从主机端和设备端访问网格/块变量</strong></p>
+<p>区分主机端和设备端的网格和块变量的访问是很重要的。</p>
+<p>例如， 声明一个主机端的块变量， 你按如下定义它的坐标并对其进行访问：</p>
+<p><code>block.x, block.y, block.z</code></p>
+<p>在设备端， 你已经预定义了内置块变量的大小：</p>
+<p><code>blockDim.x, blockDim.y, and blockDim.z</code></p>
+<p>在启动内核之前就定义了主机端的网格和块变量， 并从主机端通过由x、 y、 z三个字段决定的矢量结构来访问它们。 当内核启动时， 可以使用内核中预初始化的内置变量。</p>
+<p>总之， 在启动内核之前就定义了主机端的网格和块变量， 并从主机端通过由x、 y、 z三个字段决定的矢量结构来访问它们。 当内核启动时， 可以使用内核中预初始化的内置变量.</p>
+<p>对于一个给定的数据大小， 确定网格和块尺寸的一般步骤为：</p>
+<ul>
+<li>确定块的大小</li>
+<li>在已知数据大小和块大小的基础上计算网格维度</li>
+</ul>
+<p>要确定块尺寸， 通常需要考虑：</p>
+<ul>
+<li>内核的性能特性</li>
+<li>GPU资源的限制</li>
+</ul>
+<p><strong>线程层次结构</strong></p>
+<p>CUDA的特点之一就是通过编程模型揭示了一个两层的线程层次结构（grid-&gt;block-&gt;thread）。 由于一个内核
+<strong>启动的网格和块的维数</strong>会影响性能， 这一结构为程序员优化程序提供了一个额外的途径。</p>
+<h4 id="214-启动一个cuda核函数">2.1.4 启动一个CUDA核函数<a hidden class="anchor" aria-hidden="true" href="#214-启动一个cuda核函数">#</a></h4>
+<p>CUDA内核调用是对C语言函数调用语句的延伸， &laquo;&lt;&raquo;&gt;运算符内是核函数的执行配置。</p>
+<p><code>kernel_name &lt;&lt;&lt;grid, block&gt;&gt;&gt;(argument list)</code></p>
+<p>利用执行配置可以指定线程在GPU上调度运行的方式。 执行配置的<strong>第一个值是网格维度</strong>， 也就是启动块的数目。 <strong>第二个值是块维度</strong>， 也就是每个块中线程的数目。 通过指定网格和块的维度， 你可以进行以下
+配置：</p>
+<ul>
+<li>内核中线程的数目</li>
+<li>内核中使用的线程布局</li>
+</ul>
+<blockquote>
+<p>同一个块(block)中的线程之间可以相互协作， 不同块内的线程不能协作。</p>
+</blockquote>
+<p>假设你有32个数据元素用于计算， 每8个元素一个块， 需要启动4个块：</p>
+<p><code>kernel_name&lt;&lt;&lt;4, 8&gt;&gt;&gt;(argument list)</code></p>
+<p>由于数据在全局内存中是线性存储的， 因此可以用变量blockIdx.x和threadId.x来进行以下操作。</p>
+<ul>
+<li>在网格中标识一个唯一的线程</li>
+<li>建立线程和数据元素之间的映射关系</li>
+</ul>
+<p>如果把所有32个元素放到一个块里， 那么只会得到一个块:</p>
+<p><code>kernel_name&lt;&lt;&lt;1, 32&gt;&gt;&gt;(argument list)</code></p>
+<p>如果每个块只含有一个元素， 那么会有32个块：</p>
+<p><code>kernel_name&lt;&lt;&lt;32, 1&gt;&gt;&gt;(argument list)</code></p>
+<p>核函数的调用与主机线程是异步的。 核函数调用结束后， 控制权立刻返回给主机端.</p>
+<p>你可以调用以下函数来强制主机端程序等待所有的核函数执行结束：</p>
+<p><code>cudaError_t cudaDeivceSynchronize(void);</code></p>
+<p>一些CUDA运行时API在主机和设备之间是<strong>隐式同步</strong>的。 当使用cudaMemcpy函数在主
+机和设备之间拷贝数据时， 主机端隐式同步， 即主机端程序必须等待数据拷贝完成后才能
+继续执行程序。</p>
+<p><strong>异步行为</strong></p>
+<p>不同于C语言的函数调用， 所有的CUDA核函数的启动都是异步的。 CUDA内核调用完成后， 控制权立刻返回给CPU。</p>
+<h4 id="215-编写核函数">2.1.5 编写核函数<a hidden class="anchor" aria-hidden="true" href="#215-编写核函数">#</a></h4>
+<p>核函数是在设备端执行的代码。</p>
+<p>用__global__声明定义核函数:</p>
+<p><code>__global__ void kernel_name(argument list);</code></p>
+<p>核函数必须有一个void返回类型。</p>
+<p>表2-2总结了CUDA C程序中的函数类型限定符</p>
+<table>
+<thead>
+<tr>
+<th>限定符</th>
+<th>执行</th>
+<th>调用</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>global</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>device</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>host</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>CUDA核函数的限制</strong>
+以下限制适用于所有核函数:</p>
+<ul>
+<li>只能访问设备内存</li>
+<li>必须具有void返回类型</li>
+<li>不支持可变数量的参数</li>
+<li>不支持静态变量</li>
+<li>显示异步行为</li>
+</ul>
+<h3 id="23-组织并行线程-以阅读为主">2.3 组织并行线程 (以阅读为主)<a hidden class="anchor" aria-hidden="true" href="#23-组织并行线程-以阅读为主">#</a></h3>
+<p>从前面的例子可以看出， 如果使用了合适的网格和块大小来正确地组织线程， 那么可以对内核性能产生很大的影响。</p>
+<h4 id="231-使用块和线程建立矩阵索引">2.3.1 使用块和线程建立矩阵索引<a hidden class="anchor" aria-hidden="true" href="#231-使用块和线程建立矩阵索引">#</a></h4>
+<p>在一个矩阵加法核函数中，一个线程通常被分配一个数据元素来处理。首先要完成的任务是使用块和线程索引从全局内存中访问指定的数据。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch03/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>CUDA_C_CH03</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/notes/gpu_compute/cuda_c_notes/cuda_c_ch01/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>CUDA_C_CH01</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA_C_CH02 on twitter"
+        href="https://twitter.com/intent/tweet/?text=CUDA_C_CH02&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f&amp;hashtags=">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA_C_CH02 on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f&amp;title=CUDA_C_CH02&amp;summary=CUDA_C_CH02&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA_C_CH02 on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f&title=CUDA_C_CH02">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA_C_CH02 on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA_C_CH02 on whatsapp"
+        href="https://api.whatsapp.com/send?text=CUDA_C_CH02%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share CUDA_C_CH02 on telegram"
+        href="https://telegram.me/share/url?text=CUDA_C_CH02&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2fnotes%2fgpu_compute%2fcuda_c_notes%2fcuda_c_ch02%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

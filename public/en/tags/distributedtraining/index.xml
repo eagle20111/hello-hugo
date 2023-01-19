@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>DistributedTraining on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/distributedtraining/</link>
+    <description>Recent content in DistributedTraining on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Tue, 01 Nov 2022 09:11:20 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/distributedtraining/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法</title>
+      <link>https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/</link>
+      <pubDate>Tue, 01 Nov 2022 09:11:20 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/</guid>
+      <description>ref: [1]. https://www.changping.me/2022/04/10/ai-distributed-training-coll-topo/ 1. 概述 在深度学习的分布式训练里，Ring AllReduce拓扑算法奠定了数据并行训练的集合通信基础，但集合通信拓扑不只是仅有Ring A</description>
+    </item>
+    
+    <item>
+      <title>分布式训练 – 第3篇 - 集合通信及其通信原语</title>
+      <link>https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/</link>
+      <pubDate>Mon, 31 Oct 2022 07:31:46 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/</guid>
+      <description>ref: [1]. https://zhuanlan.zhihu.com/p/493092647 概述 集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 发送se</description>
+    </item>
+    
+  </channel>
+</rss>

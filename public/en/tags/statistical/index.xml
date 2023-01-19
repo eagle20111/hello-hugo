@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Statistical on Jian&#39;s Blog</title>
+    <link>https://jianye0428.github.io/en/tags/statistical/</link>
+    <description>Recent content in Statistical on Jian&#39;s Blog</description>
+    <image>
+      <url>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</url>
+      <link>https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png</link>
+    </image>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 30 May 2022 16:38:56 +0800</lastBuildDate><atom:link href="https://jianye0428.github.io/en/tags/statistical/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>详解最大似然估计(MLE)、最大后验概率估计(MAP)，以及贝叶斯公式的理解</title>
+      <link>https://jianye0428.github.io/en/posts/tech/2022-05-30_mle/</link>
+      <pubDate>Mon, 30 May 2022 16:38:56 +0800</pubDate>
+      
+      <guid>https://jianye0428.github.io/en/posts/tech/2022-05-30_mle/</guid>
+      <description>最大似然估计（Maximum likelihood estimation, 简称MLE）和最大后验概率估计（Maximum a posteriori estimation, 简称MAP）是很常用的两种参数估计方法，如果不理解这两种</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>分布式训练 – 第3篇 - 集合通信及其通信原语 | Jian&#39;s Blog</title>
+<meta name="keywords" content="DistributedTraining">
+<meta name="description" content="ref: [1]. https://zhuanlan.zhihu.com/p/493092647 概述 集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 发送se">
+<meta name="author" content="Jian">
+<link rel="canonical" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.min.1ea9c8832138446635789668415e5c75b8a534b191ee749a44f5ab404c9f27c2.css" integrity="sha256-HqnIgyE4RGY1eJZoQV5cdbilNLGR7nSaRPWrQEyfJ8I=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jianye0428.github.io/favicon/jian_icon.png">
+<link rel="apple-touch-icon" href="https://jianye0428.github.io/favicon/apple-touch-icon.png">
+<link rel="mask-icon" href="https://jianye0428.github.io/favicon/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --hljs-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+<meta name="baidu-site-verification" content="code-9oLyeix0aK" />
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4a41bf85d719f0e8c3165fc76904f546";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+
+
+<script defer crossorigin="anonymous" src="/js/katex.min.8f5024e83d2055dd60e021751066111b0057e230db34911dd56242d67f0a4c86.js" integrity="sha256-j1Ak6D0gVd1g4CF1EGYRGwBX4jDbNJEd1WJC1n8KTIY="></script>
+
+
+<script defer crossorigin="anonymous" src="/js/auto-render.min.b09accad850e4e87b8a2fc8b93fae790def79172b68de72fd777958c52e566ad.js" integrity="sha256-sJrMrYUOToe4ovyLk/rnkN73kXK2jecv13eVjFLlZq0="></script>
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          
+          throwOnError : false
+        });
+    });
+
+    
+    window.WebFontConfig = {
+        custom: {
+            families: ['KaTeX_AMS', 'KaTeX_Caligraphic:n4,n7', 'KaTeX_Fraktur:n4,n7',
+            'KaTeX_Main:n4,n7,i4,i7', 'KaTeX_Math:i4,i7', 'KaTeX_Script',
+            'KaTeX_SansSerif:n4,n7,i4', 'KaTeX_Size1', 'KaTeX_Size2', 'KaTeX_Size3',
+            'KaTeX_Size4', 'KaTeX_Typewriter'],
+        },
+    };
+</script>
+
+
+<script defer crossorigin="anonymous" src="/js/webfontloader.min.min.d1c6c39d18e2decb5c99dc9efc579098ab37b9654725df3f9c0737bc2dd00760.js" integrity="sha256-0cbDnRji3stcmdye/FeQmKs3uWVHJd8/nAc3vC3QB2A="></script>
+
+
+ 
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-C6GDZ56F4S"></script>
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-C6GDZ56F4S', { 'anonymize_ip': false });
+}
+</script>
+<meta property="og:title" content="分布式训练 – 第3篇 - 集合通信及其通信原语" />
+<meta property="og:description" content="ref: [1]. https://zhuanlan.zhihu.com/p/493092647 概述 集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 发送se" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/" /><meta property="og:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-10-31T07:31:46&#43;08:00" />
+<meta property="article:modified_time" content="2022-10-31T07:31:46&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://i.loli.net/2021/09/26/3OMGXylm8HUYJ6p.png"/>
+
+<meta name="twitter:title" content="分布式训练 – 第3篇 - 集合通信及其通信原语"/>
+<meta name="twitter:description" content="ref: [1]. https://zhuanlan.zhihu.com/p/493092647 概述 集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 发送se"/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://jianye0428.github.io/en/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "分布式训练 – 第3篇 - 集合通信及其通信原语",
+      "item": "https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "分布式训练 – 第3篇 - 集合通信及其通信原语",
+  "name": "分布式训练 – 第3篇 - 集合通信及其通信原语",
+  "description": "ref: [1]. https://zhuanlan.zhihu.com/p/493092647 概述 集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 发送se",
+  "keywords": [
+    "DistributedTraining"
+  ],
+  "articleBody": "ref: [1]. https://zhuanlan.zhihu.com/p/493092647\n概述 集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 发送send、接收receive、复制copy、组内进程栅障同步Barrier以及节点间进程同步(signal+wait)，这几个最基本的操作经过组合构成了一组通信模板也叫通信原语，比如：1对多的广播broadcast、多对1的收集gather、多对多的收集all-gather、1对多的发散scatter、多对1的规约reduce、多对多的规约all-reduce、组合的规约与发散reduce-scatter、多对多的all-to-all等，集合通信的难点在于通信效率以及网络硬件连接拓扑结构的最佳适用。\n通信原语 以一台集成了4张训练加速卡的服务器为例，如下图，服务器内四张训练加速卡是全连接的，物理连接方式可以是私有物理互联协议，比如CXL、NVLINK，也可以是PCIe、InfiniBand、Ethernet等，本文将以此物理拓扑结构描述集合通信中常用的几组通信原语。\nBroadcast Broadcast属于1对多的通信原语，一个数据发送者，多个数据接收者，可以在集群内把一个节点自身的数据广播到其他节点上。如下图所示，圈圈表示集群中的训练加速卡节点，相同的颜色的小方块则代表相同的数据。当主节点 0 执行Broadcast时，数据即从主节点0被广播至其他节点。\nBroadcast是数据的1对多的同步，它将一张XPU卡上的数据同步到其他所有的XPU卡上，其应用场景有：\n1）数据并行的参数初始化，确保每张卡上的初始参数是一致的；\n2）allReduce里的 broadcast + reduce组合里的broadcast操作；\n3）分布式训练parameter server 参数服务器结构里的 master节点 broadcast 数据到worker节点，再从worker节点reduce数据回master节点里的broadcast操作；\nScatter 同Broadcast一样，Scatter也是一个1对多的通信原语，也是一个数据发送者，多个数据接收者，可以在集群内把一个节点自身的数据发散到其他节点上。与Broadcast不同的是Broadcast把主节点0的数据发送给所有节点，而Scatter则是将数据的进行切片再分发给集群内所有的节点，如下图所示，不相同的颜色的小方块代表不相同的数据，主节点 0 将数据分为四份分发到了节点0-3。\nScatter是数据的1对多的分发，它将一张XPU卡上的数据进行分片再分发到其他所有的XPU卡上，他的反向操作对应Gather，其应用场景有: 1）ReduceScatter组合里的 Scatter操作； 2）模型并行里初始化时将模型scatter到不同的XPU上；\nGather Gather操作属于多对1的通信原语，具有多个数据发送者，一个数据接收者，可以在集群内把多个节点的数据收集到一个节点上，如下图所示，不相同的颜色的小方块代表不相同的数据。\nGather是数据的多对1的收集，它将多张XPU卡上的数据收集到1张XPU卡上，他的反向操作对应Scatter，其应用场景有：\n1）ReduceScatter组合里的 Scatter操作；\nAllGather AllGather属于多对多的通信原语，具有多个数据发送者，多个数据接收者，可以在集群内把多个节点的数据收集到一个主节点上（Gather），再把这个收集到的数据分发到其他节点上（broadcast），即收集集群内所有的数据到所有的节点上。\nAllGather是数据的多对多的同步全收集，它将多张XPU卡上的数据收集到多张XPU卡上，可以看做Gather + Broadcast的操作组合，它的反向操作对应ReduceScatter，其最应用场景有：\n1） AllGather可应用于模型并行；\n2）模型并行里前向计算里的参数全同步，需要用allgather把模型并行里将切分到不同的XPU上的参数全同步到一张XPU上才能进行前向计算。\nReduce Reduce属于多对1的通信原语，具有多个数据发送者，一个数据接收者，可以在集群内把多个节点的数据规约运算到一个主节点上，常用的规约操作符有：求累加和SUM、求累乘积PROD、求最大值MAX、求最小值MIN、逻辑与 LAND、按位与BAND、逻辑或LOR、按位或BOR、逻辑异或LXOR、按位异或BOXR、求最大值和最小大的位置MAXLOC、求最小值和最小值的位置MINLOC等，这些规约运算也需要加速卡支持对应的算子才能生效。\nReuduce操作从集群内每个节点上获取一个输入数据，通过规约运算操作后，得到精简数据，如下图的SUM求累加和：节点0数值 5、节点1数值6、节点2数值7、节点3数值8，经过SUM运算后 累积和为 26，即得到更为精简的数值，在reduce原语里回会去调用 reduce SUM算子来完成这个求和累加。\nReduce是数据的多对1的规约运算，它将所有张XPU卡上的数据规约（比如SUM求和）到1张XPU卡上，其应用场景有：\n1）AllReduce里的 broadcast + reduce组合里的reduce操作；\n2）ReduceScatter组合里的 reduce操作；\n3）分布式训练parameter server 参数服务器结构里的 master节点 broadcast 数据到worker节点，再从worker节点reduce数据回master节点里的reduce操作；\nReduceScatter ReduceScatter属于多对多的通信原语，具有多个数据发送者，多个数据接收者，其在集群内的所有节点上都按维度执行相同的Reduce规约运算，再将结果发散到集群内所有的节点上，Reduce-scatter等价于节点个数次的reduce规约运算操作，再后面执行节点个数的scatter次操作，其反向操作是AllGather。\n如下图所示，先reduce操作 XPU 0-3的数据reduce为 A(A0+A1+A2+A3) + B(B0 + B1 +B2 + B3) + C(C0 + C1 + C2 + C3) + D(D0 + D1 + D2 + D3 ) 到一张XPU上，再进行分片scatter到集群内所有的XPU卡上。\nReduceScatter是数据的多对多的reduce + scatter运算，它将所有的XPU卡上的数据先规约（比如SUM求和）到1张XPU卡上，再进行scatter，其应用场景有：\n1）ReduceScatter即可应用于数据并行也可应用于模型并行；\n2）数据并行allReduce里的 ReduceScatter+ Allgather组合里的ReduceScatter操作；\n3）模型并行里在前向allgather后的反向计算里的ReduceScatter；\nAllReduce AllReduce属于多对多的通信原语，具有多个数据发送者，多个数据接收者，其在集群内的所有节点上都执行相同的Reduce操作，可以将集群内所有节点的数据规约运算得到的结果发送到所有的节点上。AllReduce操作可通过在主节点上执行Reduce + Broadcast或ReduceScatter + AllGather实现，如下图所示：先在主节点上执行reduce得到规约累加和26，再把这个累加和26 broadcast到其他的节点，这样整个集群内，每个节点的数值就都保持一致。\nAllReduce是数据的多对多的规约运算，它将所有的XPU卡上的数据规约（比如SUM求和）到集群内每张XPU卡上，其应用场景有：\n1） AllReduce应用于数据并行；\n2）数据并行各种通信拓扑结构比如Ring allReduce、Tree allReduce里的 allReduce操作；\nAll-To-All All-To-All操作每一个节点的数据会scatter到集群内所有节点上，同时每一个节点也会Gather集群内所有节点的数据。ALLTOALL是对ALLGATHER的扩展，区别是ALLGATHER 操作中，不同节点向某一节点收集到的数据是相同的，而在ALLTOALL中，不同的节点向某一节点收集到的数据是不同的，如下图所示:\nAllToAll是数据的多对多的转置，它将所有张XPU卡上的数据转置到所有的XPU卡上，其主要应用场景有：\n1） AllToAll应用于模型并行；\n2）模型并行里的矩阵转置；\n3）数据并行到模型并行的矩阵转置；\nSend 与 Receive 数据或参数在不同XPU之间的发送与接收。\nBarrier BARRIER同步操作会阻塞所有的调用者直到所有的组内成员都调用了它， 用于一个集合通信子中所有进程的同步，调用函数时进程将处于等待状态，直到通信子中所有进程 都调用了该函数后才继续执行。\nSignal与Wait Signal与Wait属于记录型信号量机制： wait(s)，signal(s)可用于解决进程间的同步问题，在通信原语里从一个节点发送一个数据到另外一个节点时，会同时signal一个event值到对端，对端的wait操作接收到这个event时会返回一个确认给signal，这样保证在节点的进程间进行数据的同步操作。\n小结 在分布式训练过程中，深度学习训练框架不会去直接操作底层的通信网络，而是通过使用网络通信库来完成数据的集合通信，各家AI芯片加速卡厂家都会提供私有的网络通信库比如：xxx-AWARE OpenMPI或xCCL来完成这个底层通信硬件的屏蔽与抽象。在分布式训练集群里网络通信硬件连接样式多种多样，可以是Ethernet、InfiniBand 、RoCE v2/v1 等也可以是CXL、NVLINK等私有协议，这就要求在通信的后端层根据各个厂家的自己的SDK开发库接口，根据实际情况实现 各自的网络通信库，比如cuda-aware MPI、NCCL、NVSHMEM，以及根据实际的网络拓扑组合完成对应的最有效的网络拓扑算法。\n本文讲述了分布式训练里的集合通信原语，这些原语是集合通信拓扑算法的基本组成单元，后续的文章里会讲述如何组合这些通信原语以完成合适的通信拓扑算法。\n",
+  "wordCount" : "3933",
+  "inLanguage": "en",
+  "datePublished": "2022-10-31T07:31:46+08:00",
+  "dateModified": "2022-10-31T07:31:46+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Jian"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-31_distributedtraining_3/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Jian's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://jianye0428.github.io/favicon/jian_icon.png"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://jianye0428.github.io/en/" accesskey="h" title="Jian&#39;s Blog (Alt + H)">
+                <img src="https://jianye0428.github.io/favicon/jian_icon.png" alt="logo" aria-label="logo"
+                    height="30">Jian&#39;s Blog</a>
+            <span class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <ul class="lang-switch"><li>|</li>
+                    <li>
+                        <a href="https://jianye0428.github.io/cn/" title="Chinese"
+                            aria-label="Chinese">Chinese</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://jianye0428.github.io/en/myresume/" title="My Resume">
+                    <span>My Resume</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/tags/" title="🔖Tags">
+                    <span>🔖Tags</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/archives" title="🙋🏻‍♂️Archive">
+                    <span>🙋🏻‍♂️Archive</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://jianye0428.github.io/en/search/" title="🔍Search (Alt &#43; /)" accesskey=/>
+                    <span>🔍Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://jianye0428.github.io/en/">Home</a>&nbsp;»&nbsp;<a href="https://jianye0428.github.io/en/posts/">Posts</a></div>
+    <h1 class="post-title">
+      分布式训练 – 第3篇 - 集合通信及其通信原语
+    </h1>
+    <div class="post-meta"><span title='2022-10-31 07:31:46 +0800 CST'>2022-10-31</span>&nbsp;·&nbsp;8 min&nbsp;·&nbsp;Jian&nbsp;|&nbsp;<a href="https://github.com/jianye0428/myblog/tree/main/content/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3.md" rel="noopener noreferrer" target="_blank">Suggest Changes</a>
+
+</div>
+  </header> <aside id="toc-container" class="toc-container wide">
+    <div class="toc">
+        <details  open>
+            <summary accesskey="c" title="(Alt + C)">
+                <span class="details">Table of Contents</span>
+            </summary>
+
+            <div class="inner"><ul>
+                    <li>
+                        <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                    <li>
+                        <a href="#%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad" aria-label="通信原语">通信原语</a><ul>
+                            
+                    <li>
+                        <a href="#broadcast" aria-label="Broadcast">Broadcast</a></li>
+                    <li>
+                        <a href="#scatter" aria-label="Scatter">Scatter</a></li>
+                    <li>
+                        <a href="#gather" aria-label="Gather">Gather</a></li>
+                    <li>
+                        <a href="#allgather" aria-label="AllGather">AllGather</a></li>
+                    <li>
+                        <a href="#reduce" aria-label="Reduce">Reduce</a></li>
+                    <li>
+                        <a href="#reducescatter" aria-label="ReduceScatter">ReduceScatter</a></li>
+                    <li>
+                        <a href="#allreduce" aria-label="AllReduce">AllReduce</a></li>
+                    <li>
+                        <a href="#all-to-all" aria-label="All-To-All">All-To-All</a></li>
+                    <li>
+                        <a href="#send-%e4%b8%8e-receive" aria-label="Send 与 Receive">Send 与 Receive</a></li>
+                    <li>
+                        <a href="#barrier" aria-label="Barrier">Barrier</a></li>
+                    <li>
+                        <a href="#signal%e4%b8%8ewait" aria-label="Signal与Wait">Signal与Wait</a></li></ul>
+                    </li>
+                    <li>
+                        <a href="#%e5%b0%8f%e7%bb%93" aria-label="小结">小结</a>
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</aside>
+<script>
+    let activeElement;
+    let elements;
+    window.addEventListener('DOMContentLoaded', function (event) {
+        checkTocPosition();
+
+        elements = document.querySelectorAll('h1[id],h2[id],h3[id],h4[id],h5[id],h6[id]');
+         
+         activeElement = elements[0];
+         const id = encodeURI(activeElement.getAttribute('id')).toLowerCase();
+         document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+     }, false);
+
+    window.addEventListener('resize', function(event) {
+        checkTocPosition();
+    }, false);
+
+    window.addEventListener('scroll', () => {
+        
+        activeElement = Array.from(elements).find((element) => {
+            if ((getOffsetTop(element) - window.pageYOffset) > 0 && 
+                (getOffsetTop(element) - window.pageYOffset) < window.innerHeight/2) {
+                return element;
+            }
+        }) || activeElement
+
+        elements.forEach(element => {
+             const id = encodeURI(element.getAttribute('id')).toLowerCase();
+             if (element === activeElement){
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.add('active');
+             } else {
+                 document.querySelector(`.inner ul li a[href="#${id}"]`).classList.remove('active');
+             }
+         })
+     }, false);
+
+    const main = parseInt(getComputedStyle(document.body).getPropertyValue('--article-width'), 10);
+    const toc = parseInt(getComputedStyle(document.body).getPropertyValue('--toc-width'), 10);
+    const gap = parseInt(getComputedStyle(document.body).getPropertyValue('--gap'), 10);
+
+    function checkTocPosition() {
+        const width = document.body.scrollWidth;
+
+        if (width - main - (toc * 2) - (gap * 4) > 0) {
+            document.getElementById("toc-container").classList.add("wide");
+        } else {
+            document.getElementById("toc-container").classList.remove("wide");
+        }
+    }
+
+    function getOffsetTop(element) {
+        if (!element.getClientRects().length) {
+            return 0;
+        }
+        let rect = element.getBoundingClientRect();
+        let win = element.ownerDocument.defaultView;
+        return rect.top + win.pageYOffset;   
+    }
+</script>
+
+  <div class="post-content"><p>ref:
+[1]. <a href="https://zhuanlan.zhihu.com/p/493092647">https://zhuanlan.zhihu.com/p/493092647</a></p>
+<h2 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h2>
+<p>集合通信（Collective Communications）是一个进程组的所有进程都参与的全局通信操作，其最为基础的操作有 <strong>发送send</strong>、<strong>接收receive</strong>、<strong>复制copy</strong>、<strong>组内进程栅障同步Barrier</strong>以及<strong>节点间进程同步(signal+wait)</strong>，这几个最基本的操作经过组合构成了一组通信模板也叫通信原语，比如：<u>1对多的广播broadcast</u>、<u>多对1的收集gather</u>、<u>多对多的收集all-gather</u>、<u>1对多的发散scatter</u>、<u>多对1的规约reduce</u>、<u>多对多的规约all-reduce</u>、<u>组合的规约与发散reduce-scatter</u>、<u>多对多的all-to-all</u>等，<font color=red>集合通信的难点在于通信效率以及网络硬件连接拓扑结构的最佳适用</font>。</p>
+<h2 id="通信原语">通信原语<a hidden class="anchor" aria-hidden="true" href="#通信原语">#</a></h2>
+<p>以一台集成了4张训练加速卡的服务器为例，如下图，服务器内四张训练加速卡是全连接的，物理连接方式可以是私有物理互联协议，比如CXL、NVLINK，也可以是PCIe、InfiniBand、Ethernet等，本文将以此物理拓扑结构描述集合通信中常用的几组通信原语。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_communication_terminology.jpg#center" alt="communication terminology"  />
+</p>
+<h3 id="broadcast">Broadcast<a hidden class="anchor" aria-hidden="true" href="#broadcast">#</a></h3>
+<p><font color=red>Broadcast属于1对多的通信原语</font>，一个数据发送者，多个数据接收者，可以在集群内把一个节点自身的数据广播到其他节点上。如下图所示，圈圈表示集群中的训练加速卡节点，相同的颜色的小方块则代表相同的数据。当主节点 0 执行Broadcast时，数据即从主节点0被广播至其他节点。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_broadcast.jpg#center" alt="broadcast"  />
+</p>
+<p>Broadcast是数据的1对多的同步，它将一张XPU卡上的数据同步到其他所有的XPU卡上，其应用场景有：</p>
+<p>1）数据并行的参数初始化，确保每张卡上的初始参数是一致的；</p>
+<p>2）allReduce里的 broadcast + reduce组合里的broadcast操作；</p>
+<p>3）分布式训练parameter server 参数服务器结构里的 master节点 broadcast 数据到worker节点，再从worker节点reduce数据回master节点里的broadcast操作；</p>
+<h3 id="scatter">Scatter<a hidden class="anchor" aria-hidden="true" href="#scatter">#</a></h3>
+<p>同Broadcast一样，<font color=red>Scatter也是一个1对多的通信原语</font>，也是一个数据发送者，多个数据接收者，可以在集群内把一个节点自身的数据发散到其他节点上。与Broadcast不同的是Broadcast把主节点0的数据发送给所有节点，而Scatter则是将数据的进行切片再分发给集群内所有的节点，如下图所示，不相同的颜色的小方块代表不相同的数据，主节点 0 将数据分为四份分发到了节点0-3。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_scatter.jpg#center" alt="scatter"  />
+</p>
+<p>Scatter是数据的1对多的分发，它将一张XPU卡上的数据进行分片再分发到其他所有的XPU卡上，他的反向操作对应Gather，其应用场景有:
+1）ReduceScatter组合里的 Scatter操作；
+2）模型并行里初始化时将模型scatter到不同的XPU上；</p>
+<h3 id="gather">Gather<a hidden class="anchor" aria-hidden="true" href="#gather">#</a></h3>
+<p><font color=red>Gather操作属于多对1的通信原语</font>，具有多个数据发送者，一个数据接收者，可以在集群内把多个节点的数据收集到一个节点上，如下图所示，不相同的颜色的小方块代表不相同的数据。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_gather.jpg#center" alt="gather"  />
+</p>
+<p>Gather是数据的多对1的收集，它将多张XPU卡上的数据收集到1张XPU卡上，他的反向操作对应Scatter，其应用场景有：</p>
+<p>1）ReduceScatter组合里的 Scatter操作；</p>
+<h3 id="allgather">AllGather<a hidden class="anchor" aria-hidden="true" href="#allgather">#</a></h3>
+<p><font color=red>AllGather属于多对多的通信原语</font>，具有多个数据发送者，多个数据接收者，可以在集群内把多个节点的数据收集到一个主节点上（Gather），再把这个收集到的数据分发到其他节点上（broadcast），即收集集群内所有的数据到所有的节点上。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_allgather.jpg#center" alt="allgather"  />
+</p>
+<p>AllGather是数据的多对多的同步全收集，它将多张XPU卡上的数据收集到多张XPU卡上，可以看做Gather + Broadcast的操作组合，它的反向操作对应ReduceScatter，其最应用场景有：</p>
+<p>1） AllGather可应用于模型并行；</p>
+<p>2）模型并行里前向计算里的参数全同步，需要用allgather把模型并行里将切分到不同的XPU上的参数全同步到一张XPU上才能进行前向计算。</p>
+<h3 id="reduce">Reduce<a hidden class="anchor" aria-hidden="true" href="#reduce">#</a></h3>
+<p><font color=red>Reduce属于多对1的通信原语</font>，具有多个数据发送者，一个数据接收者，可以在集群内把多个节点的数据规约运算到一个主节点上，常用的规约操作符有：求累加和SUM、求累乘积PROD、求最大值MAX、求最小值MIN、逻辑与 LAND、按位与BAND、逻辑或LOR、按位或BOR、逻辑异或LXOR、按位异或BOXR、求最大值和最小大的位置MAXLOC、求最小值和最小值的位置MINLOC等，这些规约运算也需要加速卡支持对应的算子才能生效。</p>
+<p>Reuduce操作从集群内每个节点上获取一个输入数据，通过规约运算操作后，得到精简数据，如下图的SUM求累加和：节点0数值 5、节点1数值6、节点2数值7、节点3数值8，经过SUM运算后 累积和为 26，即得到更为精简的数值，在reduce原语里回会去调用 reduce SUM算子来完成这个求和累加。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_reduce.jpg#center" alt="reduce"  />
+</p>
+<p>Reduce是数据的多对1的规约运算，它将所有张XPU卡上的数据规约（比如SUM求和）到1张XPU卡上，其应用场景有：</p>
+<p>1）AllReduce里的 broadcast + reduce组合里的reduce操作；</p>
+<p>2）ReduceScatter组合里的 reduce操作；</p>
+<p>3）分布式训练parameter server 参数服务器结构里的 master节点 broadcast 数据到worker节点，再从worker节点reduce数据回master节点里的reduce操作；</p>
+<h3 id="reducescatter">ReduceScatter<a hidden class="anchor" aria-hidden="true" href="#reducescatter">#</a></h3>
+<p>ReduceScatter属于多对多的通信原语，具有多个数据发送者，多个数据接收者，其在集群内的所有节点上都按维度执行相同的Reduce规约运算，再将结果发散到集群内所有的节点上，Reduce-scatter等价于节点个数次的reduce规约运算操作，再后面执行节点个数的scatter次操作，其反向操作是AllGather。</p>
+<p>如下图所示，先reduce操作 XPU 0-3的数据reduce为 A(A0+A1+A2+A3) + B(B0 + B1 +B2 + B3) + C(C0 + C1 + C2 + C3) + D(D0 + D1 + D2 + D3 ) 到一张XPU上，再进行分片scatter到集群内所有的XPU卡上。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_reducescatter.jpg#center" alt="reducescatter"  />
+</p>
+<p>ReduceScatter是数据的多对多的reduce + scatter运算，它将所有的XPU卡上的数据先规约（比如SUM求和）到1张XPU卡上，再进行scatter，其应用场景有：</p>
+<p>1）ReduceScatter即可应用于数据并行也可应用于模型并行；</p>
+<p>2）数据并行allReduce里的 ReduceScatter+ Allgather组合里的ReduceScatter操作；</p>
+<p>3）模型并行里在前向allgather后的反向计算里的ReduceScatter；</p>
+<h3 id="allreduce">AllReduce<a hidden class="anchor" aria-hidden="true" href="#allreduce">#</a></h3>
+<p>AllReduce属于多对多的通信原语，具有多个数据发送者，多个数据接收者，其在集群内的所有节点上都执行相同的Reduce操作，可以将集群内所有节点的数据规约运算得到的结果发送到所有的节点上。AllReduce操作可通过在主节点上执行Reduce + Broadcast或ReduceScatter + AllGather实现，如下图所示：先在主节点上执行reduce得到规约累加和26，再把这个累加和26 broadcast到其他的节点，这样整个集群内，每个节点的数值就都保持一致。</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_allreduce.jpg#center" alt="all reduce"  />
+</p>
+<p>AllReduce是数据的多对多的规约运算，它将所有的XPU卡上的数据规约（比如SUM求和）到集群内每张XPU卡上，其应用场景有：</p>
+<p>1） AllReduce应用于数据并行；</p>
+<p>2）数据并行各种通信拓扑结构比如Ring allReduce、Tree allReduce里的 allReduce操作；</p>
+<h3 id="all-to-all">All-To-All<a hidden class="anchor" aria-hidden="true" href="#all-to-all">#</a></h3>
+<p>All-To-All操作每一个节点的数据会scatter到集群内所有节点上，同时每一个节点也会Gather集群内所有节点的数据。ALLTOALL是对ALLGATHER的扩展，区别是ALLGATHER 操作中，不同节点向某一节点收集到的数据是相同的，而在ALLTOALL中，不同的节点向某一节点收集到的数据是不同的，如下图所示:</p>
+<p><img loading="lazy" src="https://github.com/jianye0428/hello-hugo/raw/master/img/posts/tech/DistributedTraining/2022-10-31_DistributedTraining_3/2022-10-31_DistributedTraining_3_all_to_all.jpg#center" alt="all to all"  />
+</p>
+<p>AllToAll是数据的多对多的转置，它将所有张XPU卡上的数据转置到所有的XPU卡上，其主要应用场景有：</p>
+<p>1） AllToAll应用于模型并行；</p>
+<p>2）模型并行里的矩阵转置；</p>
+<p>3）数据并行到模型并行的矩阵转置；</p>
+<h3 id="send-与-receive">Send 与 Receive<a hidden class="anchor" aria-hidden="true" href="#send-与-receive">#</a></h3>
+<p>数据或参数在不同XPU之间的发送与接收。</p>
+<h3 id="barrier">Barrier<a hidden class="anchor" aria-hidden="true" href="#barrier">#</a></h3>
+<p>BARRIER同步操作会阻塞所有的调用者直到所有的组内成员都调用了它， 用于一个集合通信子中所有进程的同步，调用函数时进程将处于等待状态，直到通信子中所有进程 都调用了该函数后才继续执行。</p>
+<h3 id="signal与wait">Signal与Wait<a hidden class="anchor" aria-hidden="true" href="#signal与wait">#</a></h3>
+<p>Signal与Wait属于记录型信号量机制： wait(s)，signal(s)可用于解决进程间的同步问题，在通信原语里从一个节点发送一个数据到另外一个节点时，会同时signal一个event值到对端，对端的wait操作接收到这个event时会返回一个确认给signal，这样保证在节点的进程间进行数据的同步操作。</p>
+<h2 id="小结">小结<a hidden class="anchor" aria-hidden="true" href="#小结">#</a></h2>
+<p>在分布式训练过程中，深度学习训练框架不会去直接操作底层的通信网络，而是通过使用网络通信库来完成数据的集合通信，各家AI芯片加速卡厂家都会提供私有的网络通信库比如：xxx-AWARE OpenMPI或xCCL来完成这个底层通信硬件的屏蔽与抽象。在分布式训练集群里网络通信硬件连接样式多种多样，可以是Ethernet、InfiniBand 、RoCE v2/v1 等也可以是CXL、NVLINK等私有协议，这就要求在通信的后端层根据各个厂家的自己的SDK开发库接口，根据实际情况实现 各自的网络通信库，比如cuda-aware MPI、NCCL、NVSHMEM，以及根据实际的网络拓扑组合完成对应的最有效的网络拓扑算法。</p>
+<p>本文讲述了分布式训练里的集合通信原语，这些原语是集合通信拓扑算法的基本组成单元，后续的文章里会讲述如何组合这些通信原语以完成合适的通信拓扑算法。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://jianye0428.github.io/en/tags/distributedtraining/">DistributedTraining</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-11-01_distributedtraining_4/">
+    <span class="title"><i class="fas fa-angle-double-left"></i> Prev Page</span>
+    <br>
+    <span>分布式训练 – 第4篇 - 分布式训练常用的网络结构及集合通信拓扑算法</span>
+  </a>
+  <a class="next" href="https://jianye0428.github.io/en/posts/tech/distributedtraining/2022-10-29_distributedtraining_2/">
+    <span class="title">Next Page <i class="fas fa-angle-double-right"></i></span>
+    <br>
+    <span>分布式训练 – 第2章 - 训练与系统评价指标</span>
+  </a>
+</nav>
+
+
+<div class="share-buttons">
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第3篇 - 集合通信及其通信原语 on twitter"
+        href="https://twitter.com/intent/tweet/?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac3%e7%af%87%20-%20%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e5%8f%8a%e5%85%b6%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f&amp;hashtags=DistributedTraining">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-253.927,424.544c135.939,0 210.268,-112.643 210.268,-210.268c0,-3.218 0,-6.437 -0.153,-9.502c14.406,-10.421 26.973,-23.448 36.935,-38.314c-13.18,5.824 -27.433,9.809 -42.452,11.648c15.326,-9.196 26.973,-23.602 32.49,-40.92c-14.252,8.429 -30.038,14.56 -46.896,17.931c-13.487,-14.406 -32.644,-23.295 -53.946,-23.295c-40.767,0 -73.87,33.104 -73.87,73.87c0,5.824 0.613,11.494 1.992,16.858c-61.456,-3.065 -115.862,-32.49 -152.337,-77.241c-6.284,10.881 -9.962,23.601 -9.962,37.088c0,25.594 13.027,48.276 32.95,61.456c-12.107,-0.307 -23.448,-3.678 -33.41,-9.196l0,0.92c0,35.862 25.441,65.594 59.311,72.49c-6.13,1.686 -12.72,2.606 -19.464,2.606c-4.751,0 -9.348,-0.46 -13.946,-1.38c9.349,29.426 36.628,50.728 68.965,51.341c-25.287,19.771 -57.164,31.571 -91.8,31.571c-5.977,0 -11.801,-0.306 -17.625,-1.073c32.337,21.15 71.264,33.41 112.95,33.41Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第3篇 - 集合通信及其通信原语 on linkedin"
+        href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac3%e7%af%87%20-%20%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e5%8f%8a%e5%85%b6%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad&amp;summary=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac3%e7%af%87%20-%20%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e5%8f%8a%e5%85%b6%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad&amp;source=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-288.985,423.278l0,-225.717l-75.04,0l0,225.717l75.04,0Zm270.539,0l0,-129.439c0,-69.333 -37.018,-101.586 -86.381,-101.586c-39.804,0 -57.634,21.891 -67.617,37.266l0,-31.958l-75.021,0c0.995,21.181 0,225.717 0,225.717l75.02,0l0,-126.056c0,-6.748 0.486,-13.492 2.474,-18.315c5.414,-13.475 17.767,-27.434 38.494,-27.434c27.135,0 38.007,20.707 38.007,51.037l0,120.768l75.024,0Zm-307.552,-334.556c-25.674,0 -42.448,16.879 -42.448,39.002c0,21.658 16.264,39.002 41.455,39.002l0.484,0c26.165,0 42.452,-17.344 42.452,-39.002c-0.485,-22.092 -16.241,-38.954 -41.943,-39.002Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第3篇 - 集合通信及其通信原语 on reddit"
+        href="https://reddit.com/submit?url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f&title=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac3%e7%af%87%20-%20%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e5%8f%8a%e5%85%b6%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-3.446,265.638c0,-22.964 -18.616,-41.58 -41.58,-41.58c-11.211,0 -21.361,4.457 -28.841,11.666c-28.424,-20.508 -67.586,-33.757 -111.204,-35.278l18.941,-89.121l61.884,13.157c0.756,15.734 13.642,28.29 29.56,28.29c16.407,0 29.706,-13.299 29.706,-29.701c0,-16.403 -13.299,-29.702 -29.706,-29.702c-11.666,0 -21.657,6.792 -26.515,16.578l-69.105,-14.69c-1.922,-0.418 -3.939,-0.042 -5.585,1.036c-1.658,1.073 -2.811,2.761 -3.224,4.686l-21.152,99.438c-44.258,1.228 -84.046,14.494 -112.837,35.232c-7.468,-7.164 -17.589,-11.591 -28.757,-11.591c-22.965,0 -41.585,18.616 -41.585,41.58c0,16.896 10.095,31.41 24.568,37.918c-0.639,4.135 -0.99,8.328 -0.99,12.576c0,63.977 74.469,115.836 166.33,115.836c91.861,0 166.334,-51.859 166.334,-115.836c0,-4.218 -0.347,-8.387 -0.977,-12.493c14.564,-6.47 24.735,-21.034 24.735,-38.001Zm-119.474,108.193c-20.27,20.241 -59.115,21.816 -70.534,21.816c-11.428,0 -50.277,-1.575 -70.522,-21.82c-3.007,-3.008 -3.007,-7.882 0,-10.889c3.003,-2.999 7.882,-3.003 10.885,0c12.777,12.781 40.11,17.317 59.637,17.317c19.522,0 46.86,-4.536 59.657,-17.321c3.016,-2.999 7.886,-2.995 10.885,0.008c3.008,3.011 3.003,7.882 -0.008,10.889Zm-5.23,-48.781c-16.373,0 -29.701,-13.324 -29.701,-29.698c0,-16.381 13.328,-29.714 29.701,-29.714c16.378,0 29.706,13.333 29.706,29.714c0,16.374 -13.328,29.698 -29.706,29.698Zm-160.386,-29.702c0,-16.381 13.328,-29.71 29.714,-29.71c16.369,0 29.689,13.329 29.689,29.71c0,16.373 -13.32,29.693 -29.689,29.693c-16.386,0 -29.714,-13.32 -29.714,-29.693Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第3篇 - 集合通信及其通信原语 on facebook"
+        href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-106.468,0l0,-192.915l66.6,0l12.672,-82.621l-79.272,0l0,-53.617c0,-22.603 11.073,-44.636 46.58,-44.636l36.042,0l0,-70.34c0,0 -32.71,-5.582 -63.982,-5.582c-65.288,0 -107.96,39.569 -107.96,111.204l0,62.971l-72.573,0l0,82.621l72.573,0l0,192.915l-191.104,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第3篇 - 集合通信及其通信原语 on whatsapp"
+        href="https://api.whatsapp.com/send?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac3%e7%af%87%20-%20%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e5%8f%8a%e5%85%b6%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad%20-%20https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f">
+        <svg version="1.1" viewBox="0 0 512 512" xml:space="preserve">
+            <path
+                d="M449.446,0c34.525,0 62.554,28.03 62.554,62.554l0,386.892c0,34.524 -28.03,62.554 -62.554,62.554l-386.892,0c-34.524,0 -62.554,-28.03 -62.554,-62.554l0,-386.892c0,-34.524 28.029,-62.554 62.554,-62.554l386.892,0Zm-58.673,127.703c-33.842,-33.881 -78.847,-52.548 -126.798,-52.568c-98.799,0 -179.21,80.405 -179.249,179.234c-0.013,31.593 8.241,62.428 23.927,89.612l-25.429,92.884l95.021,-24.925c26.181,14.28 55.659,21.807 85.658,21.816l0.074,0c98.789,0 179.206,-80.413 179.247,-179.243c0.018,-47.895 -18.61,-92.93 -52.451,-126.81Zm-126.797,275.782l-0.06,0c-26.734,-0.01 -52.954,-7.193 -75.828,-20.767l-5.441,-3.229l-56.386,14.792l15.05,-54.977l-3.542,-5.637c-14.913,-23.72 -22.791,-51.136 -22.779,-79.287c0.033,-82.142 66.867,-148.971 149.046,-148.971c39.793,0.014 77.199,15.531 105.329,43.692c28.128,28.16 43.609,65.592 43.594,105.4c-0.034,82.149 -66.866,148.983 -148.983,148.984Zm81.721,-111.581c-4.479,-2.242 -26.499,-13.075 -30.604,-14.571c-4.105,-1.495 -7.091,-2.241 -10.077,2.241c-2.986,4.483 -11.569,14.572 -14.182,17.562c-2.612,2.988 -5.225,3.364 -9.703,1.12c-4.479,-2.241 -18.91,-6.97 -36.017,-22.23c-13.314,-11.876 -22.304,-26.542 -24.916,-31.026c-2.612,-4.484 -0.279,-6.908 1.963,-9.14c2.016,-2.007 4.48,-5.232 6.719,-7.847c2.24,-2.615 2.986,-4.484 4.479,-7.472c1.493,-2.99 0.747,-5.604 -0.374,-7.846c-1.119,-2.241 -10.077,-24.288 -13.809,-33.256c-3.635,-8.733 -7.327,-7.55 -10.077,-7.688c-2.609,-0.13 -5.598,-0.158 -8.583,-0.158c-2.986,0 -7.839,1.121 -11.944,5.604c-4.105,4.484 -15.675,15.32 -15.675,37.364c0,22.046 16.048,43.342 18.287,46.332c2.24,2.99 31.582,48.227 76.511,67.627c10.685,4.615 19.028,7.371 25.533,9.434c10.728,3.41 20.492,2.929 28.209,1.775c8.605,-1.285 26.499,-10.833 30.231,-21.295c3.732,-10.464 3.732,-19.431 2.612,-21.298c-1.119,-1.869 -4.105,-2.99 -8.583,-5.232Z" />
+        </svg>
+    </a>
+    <a target="_blank" rel="noopener noreferrer" aria-label="share 分布式训练 – 第3篇 - 集合通信及其通信原语 on telegram"
+        href="https://telegram.me/share/url?text=%e5%88%86%e5%b8%83%e5%bc%8f%e8%ae%ad%e7%bb%83%20%e2%80%93%20%e7%ac%ac3%e7%af%87%20-%20%e9%9b%86%e5%90%88%e9%80%9a%e4%bf%a1%e5%8f%8a%e5%85%b6%e9%80%9a%e4%bf%a1%e5%8e%9f%e8%af%ad&amp;url=https%3a%2f%2fjianye0428.github.io%2fen%2fposts%2ftech%2fdistributedtraining%2f2022-10-31_distributedtraining_3%2f">
+        <svg version="1.1" xml:space="preserve" viewBox="2 2 28 28">
+            <path
+                d="M26.49,29.86H5.5a3.37,3.37,0,0,1-2.47-1,3.35,3.35,0,0,1-1-2.47V5.48A3.36,3.36,0,0,1,3,3,3.37,3.37,0,0,1,5.5,2h21A3.38,3.38,0,0,1,29,3a3.36,3.36,0,0,1,1,2.46V26.37a3.35,3.35,0,0,1-1,2.47A3.38,3.38,0,0,1,26.49,29.86Zm-5.38-6.71a.79.79,0,0,0,.85-.66L24.73,9.24a.55.55,0,0,0-.18-.46.62.62,0,0,0-.41-.17q-.08,0-16.53,6.11a.59.59,0,0,0-.41.59.57.57,0,0,0,.43.52l4,1.24,1.61,4.83a.62.62,0,0,0,.63.43.56.56,0,0,0,.4-.17L16.54,20l4.09,3A.9.9,0,0,0,21.11,23.15ZM13.8,20.71l-1.21-4q8.72-5.55,8.78-5.55c.15,0,.23,0,.23.16a.18.18,0,0,1,0,.06s-2.51,2.3-7.52,6.8Z" />
+        </svg>
+    </a>
+</div>
+
+  </footer>
+
+
+
+
+<footer class="tc-container" id="comment">
+    <div class="tc-title"><p class="c-title">Discussion</p></div>
+    <div id="tcomments"></div>
+</footer>
+<script crossorigin="anonymous" src="/js/twikoo.min.b16100b7cf8a61759eab076a122482054e083087aad37c3be1fe2e293934dc34.js" integrity="sha256-sWEAt8&#43;KYXWeqwdqEiSCBU4IMIeq03w74f4uKTk03DQ="></script>
+<script>
+    twikoo.init({
+        envId: 'https://my-repository-pink.vercel.app/',
+        el: '#tcomments',
+        region: 'ap-shanghai', 
+        
+        lang: 'zh-CN', 
+    });
+</script>
+
+</article>
+    </main>
+    
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerText = 'copy';
+
+        function copyingDone() {
+            copybutton.innerText = 'copied!';
+            setTimeout(() => {
+                copybutton.innerText = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
